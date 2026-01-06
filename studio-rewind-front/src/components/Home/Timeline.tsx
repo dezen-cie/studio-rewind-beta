@@ -52,10 +52,39 @@ function Timeline() {
       lineRef.current.style.top = `${dotCenter}px`;
     }
 
-    updateLinePosition();
+    // Attendre que les images soient chargées avant de calculer la position
+    const images = sectionRef.current?.querySelectorAll('img');
+    let loadedCount = 0;
+    const totalImages = images?.length || 0;
+
+    function onImageLoad() {
+      loadedCount++;
+      if (loadedCount >= totalImages) {
+        updateLinePosition();
+      }
+    }
+
+    images?.forEach(img => {
+      if (img.complete) {
+        loadedCount++;
+      } else {
+        img.addEventListener('load', onImageLoad);
+      }
+    });
+
+    // Si toutes les images sont déjà chargées, mettre à jour immédiatement
+    if (loadedCount >= totalImages) {
+      updateLinePosition();
+    }
+
     window.addEventListener('resize', updateLinePosition);
 
-    return () => window.removeEventListener('resize', updateLinePosition);
+    return () => {
+      window.removeEventListener('resize', updateLinePosition);
+      images?.forEach(img => {
+        img.removeEventListener('load', onImageLoad);
+      });
+    };
   }, []);
 
   return (
