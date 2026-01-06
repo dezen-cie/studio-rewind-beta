@@ -21,7 +21,7 @@ function PublicLayout() {
         <>
           <h1>
             Ton Studio Clé en Main Pour 
-            <span>Tes Potcast & Interviews</span>
+            <span>Tes Podcast & Interviews</span>
           </h1>
 
           <div className="header-call_to_action">
