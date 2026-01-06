@@ -42,7 +42,7 @@ function sendAuthResponse(res, user) {
 
   res.cookie('token', token, {
     httpOnly: true,
-    sameSite: 'lax', // ok pour localhost:5173 -> 4000
+    sameSite: NODE_ENV === 'production' ? 'none' : 'lax',
     secure: NODE_ENV === 'production',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
   });
@@ -227,7 +227,7 @@ export async function logout(req, res) {
   try {
     res.clearCookie('token', {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: NODE_ENV === 'production' ? 'none' : 'lax',
       secure: NODE_ENV === 'production',
     });
     return res.json({ message: 'Déconnecté.' });
