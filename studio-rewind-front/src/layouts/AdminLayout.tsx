@@ -49,7 +49,7 @@ function AdminLayout() {
 
 
   return (
-    <div>
+    <div className="sr-admin-root">
       <div className="sr-admin-shell">
         {/* SIDEBAR */}
         <aside className="sr-admin-sidebar">
