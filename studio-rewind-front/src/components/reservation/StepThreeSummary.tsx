@@ -311,6 +311,18 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
     <main className="booked-main booked-main-step3">
       <h2>Récapitulatif de votre réservation</h2>
 
+      {/* WARNING DÉMO */}
+      <div className="demo-warning">
+        <span className="demo-warning-icon">⚠️</span>
+        <div className="demo-warning-content">
+          <strong>Site de démonstration</strong>
+          <p>
+            Ce site est une version de démonstration. Merci de ne pas effectuer de réservation réelle.
+            Les paiements utilisent le mode test de Stripe (aucun prélèvement réel).
+          </p>
+        </div>
+      </div>
+
       {/* RÉCAP PANIER */}
       <section className="cart-summary">
         <div className="cart-summary-main">

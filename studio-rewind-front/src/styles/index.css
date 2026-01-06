@@ -81,14 +81,13 @@ html, body{
 }
 
 .subtitle{
-    font-family: 'lovelace';
+    font-family: 'Poppins', sans-serif;
     font-size: 3rem;
     text-align: left;
     color: inherit;
 
     span{
         display: block;
-        font-family: 'caveat';
         text-transform: uppercase;
         
         em{

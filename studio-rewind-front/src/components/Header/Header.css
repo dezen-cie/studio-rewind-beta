@@ -61,14 +61,8 @@
         font-size: calc(4.4vw);
         text-align: center;
         margin: 0 2rem;
-        font-family: 'lovelace';
-        line-height: 1;
-
-        span{
-            display: inline-block;
-            font-family: 'caveat';
-            text-transform: uppercase;
-        }
+        font-family: 'Poppins', sans-serif;
+        line-height: 2;
     }
 
     .header-call_to_action{
