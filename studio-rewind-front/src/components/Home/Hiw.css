@@ -89,3 +89,64 @@
 .number1.number--visible { transition-delay: 0s; }
 .number2.number--visible { transition-delay: 0.15s; }
 .number3.number--visible { transition-delay: 0.3s; }
+
+/* Tablette et petits écrans */
+@media (max-width: 1000px) {
+    .hiw-grid {
+        flex-wrap: wrap;
+        padding: 2rem 1rem;
+        gap: 1.5rem;
+    }
+
+    .number {
+        height: clamp(200px, 25vw, 280px);
+        padding: 0 1.5rem;
+
+        .number-subtitle {
+            font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+        }
+
+        .number-text {
+            font-size: clamp(0.8rem, 1.3vw, 1rem);
+        }
+    }
+
+    .number::before {
+        font-size: clamp(8rem, 12vw, 14rem);
+    }
+}
+
+/* Mobile */
+@media (max-width: 650px) {
+    .hiw-grid {
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem;
+        gap: 1.5rem;
+    }
+
+    .number {
+        height: 220px;
+        width: 220px;
+        padding: 0 1.5rem;
+
+        .number-subtitle {
+            font-size: 1rem;
+        }
+
+        .number-text {
+            font-size: 0.85rem;
+        }
+    }
+
+    .number::before {
+        font-size: 10rem;
+    }
+}
+
+/* Très petit mobile */
+@media (max-width: 547px) {
+    .hiw .subtitle {
+        text-align: center;
+    }
+}

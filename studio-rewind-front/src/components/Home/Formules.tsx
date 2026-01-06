@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 
 import './Formules.css';
+import Timeline from './Timeline';
 import {
   getPublicFormulas,
   type PublicFormula
@@ -213,6 +214,8 @@ function Formules() {
           </button>
         </div>
       )}
+
+      <Timeline />
     </section>
   );
 }

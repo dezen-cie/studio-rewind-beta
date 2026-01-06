@@ -38,7 +38,7 @@ function Timeline() {
     <>
     <div className="materiel-section">
       <section className="materiel">
-        <h2 className="subtitle">Un matériel professionnel pensé <span>pour tes podcasts</span></h2>
+        <h2 className="subtitle">Un matériel professionnel pensé pour tes podcasts</h2>
 
         <div className="materiel-slider">
           {[...items, ...items].map((item, index) => (

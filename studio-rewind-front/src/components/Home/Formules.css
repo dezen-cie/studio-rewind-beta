@@ -251,62 +251,22 @@
     }
 
     .formules-slider {
-      max-width: 1800px; 
+      max-width: 1800px;
       margin-inline: auto;
     }
+  }
 
-  
   .formule-cards {
-      justify-content: center;
+    justify-content: center;
   }
 
   .formule {
-    flex: 0 0 30%;   
-    max-width: none; 
-    width: 100%; 
-
-      h4{
-        font-size: 2rem;
-      }
-
-      .formule-desc{
-        min-height: 150px;
-      }
-
-    }
-
-    .price{
-      font-size: 2rem;
-    }
-
-    p{
-      font-size: 1.2rem;
-    }
-
-    .formule-options p{
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-    }
+    flex: 0 0 250px;
+    max-width: 250px;
   }
-
-  .formule1{
-    min-height: 500px;
-  }
-  .formule2{
-    min-height: 650px;
-  }
-  .formule3 {
-      min-height: 800px;
-  }
-  .formule4 {
-      min-height: 800px;
-  }
-
 }
 
-@media screen and (max-width: 810px){
+@media screen and (max-width: 1000px){
   .formules {
     .formules-header {
         p{
@@ -329,8 +289,8 @@
   }
 
   .formule {
-      flex: 0 0 40%;               
-      max-width: 85%;
+      flex: 0 0 250px;
+      max-width: 250px;
       scroll-snap-align: center;
       margin: 0;
 
@@ -342,7 +302,7 @@
 
     .formule-cards {
         display: flex;
-        flex-direction: row;          
+        flex-direction: row;
         overflow-x: auto;
         justify-content: flex-start;
         overflow-y: visible;
@@ -350,6 +310,8 @@
         gap: 1.5rem;
         padding: 1rem 0;
         -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
 
         &::-webkit-scrollbar {
             display: none;
