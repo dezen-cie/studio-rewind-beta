@@ -12,11 +12,10 @@ type HeaderProps = {
 function Header({ children }: HeaderProps) {
 
   const handleScroll = () => {
-      const footer = document.querySelector("footer");
-      if (!footer) return;
+      const formules = document.querySelector(".formules");
+      if (!formules) return;
 
-      footer.scrollIntoView({
-        block: "end",
+      formules.scrollIntoView({
         behavior: "smooth",
       });
     }
