@@ -13,15 +13,14 @@
 .studio_text{
   display:grid;
   grid-template-columns: 2fr 4fr;
-  align-items: stretch;
-  justify-content: center; 
+  align-items: center;
+  justify-content: center;
   justify-items: center;
 
   img{
     width: 100%;
-    object-fit: cover;
     border-radius: 15px;
-    height: 100%;
+    height: auto;
     margin-left: 2rem;
   }
 
@@ -77,5 +76,30 @@
   .studio_text {
     font-size: 0.95rem;
     text-align: justify;
+  }
+}
+
+/* Très grands écrans */
+@media (min-width: 2000px) {
+  .studio {
+    padding: 4rem 5vw;
+  }
+
+  .studio_text {
+    gap: 3rem;
+  }
+
+  .studio_text img {
+    width: 100%;
+    height: auto;
+  }
+
+  .studio_text p {
+    font-size: calc(0.6vw + 0.5rem);
+    line-height: 2.2;
+  }
+
+  .subtitle {
+    font-size: calc(1.5vw + 1rem);
   }
 }
