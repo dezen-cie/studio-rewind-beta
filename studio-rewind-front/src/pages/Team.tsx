@@ -11,7 +11,7 @@ function Team() {
         <h2 className="team-title">Les podcasteurs</h2>
         <div className="members">
          <div className="team-member">
-            <img src="/images/Karim.jpg" alt="Membre de l'équipe 1" />
+            <img src="/images/Karim.jpg" alt="Membre de l'équipe 1" loading="lazy" />
             <div className="team-member_description">
               <h3>Karim</h3>
               <p>
@@ -20,7 +20,7 @@ function Team() {
             </div>
           </div>
           <div className="team-member">
-            <img src="/images/Justine.jpg" alt="Membre de l'équipe 2" />
+            <img src="/images/Justine.jpg" alt="Membre de l'équipe 2" loading="lazy" />
             <div className="team-member_description">
               <h3>Justine</h3>
               <p>
@@ -29,7 +29,7 @@ function Team() {
             </div>
           </div>
           <div className="team-member">
-              <img src="/images/Suzie.jpg" alt="Membre de l'équipe 3" />
+              <img src="/images/Suzie.jpg" alt="Membre de l'équipe 3" loading="lazy" />
               <div className="team-member_description">
                 <h3>Suzie</h3>
                 <p>
@@ -38,7 +38,7 @@ function Team() {
             </div>
           </div>
           <div className="team-member">
-              <img src="/images/Adrien.jpg" alt="Membre de l'équipe 4" />
+              <img src="/images/Adrien.jpg" alt="Membre de l'équipe 4" loading="lazy" />
               <div className="team-member_description">
                 <h3>Adrien</h3>
                 <p>
@@ -57,21 +57,21 @@ function Team() {
               <h3>CEO</h3>
               <p>Karim</p>
             </div>
-            <img src="/images/Karim.jpg" alt="CEO" />
+            <img src="/images/Karim.jpg" alt="CEO" loading="lazy" />
           </div>
           <div className="commercial-member">
             <div className="commercial-member_role">
               <h3>CSO</h3>
               <p>Grégory</p>
             </div>
-            <img src="/images/Gregory.jpg" alt="CEO" />
+            <img src="/images/Gregory.jpg" alt="CSO" loading="lazy" />
           </div>
           <div className="commercial-member">
             <div className="commercial-member_role">
               <h3>Monteur</h3>
               <p>John</p>
             </div>
-            <img src="/images/John.jpg" alt="CEO" />
+            <img src="/images/John.jpg" alt="Monteur" loading="lazy" />
           </div>
          </div>
        </section>

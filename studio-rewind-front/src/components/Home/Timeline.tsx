@@ -67,7 +67,7 @@ function Timeline() {
         <div className="materiel-slider">
           {[...items, ...items].map((item, index) => (
             <div className="materiel-item" key={index}>
-              <img src={item.img} alt={item.title} />
+              <img src={item.img} alt={item.title} loading="lazy" />
               <div className="materiel-dot"></div>
               <h3><span className="materiel-icon">{item.icon}</span> {item.title}</h3>
               <ul>

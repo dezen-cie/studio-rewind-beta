@@ -22,6 +22,7 @@ function FooterInner(){
               src="/images/logo-footer.svg"
               alt="Logo Studio Rewind"
               className="logo-footer"
+              loading="lazy"
             />
             <Link className="footer-nav_link" to="/reservation">
               <button className="btn btn-primary">Réserver un créneau</button>

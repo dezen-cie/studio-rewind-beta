@@ -6,7 +6,7 @@ function Studio(){
         <section className="studio">
             <div className="studio_text"> 
                 <figure className="studio_img studio_img-main studio_img-main--left">
-                    <img src="/images/studio.jpg" alt="Vue du studio avec canapé et lumière" />
+                    <img src="/images/studio.jpg" alt="Vue du studio avec canapé et lumière" loading="lazy" />
                 </figure>
                 
                 <div>

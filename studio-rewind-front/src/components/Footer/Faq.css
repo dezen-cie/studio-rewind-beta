@@ -56,5 +56,17 @@
     }
 }
 
+@media (max-width: 467px){
+    .faq .subtitle{
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 337px){
+    .faq .subtitle{
+        font-size: 1.7rem;
+    }
+}
+
 
 

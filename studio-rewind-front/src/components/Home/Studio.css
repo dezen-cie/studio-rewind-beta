@@ -79,6 +79,18 @@
   }
 }
 
+@media (max-width: 467px) {
+  .studio .subtitle {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 337px) {
+  .studio .subtitle {
+    font-size: 1.7rem;
+  }
+}
+
 /* Très grands écrans */
 @media (min-width: 2000px) {
   .studio {

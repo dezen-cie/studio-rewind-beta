@@ -103,7 +103,7 @@ function StepOneFormulas({ onSelectFormula }: StepOneFormulasProps) {
               key={f.id}
               className="booked-formule"
             >
-              <img src={`/images/formule-${f.key}.jpg`} alt={f.name} />
+              <img src={`/images/formule-${f.key}.jpg`} alt={f.name} loading="lazy" />
               <div>
               <div className="reservation-formula-info">
                 <p className="reservation-formula-title">
