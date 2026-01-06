@@ -1,5 +1,5 @@
 // src/pages/admin/AdminBlockedSlotsPage.tsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Trash2, Plus, X } from 'lucide-react';
 import {
   type BlockedSlot,

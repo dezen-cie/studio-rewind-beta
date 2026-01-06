@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { Clock, Calendar, Users, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   getDashboardSummary,
@@ -9,7 +8,6 @@ import {
   type DashboardReservation,
   type OccupancyData
 } from '../../api/adminDashboard';
-import type { AdminLayoutOutletContext } from '../../layouts/AdminLayout';
 import './AdminDashboardPage.css';
 
 // Heures d'ouverture du studio (9h - 18h)
@@ -33,8 +31,6 @@ function isSameDay(d1: Date, d2: Date): boolean {
 }
 
 function AdminDashboardPage() {
-  const { searchQuery } = useOutletContext<AdminLayoutOutletContext>();
-
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
