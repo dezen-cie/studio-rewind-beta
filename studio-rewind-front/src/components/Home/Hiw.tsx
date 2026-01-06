@@ -43,7 +43,7 @@ function Hiw() {
                     }}
                 >
                     <p className="number-subtitle">Etape 1 / Choisissez Votre formule:</p>
-                    <p className="number-text">Selon votre niveau d'accompagnement. Automome - Ameliorée - Pack d'heures</p>
+                    <p className="number-text">Selon votre niveau d'accompagnement. Automome - Ameliorée - Pack d'heures - formule réseaux</p>
                 </article>
 
                 <article
