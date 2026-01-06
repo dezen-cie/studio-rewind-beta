@@ -1,23 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { logout } from '../utils/auth';
 import 'bulma/css/bulma.min.css';
 import './admin.css';
 
-type Theme = 'light' | 'dark';
 
 export type AdminLayoutOutletContext = {
   searchQuery: string;
 };
 
 function AdminLayout() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'dark';
-    const stored = window.localStorage.getItem('sr_admin_theme');
-    if (stored === 'light' || stored === 'dark') return stored;
-    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
-    return prefersDark ? 'dark' : 'light';
-  });
 
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -55,17 +47,9 @@ function AdminLayout() {
       .join('');
   }, [rawUser]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.setItem('sr_admin_theme', theme);
-  }, [theme]);
-
-  function toggleTheme() {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
-  }
 
   return (
-    <div className={`sr-admin-root theme-${theme}`}>
+    <div>
       <div className="sr-admin-shell">
         {/* SIDEBAR */}
         <aside className="sr-admin-sidebar">
