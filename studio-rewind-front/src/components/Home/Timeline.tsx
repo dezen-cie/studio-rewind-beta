@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import "./Timeline.css";
 
 const items = [
@@ -34,11 +35,34 @@ const items = [
 ];
 
 function Timeline() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const lineRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function updateLinePosition() {
+      if (!sectionRef.current || !lineRef.current) return;
+
+      const dot = sectionRef.current.querySelector('.materiel-dot');
+      if (!dot) return;
+
+      const sectionRect = sectionRef.current.getBoundingClientRect();
+      const dotRect = dot.getBoundingClientRect();
+      const dotCenter = dotRect.top + dotRect.height / 2 - sectionRect.top;
+
+      lineRef.current.style.top = `${dotCenter}px`;
+    }
+
+    updateLinePosition();
+    window.addEventListener('resize', updateLinePosition);
+
+    return () => window.removeEventListener('resize', updateLinePosition);
+  }, []);
+
   return (
     <>
     <div className="materiel-section">
-      <section className="materiel">
-        <h2 className="subtitle">Un matériel professionnel pensé pour tes podcasts</h2>
+      <section className="materiel" ref={sectionRef}>
+        <h2 className="subtitle">Un matériel professionnel <span>pensé pour tes podcasts</span></h2>
 
         <div className="materiel-slider">
           {[...items, ...items].map((item, index) => (
@@ -54,7 +78,7 @@ function Timeline() {
             </div>
           ))}
         </div>
-        <div className="materiel-line"></div>
+        <div className="materiel-line" ref={lineRef}></div>
       </section>
     </div>
     </>
