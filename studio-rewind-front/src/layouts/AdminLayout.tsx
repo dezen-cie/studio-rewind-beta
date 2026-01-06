@@ -171,7 +171,7 @@ function AdminLayout() {
               className="sr-admin-sidebar-logout"
               onClick={async () => {
                 await logout();
-                window.location.href = '/login';
+                window.location.href = '/';
               }}
             >
               Déconnexion
