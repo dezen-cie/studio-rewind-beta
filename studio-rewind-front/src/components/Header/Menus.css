@@ -1,0 +1,88 @@
+.menu {
+    display: none;
+
+    &.menu--open {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.95);
+        gap: 2rem;
+        z-index: 10;
+    }
+
+
+    .btn_link {
+        display: flex;
+        align-items: center;
+        color: rgba(255, 255, 255, 1);
+        background-color: transparent;
+        border: 1px solid rgba(255, 255, 255, 1);
+        border-radius: 5px;
+        padding: 0.8rem 1.6rem;
+        cursor: pointer;
+        transition: var(--transition);
+
+        &:hover {
+            background: var(--color-primary);
+            color: rgba(255, 255, 255, 1);
+            
+        }
+
+        svg {
+            margin-left: 0.5rem;
+            width: 1rem;
+        }
+    }
+}
+
+.menu-toggle {
+    color: inherit;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: block;
+    z-index: 11;
+}
+
+/** 
+ * Desktop (>= 650px) 
+ */
+@media screen and (min-width: 650px) {
+  .menu {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    position: static;
+    height: auto;
+    background: transparent;
+
+    &.menu--open {
+        position: static;
+        inset: auto;
+        height: auto;
+        background: transparent;
+    }
+  }
+  
+  .menu-toggle {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 954px){
+    .menu{
+        gap: 1.5rem;
+    }
+}
+
+@media screen and (max-width: 954px){
+    .menu a{
+        font-size:0.8rem;
+    }
+}
+

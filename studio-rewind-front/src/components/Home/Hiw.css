@@ -1,0 +1,91 @@
+.hiw{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 2rem 0;
+    cursor: default;
+
+    .subtitle-baseline{
+        color: rgba(0, 0, 0, 0.5);
+        font-style: italic;
+    }
+}
+
+.hiw-grid {
+    display: flex;
+    justify-content: space-around;
+    padding: 3rem;
+    gap: 2rem;
+    width: 100%;
+}
+
+.number {
+    position: relative;
+    height: 300px;
+    aspect-ratio: 1;
+    padding: 0 2rem;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    background-color: rgba(88, 88, 88, 0.452);
+    text-align: center;
+    color: #fff;
+
+    opacity: 0;
+    transform: translateY(80px);
+    transition:
+        opacity 0.6s ease-out,
+        transform 0.6s ease-out,
+        background-color 0.3s ease;
+
+    .number-subtitle{
+        margin-bottom: 1rem;
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+
+    .number-text{
+        font-style: italic;
+    }
+}
+
+.number:hover {
+    background-color: rgba(94, 0, 0, 0.5);
+}
+
+/* grand numéro en arrière-plan */
+.number::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15rem;
+    font-family: 'Times New Roman', serif;
+    color: rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+/* texte au-dessus du chiffre */
+.number > * {
+    position: relative;
+    z-index: 2;
+}
+
+/* --- état final : élément visible --- */
+.number--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* apparitions successives */
+.number1.number--visible { transition-delay: 0s; }
+.number2.number--visible { transition-delay: 0.15s; }
+.number3.number--visible { transition-delay: 0.3s; }

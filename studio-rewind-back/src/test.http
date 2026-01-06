@@ -1,0 +1,87 @@
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjFkMWNiOTk1LTg1ZGYtNGFiNi05YTk0LTE0ZTg3MWRiYWRmOCIsInJvbGUiOiJzdXBlcl9hZG1pbiIsImlzX2FjdGl2ZSI6dHJ1ZSwiaWF0IjoxNzY0ODU1MzEwLCJleHAiOjE3NjU0NjAxMTB9.l-lqr7ie_wKSWbYI0E35XzxdvrFt3fYHqVOBR-A-EXk
+
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "client@test.com",
+  "password": "Password123!",
+  "account_type": "particulier",
+  "firstname": "Jean",
+  "lastname": "Dupont",
+  "phone": "0600000000"
+}
+
+
+###
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@mail.fr",
+  "password": "Password1+"
+}
+
+###
+POST http://localhost:4000/api/reservations/preview
+Authorization: Bearer {{token}}
+Content-Type: application/json 
+
+{
+  "formula": "autonome",
+  "start_date": "2025-12-10T10:00:00.000Z",
+  "end_date": "2025-12-10T12:00:00.000Z"
+}
+
+###
+POST http://localhost:4000/api/reservations
+Authorization: Bearer {{token}}
+Content-Type: application/json 
+
+{
+  "formula": "autonome",
+  "start_date": "2025-12-10T10:00:00.000Z",
+  "end_date": "2025-12-10T12:00:00.000Z"
+}
+
+###
+POST http://localhost:4000/api/admin/create-admin
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "email": "admin@mail.fr",
+  "password": "Password1+"
+}
+
+
+### Envoi d'un mail depuis formulaire contact
+POST http://localhost:4000/api/messages/contact
+Content-Type: application/json
+
+{
+  "email": "visiteur@test.com",
+  "subject": "Demande d'informations",
+  "content": "Bonjour, je voudrais plus d'infos sur vos formules."
+}
+
+### Message depuis un utilisateur connecté
+POST http://localhost:4000/api/messages/contact-auth
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "subject": "Problème de réservation",
+  "content": "Je ne comprends pas mon quota d'abonnement."
+}
+
+### Créer un PaymentIntent + réservation (formule autonome)
+POST http://localhost:4000/api/payments/reservation-intent
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "formula": "autonome",
+  "start_date": "2025-12-10T17:00:00.000Z",
+  "end_date": "2025-12-10T18:00:00.000Z"
+}

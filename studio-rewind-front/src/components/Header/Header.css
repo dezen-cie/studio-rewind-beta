@@ -1,0 +1,121 @@
+.header {
+    position: relative;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    color: #fff;
+
+    .header-content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+        z-index: 2;
+    }
+
+    .logo-header {
+        width: clamp(150px, 26.6vw, 800px);
+        height: auto;
+    }
+
+    .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-inline: 3rem;
+    }
+
+    .swissjob-logo{
+        position: absolute;
+        width: 200px;
+        height: 90px;
+        background-image: url('/images/suissjobs.png');
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: contain;
+        z-index: 100;
+        bottom: 0;
+        right: 20px;
+        
+        &:hover{
+            color: rgba(255, 255, 255, 1);
+        } 
+    }
+}
+
+.p-header{
+    width: 70%;
+    margin: 2rem auto;
+    line-height: 1.5;
+    text-align: justify;
+}
+
+.header-hero {
+    flex: 1; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+
+    h1{
+        font-size: calc(4.4vw);
+        text-align: center;
+        margin: 0 2rem;
+        font-family: 'lovelace';
+        line-height: 1;
+
+        span{
+            display: inline-block;
+            font-family: 'caveat';
+            text-transform: uppercase;
+        }
+    }
+
+    .header-call_to_action{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        p{
+            padding-bottom: 1rem;
+        }
+    }
+
+    button{
+        display: flex;
+        align-items: center;
+
+        svg{
+            width: 1rem;
+            margin-left: 0.5rem;
+        }
+    }
+
+    .lucide-chevron-down{
+        box-sizing: content-box;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: var(--transition);
+        cursor: pointer;
+
+        &:hover{
+            background-color: rgba(255, 255, 255, 0.5);
+            color: rgba(0, 0, 0, 0.4);
+            scale: 1.2;
+        }
+    }
+
+}
+
+
+/* Réduction des marges externes */
+@media screen and (max-width: 994px){
+    .header {
+        .nav {
+            margin-inline: 1rem;
+        }
+    } 
+}
+
+
+

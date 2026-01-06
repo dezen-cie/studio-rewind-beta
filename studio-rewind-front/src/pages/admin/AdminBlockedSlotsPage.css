@@ -1,0 +1,400 @@
+/* AdminBlockedSlotsPage.css */
+
+.blocked-slots-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .blocked-slots-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* CALENDRIER */
+.blocked-calendar-card {
+  padding: 1.5rem;
+}
+
+.blocked-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.blocked-calendar-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--text-color, #fff);
+}
+
+.blocked-calendar-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.blocked-calendar-month-nav button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 0.4rem;
+  cursor: pointer;
+  color: var(--text-color, #fff);
+  transition: background 0.2s;
+}
+
+.blocked-calendar-month-nav button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.blocked-calendar-month-label {
+  font-weight: 500;
+  text-transform: capitalize;
+  color: var(--text-color, #fff);
+}
+
+.blocked-calendar-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.blocked-calendar-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.blocked-calendar-row-labels {
+  margin-bottom: 0.5rem;
+}
+
+.blocked-calendar-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-color, #fff);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.blocked-calendar-cell-label {
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: default;
+}
+
+.blocked-calendar-cell-day:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.blocked-calendar-cell-empty {
+  cursor: default;
+}
+
+.blocked-calendar-cell-selected {
+  background: #646cff !important;
+  color: #fff;
+  font-weight: 600;
+}
+
+.blocked-calendar-cell-fullday {
+  background: rgba(255, 82, 82, 0.4);
+  color: #ff5252;
+  font-weight: 500;
+}
+
+.blocked-calendar-cell-fullday:hover:not(:disabled) {
+  background: rgba(255, 82, 82, 0.5);
+}
+
+.blocked-calendar-cell-partial {
+  background: rgba(255, 193, 7, 0.3);
+  color: #ffc107;
+  font-weight: 500;
+}
+
+.blocked-calendar-cell-partial:hover:not(:disabled) {
+  background: rgba(255, 193, 7, 0.4);
+}
+
+.blocked-calendar-cell:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Légende */
+.blocked-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.blocked-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.blocked-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.blocked-legend-dot.fullday {
+  background: rgba(255, 82, 82, 0.6);
+}
+
+.blocked-legend-dot.partial {
+  background: rgba(255, 193, 7, 0.5);
+}
+
+.blocked-loading {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 1rem;
+}
+
+/* PANNEAU JOUR */
+.blocked-day-panel {
+  padding: 1.5rem;
+  min-height: 400px;
+}
+
+.blocked-day-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  gap: 1rem;
+}
+
+.blocked-day-empty p {
+  max-width: 250px;
+}
+
+.blocked-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.blocked-day-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color, #fff);
+  text-transform: capitalize;
+  margin: 0;
+}
+
+.blocked-day-header .button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.blocked-day-no-blocks {
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  padding: 2rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+/* LISTE DES BLOCAGES */
+.blocked-day-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.blocked-slot-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #ff5252;
+}
+
+.blocked-slot-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.blocked-slot-time {
+  font-weight: 600;
+  color: var(--text-color, #fff);
+}
+
+.blocked-slot-time.fullday {
+  color: #ff5252;
+}
+
+.blocked-slot-reason {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.blocked-slot-delete {
+  background: transparent;
+  border: 1px solid rgba(255, 82, 82, 0.5);
+  border-radius: 4px;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #ff5252;
+  transition: all 0.2s;
+}
+
+.blocked-slot-delete:hover {
+  background: rgba(255, 82, 82, 0.2);
+}
+
+/* MODAL */
+.blocked-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.blocked-modal {
+  background: #1a1a2e;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.blocked-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.blocked-modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-color, #fff);
+}
+
+.blocked-modal-close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.2s;
+}
+
+.blocked-modal-close:hover {
+  color: #fff;
+}
+
+.blocked-modal-body {
+  padding: 1.5rem;
+}
+
+.blocked-modal-date {
+  font-weight: 500;
+  color: #646cff;
+  margin-bottom: 1.25rem;
+  text-transform: capitalize;
+}
+
+.blocked-modal-body .field {
+  margin-bottom: 1rem;
+}
+
+.blocked-modal-body .label {
+  color: var(--text-color, #fff);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.blocked-modal-body .radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-color, #fff);
+  cursor: pointer;
+}
+
+.blocked-modal-body .radio input {
+  margin: 0;
+}
+
+.blocked-time-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.blocked-modal-body .input,
+.blocked-modal-body .select select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-color, #fff);
+}
+
+.blocked-modal-body .select select{
+    background: var(--background);
+  & option{
+    background-color: transparent;
+  }
+}
+
+.blocked-modal-body .input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.blocked-modal-body .input:focus,
+.blocked-modal-body .select select:focus {
+  border-color: #646cff;
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+}
+
+.blocked-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.blocked-modal-footer .button {
+  min-width: 100px;
+}

@@ -1,0 +1,346 @@
+.booking{
+    background-color: var(--background);
+    color: rgba(255, 255, 255, 1);
+    min-width: 100vh;
+}
+
+.booked-header{
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem 0;
+    .logo-header{
+        width: clamp(150px, 15vw, 300px);
+        height: auto;
+    }
+
+    .booked-menu{
+        
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+    }
+}
+
+.booked-main{
+    width: 80%;
+    margin: 0 auto;
+    padding: 3rem 0;
+    display: flex;
+    flex-direction: column;
+
+    .booked-formules{
+        width: 100%;
+        display: flex;
+        flex-direction: column; 
+        gap: 2rem;  
+
+        
+        div{
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-inline: 1rem;
+
+            div{
+                display: flex;
+                flex-direction: column;
+                align-items:flex-start;
+
+                p{
+                    margin: 0.5rem;;
+                }
+            }
+            
+        }
+    
+        .booked-formule{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(105, 104, 104, 0.1); 
+            -webkit-box-shadow: inset 6px 6px 27px -9px #000000; 
+            box-shadow: inset 6px 6px 27px -9px #000000;
+            cursor: pointer;
+            padding-right: 2rem;
+
+            &::after{
+                content: "";
+                position: absolute;
+                inset: 0;
+                background-color: rgba(0, 0, 0, 0.4);
+                transition: var(--transition);
+                pointer-events: none;
+            }
+
+            &:hover{
+                &::after{
+                    background-color: transparent;
+                }
+            }
+
+            img{
+                width: 270px;
+                height: 150px;
+                object-fit: cover;
+            }
+
+            .select{
+                display: inline-block;
+                height:min-content;
+                padding: 0.5rem;
+                border-radius: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                background-color: rgba(46, 34, 39, 1);
+
+                &:hover{
+                    background-color: rgba(59, 49, 54, 1);
+                    color: rgba(255, 255, 255, 1);
+                }
+            }
+        }
+    }
+}
+
+.flex-align{
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.flex-split{
+    justify-content: space-between;
+}
+
+.small{
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.padding{
+    padding: 1rem 0;
+}
+
+.color{
+    color: rgb(242, 82, 84);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================
+   CALENDRIER BOOKING
+   ============================ */
+
+.calendar-card {
+  background: #050509;
+  border-radius: 18px;
+  padding: 1.75rem 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #f5f5f5;
+  font-family: inherit;
+  max-width: 720px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* reset interne pour éviter les styles globaux dégueu */
+.calendar-card *,
+.calendar-card *::before,
+.calendar-card *::after {
+  box-sizing: border-box;
+}
+
+.calendar-card button {
+  all: unset;
+  box-sizing: border-box;
+}
+
+/* ============ HEADER ============ */
+
+.calendar-card .calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.calendar-card .calendar-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.calendar-card .calendar-title svg {
+  display: block;
+}
+
+.calendar-card .calendar-selected-info {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+/* ============ NAVIGATION MOIS ============ */
+
+.calendar-card .calendar-month-nav {
+  display: grid;
+  grid-template-columns: 32px 1fr 32px;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.calendar-card .calendar-month-label {
+  text-align: center;
+  text-transform: lowercase;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  font-size: 0.95rem;
+}
+
+/* flèches gauche / droite */
+
+.calendar-card .calendar-month-nav button {
+  height: 32px;
+  width: 32px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: transparent;
+  transition: background 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+  opacity: 0.8;
+}
+
+.calendar-card .calendar-month-nav button svg {
+  display: block;
+}
+
+.calendar-card .calendar-month-nav button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+  opacity: 1;
+}
+
+/* ============ GRILLE ============ */
+
+.calendar-card .calendar-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: 100%;
+}
+
+/* chaque ligne = 7 colonnes */
+
+.calendar-card .calendar-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.4rem;
+}
+
+/* cellules génériques */
+
+.calendar-card .calendar-cell {
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+/* labels L M M J V S D */
+
+.calendar-card .calendar-row-labels .calendar-cell {
+  opacity: 0.5;
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+/* ============ JOURS ============ */
+
+.calendar-card .calendar-cell-day {
+  height: 2rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease,
+    opacity 0.15s ease;
+}
+
+.calendar-card .calendar-cell-day:hover:not(.calendar-cell-empty) {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+/* cases vides (avant/après le mois) */
+
+.calendar-card .calendar-cell-empty {
+  cursor: default;
+  opacity: 0;
+}
+
+/* jour sélectionné */
+
+.calendar-card .calendar-cell-selected {
+  background: var(--color-primary);
+  color: #050509;
+  font-weight: 600;
+}
+
+.navbar-link:not(.is-arrowless)::after, .select:not(.is-multiple):not(.is-loading)::after{
+    border: none;
+}
+
+/* ============ PETITES ADAPTATIONS RESPONSIVE ============ */
+
+@media (max-width: 600px) {
+  .calendar-card {
+    padding: 1.25rem 1.5rem;
+    border-radius: 14px;
+  }
+
+  .calendar-card .calendar-month-nav {
+    margin-bottom: 1.25rem;
+  }
+
+  .calendar-card .calendar-cell,
+  .calendar-card .calendar-cell-day {
+    height: 1.8rem;
+    font-size: 0.75rem;
+  }
+}
+
+
+
+
+
+
+
+
+

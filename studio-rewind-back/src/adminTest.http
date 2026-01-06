@@ -1,0 +1,75 @@
+@token2 = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVlYTlhMTJiLWZhOTUtNDM1NC1hMDBjLTc3MDQzNjg5MWM5YSIsImVtYWlsIjoiZ3JlZ0BtYWlsLmZyIiwicm9sZSI6InN1cGVyX2FkbWluIiwiYWNjb3VudF90eXBlIjoicHJvZmVzc2lvbm5lbCIsImlhdCI6MTc2NTEyNDEyNCwiZXhwIjoxNzY1NzI4OTI0fQ.oXktt_4gYCMSUpFS5wTxqgl_caOcD2-r4s-i4e13Ytg
+### Connexion Super Admin
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "greg@mail.fr",
+  "password": "Password1+"
+}
+
+###
+GET http://localhost:4000/api/admin/dashboard
+Authorization: Bearer {{token2}}
+
+
+### Connexion Admin
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@mail.fr",
+  "password": "Password1+"
+}
+
+### Creation de l admin depuis le super admin
+POST http://localhost:4000/api/admin/create-admin
+Authorization: Bearer {{token2}}
+Content-Type: application/json
+
+{
+  "email": "admin@mail.fr",
+  "password": "Password1+"
+}
+
+### Listes de reservations
+GET http://localhost:4000/api/admin/reservations
+Authorization: Bearer {{token2}}
+
+### Listes de reservations d'un jour donné
+GET http://localhost:4000/api/admin/reservations/day/2025-12-10
+Authorization: Bearer {{token2}}
+
+### Modifier un creneau
+PATCH http://localhost:4000/api/admin/reservations/389769ef-bc38-41fc-b8aa-a4ed201756a0
+Authorization: Bearer {{token2}}
+Content-Type: application/json
+
+{
+  "start_date": "2025-12-15T14:00:00.000Z",
+  "end_date": "2025-12-15T16:00:00.000Z"
+}
+
+### Annuler une reservation
+POST http://localhost:4000/api/admin/reservations/389769ef-bc38-41fc-b8aa-a4ed201756a0/cancel
+Authorization: Bearer {{token2}}
+
+### Detail d'un message
+GET http://localhost:4000/api/messages/admin/439816bd-830f-4ec6-ac07-13d8f86b2626
+Authorization: Bearer {{token2}}
+
+###
+PATCH http://localhost:4000/api/messages/admin/439816bd-830f-4ec6-ac07-13d8f86b2626/archive
+Authorization: Bearer {{token2}}
+
+
+
+### CREATE SUBSCRIPTION FOR USER (ADMIN)
+POST http://localhost:4000/api/admin/subscriptions
+Authorization: Bearer {{token2}}
+Content-Type: application/json
+
+{
+  "user_id": "2fa74e15-14c1-4f1e-8e61-c393a20a0809",
+  "monthly_hours_quota": 5
+}

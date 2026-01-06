@@ -1,0 +1,360 @@
+/* src/pages/MemberDashboardPage.css */
+
+.member-dashboard {
+  min-height: 100vh;
+  padding: 2rem 0;
+  color: #ffffff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.member-dashboard-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.member-dashboard-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.member-dashboard-subtitle {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 1.5rem;
+}
+
+/* ===== Card globale calendrier ===== */
+
+.member-calendar-card {
+  background: #101114;
+  border-radius: 20px;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+  margin-bottom: 2rem;
+}
+
+.member-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.member-calendar-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.member-calendar-header-left-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.member-calendar-header-right {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Header mois + flèches */
+
+.member-calendar-month-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.member-calendar-month-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-transform: lowercase;
+}
+
+.member-calendar-month-title::first-letter {
+  text-transform: uppercase;
+}
+
+.member-calendar-arrow-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+}
+
+.member-calendar-arrow-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Grille calendrier */
+
+.member-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 0.4rem;
+  column-gap: 0.15rem;
+  font-size: 0.85rem;
+}
+
+.member-calendar-weekday {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  padding-bottom: 0.5rem;
+}
+
+.member-calendar-day {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.15rem 0;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.member-calendar-day--empty {
+  cursor: default;
+}
+
+.member-calendar-day--empty span {
+  visibility: hidden;
+}
+
+.member-calendar-day:not(.member-calendar-day--empty) > span {
+  min-width: 32px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+/* Jour avec résa (fond sombre) */
+
+.member-calendar-day--has-reservation > span {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Aujourd'hui (bordure claire) */
+
+.member-calendar-day--today > span {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+/* Jour sélectionné (rouge) */
+
+.member-calendar-day--selected > span {
+  background: rgba(206, 27, 29, 1);
+  color: #ffffff;
+}
+
+/* Hover */
+
+.member-calendar-day:not(.member-calendar-day--empty):hover > span {
+  background: rgba(255, 255, 255, 0.14);
+  transform: translateY(-1px);
+}
+
+/* Légende en bas */
+
+.member-calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.member-calendar-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.member-calendar-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.member-calendar-legend-dot--has-reservation {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.member-calendar-legend-dot--today {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+/* Bloc "réservations du jour" */
+
+.member-selected-day {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.member-selected-day-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+/* Layout global : calendrier + liste */
+
+.member-dashboard-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .member-dashboard-content {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Liste des cartes de réservation */
+
+.member-reservation-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.member-reservation-card {
+  background: #101114;
+  border-radius: 16px;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.member-reservation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+  gap: 0.75rem;
+}
+
+.member-reservation-formula {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.member-reservation-status {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+/* Status couleurs */
+
+.sr-status-confirmed {
+  background: rgba(46, 204, 113, 0.16);
+  color: #2ecc71;
+}
+
+.sr-status-pending {
+  background: rgba(241, 196, 15, 0.16);
+  color: #f1c40f;
+}
+
+.sr-status-cancelled {
+  background: rgba(231, 76, 60, 0.16);
+  color: #e74c3c;
+}
+
+.member-reservation-dates {
+  font-size: 0.85rem;
+  margin-bottom: 0.15rem;
+}
+
+.member-reservation-extra {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Section "à venir" */
+
+.member-upcoming-section {
+  background: #101114;
+  border-radius: 20px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+}
+
+.member-upcoming-title {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.member-upcoming-empty {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Zone d’erreur */
+
+.member-error {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #ff6b6b;
+}
+
+
+.card-more{
+  display: flex;
+  gap: 2rem;
+}
+
+
+.validation{
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.8rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 1);
+  background-color: transparent;
+  transition: var(--transition);
+  color: rgba(255, 255, 255, 1);
+
+    &:hover{
+      background-color: var(--color-primary);
+    }
+   
+}

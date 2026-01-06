@@ -1,0 +1,12 @@
+.member-password-field textarea{
+    color: rgba(255, 255, 255, 1);
+    background-color: var(--background);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    outline: none;
+    padding: 0.5rem;
+
+    &:focus{
+        border: 1px solid var(--color-primary);
+    }
+}

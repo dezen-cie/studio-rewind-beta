@@ -1,0 +1,157 @@
+.materiel-section{
+    background-color: var(--color-brownGrey);
+}
+
+.materiel {
+  max-width: 2000px;
+  margin: 0 auto;
+  position: relative;
+  padding: 4rem 0;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 1);
+
+    .subtitle{
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .materiel-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 0;
+        overflow: visible;
+        top: 65%;
+    }
+
+    .materiel-line::after {
+        content: "";
+        position: absolute;
+        top:-2px;
+        left:0;
+        right: 0;
+        height: 6px;
+        background-color: var(--background);
+        animation: materiel-line-fill 180s linear infinite;
+        border-radius: 4px;
+        transform-origin: left;
+        transform: scaleX(0);
+        z-index: 10;
+    }
+
+    &:hover .materiel-slider {
+        animation-play-state: paused;
+    }
+
+    &:hover .materiel-line::after {
+        animation-play-state: paused;
+    }
+
+}
+
+
+.materiel-slider {
+  display: flex;
+  gap: 4rem;
+  width: max-content;
+  padding: 2rem 0;
+  animation: materiel-slide 20s linear infinite;
+
+    .materiel-item {
+        text-align: center;
+        position: relative;
+        z-index: 2;
+        flex: 0 0 33.3333vw;
+        max-width: 380px;
+
+        ul {
+            padding: 0;
+            margin: 0;
+            list-style: disc;
+            text-align: left;
+            display: inline-block;
+        }
+
+        li {
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .materiel-icon {
+            font-size: 1rem;
+        }
+
+        img {
+            max-width: 180px;
+            height: auto;
+            display: block;
+            margin: 0 auto 1.5rem;
+        }
+    }
+
+    .materiel-dot {
+        width: 14px;
+        height: 14px;
+        background: #000;
+        border-radius: 50%;
+        border: 2px solid rgba(0, 0, 0, 0.5);
+        margin: 1.5rem auto;
+        position: relative;
+        z-index: 5;
+    }
+}
+
+
+
+/* défilement horizontal */
+@keyframes materiel-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* remplissage de la ligne en même temps que le slide */
+@keyframes materiel-line-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+
+
+@media (max-width: 768px) {
+  .materiel {
+    padding: 3rem 0;
+  }
+
+  .materiel-slider {
+    gap: 2.5rem;
+  }
+
+  .materiel-item {
+    flex: 0 0 80vw;
+    max-width: none;
+  }
+
+  .materiel-line {
+    top: 50%;
+  }
+}

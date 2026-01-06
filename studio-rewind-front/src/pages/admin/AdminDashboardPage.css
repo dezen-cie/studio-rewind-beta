@@ -1,0 +1,515 @@
+/* AdminDashboardPage.css */
+
+/* DATE SELECTOR */
+.dashboard-date-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+}
+
+.date-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-color, #fff);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.date-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.date-display {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.date-display-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: rgba(100, 108, 255, 0.15);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.date-display-btn:hover {
+  background: rgba(100, 108, 255, 0.25);
+  border-color: rgba(100, 108, 255, 0.5);
+}
+
+.date-display-btn svg {
+  color: #646cff;
+}
+
+.date-display-text {
+  text-transform: capitalize;
+}
+
+.date-picker-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 0.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.date-picker-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 0.5rem;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.date-picker-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+.today-btn {
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.today-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* STATS GRID - Amélioration */
+.sr-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 1200px) {
+  .sr-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .sr-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sr-stats-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.sr-stats-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(100, 108, 255, 0.15);
+  border-radius: 10px;
+  color: #646cff;
+  flex-shrink: 0;
+}
+
+.sr-stats-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.sr-stats-card.occupancy-card {
+  grid-column: span 1;
+}
+
+/* Barre d'occupation */
+.occupancy-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.occupancy-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.occupancy-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.4rem;
+}
+
+/* TIMELINE */
+.timeline-card {
+  padding: 1.5rem;
+}
+
+.timeline-empty,
+.upcoming-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: rgba(255, 255, 255, 0.4);
+  gap: 0.75rem;
+}
+
+.timeline-empty p,
+.upcoming-empty p {
+  margin: 0;
+}
+
+.timeline-container {
+  margin-bottom: 1.5rem;
+}
+
+.timeline-hours {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  padding: 0 2px;
+}
+
+.timeline-hour-marker {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  width: calc(100% / 10);
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.timeline-hour-marker:first-child {
+  align-items: flex-start;
+}
+
+.timeline-hour-marker:last-child {
+  align-items: flex-end;
+}
+
+/* Ligne horizontale passant par tous les points */
+.timeline-hours-line {
+  position: relative;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0.5rem 0 1rem 0;
+  border-radius: 1px;
+}
+
+/* Points sur la ligne */
+.timeline-hours-line::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(100, 108, 255, 0.3) 0%,
+    rgba(100, 108, 255, 0.5) 50%,
+    rgba(100, 108, 255, 0.3) 100%
+  );
+}
+
+.timeline-dot {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  background: #1a1a2e;
+  border: 2px solid rgba(100, 108, 255, 0.7);
+  border-radius: 50%;
+  z-index: 2;
+  transition: all 0.2s;
+}
+
+.timeline-dot:hover {
+  background: rgba(100, 108, 255, 0.4);
+  border-color: #646cff;
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
+.timeline-track {
+  position: relative;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Lignes de grille verticales */
+.timeline-track::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0px,
+    rgba(255, 255, 255, 0.05) 1px,
+    transparent 1px,
+    transparent calc(100% / 9)
+  );
+}
+
+/* Indicateur heure actuelle */
+.timeline-now {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.timeline-now-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: #ef4444;
+}
+
+.timeline-now-dot {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 10px;
+  height: 10px;
+  background: #ef4444;
+  border-radius: 50%;
+}
+
+/* Blocs de réservation */
+.timeline-block {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.timeline-block:hover {
+  transform: scaleY(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 5;
+}
+
+.timeline-block-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Liste détaillée timeline */
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1rem;
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: 4px 100px 1fr 100px 50px 80px;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+}
+
+@media (max-width: 900px) {
+  .timeline-item {
+    grid-template-columns: 4px 80px 1fr 80px;
+  }
+
+  .timeline-item-duration,
+  .timeline-item-status {
+    display: none;
+  }
+}
+
+.timeline-item-indicator {
+  width: 4px;
+  height: 100%;
+  min-height: 24px;
+  border-radius: 2px;
+}
+
+.timeline-item-time {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.timeline-item-client {
+  font-weight: 500;
+  color: var(--text-color, #fff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-item-formula {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.timeline-item-duration {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+.timeline-item-status {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.timeline-item-status.confirmed {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.timeline-item-status.pending {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.timeline-item-status.cancelled {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+/* PROCHAINES RÉSERVATIONS */
+.upcoming-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.upcoming-item {
+  display: grid;
+  grid-template-columns: 4px 140px 1fr 100px 50px 80px;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.upcoming-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 900px) {
+  .upcoming-item {
+    grid-template-columns: 4px 120px 1fr 80px;
+  }
+
+  .upcoming-item-duration,
+  .upcoming-item-price {
+    display: none;
+  }
+}
+
+.upcoming-item-indicator {
+  width: 4px;
+  height: 100%;
+  min-height: 24px;
+  border-radius: 2px;
+}
+
+.upcoming-item-datetime {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.upcoming-item-client {
+  font-weight: 500;
+  color: var(--text-color, #fff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upcoming-item-formula {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.upcoming-item-duration {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+.upcoming-item-price {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #10b981;
+  text-align: right;
+}

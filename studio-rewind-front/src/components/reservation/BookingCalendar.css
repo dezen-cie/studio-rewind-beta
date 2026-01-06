@@ -1,0 +1,185 @@
+/* ============================
+   CALENDRIER BOOKING
+   ============================ */
+
+.calendar-card {
+  background: #050509;
+  border-radius: 18px;
+  padding: 1.75rem 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #f5f5f5;
+  font-family: inherit;
+  max-width: 720px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* reset interne pour éviter les styles globaux dégueu */
+.calendar-card *,
+.calendar-card *::before,
+.calendar-card *::after {
+  box-sizing: border-box;
+}
+
+.calendar-card button {
+  all: unset;
+  box-sizing: border-box;
+}
+
+/* ============ HEADER ============ */
+
+.calendar-card .calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.calendar-card .calendar-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.calendar-card .calendar-title svg {
+  display: block;
+}
+
+.calendar-card .calendar-selected-info {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+/* ============ NAVIGATION MOIS ============ */
+
+.calendar-card .calendar-month-nav {
+  display: grid;
+  grid-template-columns: 32px 1fr 32px;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.calendar-card .calendar-month-label {
+  text-align: center;
+  text-transform: lowercase;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  font-size: 0.95rem;
+}
+
+/* flèches gauche / droite */
+
+.calendar-card .calendar-month-nav button {
+  height: 32px;
+  width: 32px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: transparent;
+  transition: background 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+  opacity: 0.8;
+}
+
+.calendar-card .calendar-month-nav button svg {
+  display: block;
+}
+
+.calendar-card .calendar-month-nav button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+  opacity: 1;
+}
+
+/* ============ GRILLE ============ */
+
+.calendar-card .calendar-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: 100%;
+}
+
+/* chaque ligne = 7 colonnes */
+
+.calendar-card .calendar-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.4rem;
+}
+
+/* cellules génériques */
+
+.calendar-card .calendar-cell {
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+/* labels L M M J V S D */
+
+.calendar-card .calendar-row-labels .calendar-cell {
+  opacity: 0.5;
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+/* ============ JOURS ============ */
+
+.calendar-card .calendar-cell-day {
+  height: 2rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease,
+    opacity 0.15s ease;
+}
+
+.calendar-card .calendar-cell-day:hover:not(.calendar-cell-empty) {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+/* cases vides (avant/après le mois) */
+
+.calendar-card .calendar-cell-empty {
+  cursor: default;
+  opacity: 0;
+}
+
+/* jour sélectionné */
+
+.calendar-card .calendar-cell-selected {
+  background: var(--color-primary); 
+  color: #050509;
+  font-weight: 600;
+}
+
+/* ============ PETITES ADAPTATIONS RESPONSIVE ============ */
+
+@media (max-width: 600px) {
+  .calendar-card {
+    padding: 1.25rem 1.5rem;
+    border-radius: 14px;
+  }
+
+  .calendar-card .calendar-month-nav {
+    margin-bottom: 1.25rem;
+  }
+
+  .calendar-card .calendar-cell,
+  .calendar-card .calendar-cell-day {
+    height: 1.8rem;
+    font-size: 0.75rem;
+  }
+}

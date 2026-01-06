@@ -1,0 +1,43 @@
+// src/models/formula.model.js
+import { DataTypes, Model } from 'sequelize';
+import sequelize from '../config/database.js';
+
+class Formula extends Model {}
+
+Formula.init(
+  {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
+    },
+    key: {
+      // identifiant technique : "autonome", "amelioree", "abonnement"
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true
+    },
+    name: {
+      // nom affiché dans le front : "Formule autonome", etc.
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    billing_type: {
+      // "hourly" pour à l'heure, "subscription" pour abo mensuel
+      type: DataTypes.ENUM('hourly', 'subscription'),
+      allowNull: false
+    },
+    price_ttc: {
+      // prix TTC / heure (pour hourly) ou / mois (pour subscription)
+      type: DataTypes.FLOAT,
+      allowNull: false
+    }
+  },
+  {
+    sequelize,
+    modelName: 'Formula',
+    tableName: 'formulas'
+  }
+);
+
+export default Formula;

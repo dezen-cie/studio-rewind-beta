@@ -1,0 +1,77 @@
+import { Link } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
+import './Hiw.css'
+
+function Hiw() {
+    const itemsRef = useRef<(HTMLElement | null)[]>([])
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('number--visible')
+                        observer.unobserve(entry.target)
+                    }
+                })
+            },
+            {
+                threshold: 0.3,
+            }
+        )
+
+        itemsRef.current.forEach((el) => {
+            if (el) observer.observe(el)
+        })
+
+        return () => observer.disconnect()
+    }, [])
+
+    return (
+        <section className="hiw">
+            <h3 className="subtitle">Comment ça marche?</h3>
+
+            <p className="subtitle-baseline">
+                Réservez et tournez dans le studio en 3 étapes simples
+            </p>
+
+            <div className="hiw-grid">
+                <article
+                    className="number number1"
+                    ref={(el) => {
+                    itemsRef.current[0] = el
+                    }}
+                >
+                    <p className="number-subtitle">Etape 1 / Choisissez Votre formule:</p>
+                    <p className="number-text">Selon votre niveau d'accompagnement. Automome - Ameliorée - Pack d'heures</p>
+                </article>
+
+                <article
+                    className="number number2"
+                    ref={(el) => {
+                    itemsRef.current[1] = el
+                    }}
+                >
+                    <p className="number-subtitle">Etape 2 / Choisissez un créneau</p>
+                    <p className="number-text">Réservation en ligne - calendrier en temps réel - paiement sécurisé</p>
+                </article>
+
+                <article
+                    className="number number3"
+                    ref={(el) => {
+                    itemsRef.current[2] = el
+                    }}
+                >
+                    <p className="number-subtitle">Etape 3 / Tournez dans un studio prêt à l'emploi</p>
+                    <p className="number-text">Vous arrivez : tout est déjà installé. Vous n'avez plus qu'à enregistrer.</p>
+                </article>
+            </div>
+
+            <Link className="btn btn-primary" to="/" state={{ scrollTo: 'formules' }}>
+                Voir les formules & les tarifs
+            </Link>
+        </section>
+    )
+}
+
+export default Hiw

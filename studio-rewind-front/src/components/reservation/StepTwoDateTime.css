@@ -1,0 +1,148 @@
+.booked-step2{
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* ============================
+   HEURES (SELECTS)
+   ============================ */
+
+.booked-step2 {
+  display: grid;
+  grid-template-areas: 
+    "left left left right"
+    "bottom bottom bottom right"
+  ;
+  gap: 2rem;
+  align-items: flex-start;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+
+}
+
+.calendar-card{grid-area: left;}
+.recap{grid-area: right;}
+.booked-time-inputs{grid-area: bottom;}
+
+
+.booked-time-inputs {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 220px;
+}
+
+.booked-time-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    label {
+        font-size: 0.85rem;
+        opacity: 0.8;
+    }
+
+    select {
+        padding: 0.6rem 0.75rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(12, 12, 16, 0.9);
+        color: white;
+        font-size: 0.9rem;
+        font-family: inherit;
+    }
+
+    select:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.4);
+    }
+}
+
+.recap{
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1rem;
+    border-radius: 10px;
+}
+
+.recap > * {
+    margin-bottom: 1rem;
+}
+
+.recap-price{
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.3rem;
+}
+
+.booked-time-field select,
+.booked-time-field option {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.recap-infos{
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 1rem;
+
+    .flex-align{
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }
+}
+
+.booked-actions{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .btn{
+        width: 100%;
+    }
+
+    .btn-precedent{
+        border: 1px solid rgba(255, 255,255, 1);
+        padding: 0.8rem 1rem;
+        text-align: center;
+        border-radius: 5px;
+        &:hover{
+            background-color: var(--color-primary);
+            color: rgba(255, 255, 255, 1);
+        }
+    }
+}
+
+.slots-status {
+  min-height: 1.5rem; 
+  margin-top: 0.5rem;
+}
+
+.slots-status p {
+  margin: 0;
+}
+
+.slots-loading {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+
+
+
+@media screen and (max-width: 1200px){
+    .booked-main{
+        width: 90%;
+    }
+}
+
+@media screen and (max-width: 850px){
+    .booked-step2{
+        grid-template-areas: 
+            "left" "bottom" "right" 
+        ;
+    }
+}
+
