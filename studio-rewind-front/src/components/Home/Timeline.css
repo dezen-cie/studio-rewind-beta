@@ -138,7 +138,7 @@
   }
 }
 
-/* remplissage de la ligne en même temps que le slide */
+/* remplissage de la ligne en même temps que le slider */
 @keyframes materiel-line-fill {
   from {
     transform: scaleX(0);
