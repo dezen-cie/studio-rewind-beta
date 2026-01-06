@@ -60,9 +60,13 @@
     h1{
         font-size: calc(4.4vw);
         text-align: center;
-        margin: 0 2rem;
+        margin: 0 3rem;
         font-family: 'Poppins', sans-serif;
         line-height: 2;
+
+        span{
+            display: block;
+        }
     }
 
     .header-call_to_action{

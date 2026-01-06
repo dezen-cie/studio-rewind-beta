@@ -88,11 +88,9 @@ html, body{
 
     span{
         display: block;
-        text-transform: uppercase;
-        
+
         em{
             font-style: normal;
-            text-transform: lowercase;
         }
     }
 }
