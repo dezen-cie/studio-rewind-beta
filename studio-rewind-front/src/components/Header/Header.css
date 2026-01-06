@@ -73,6 +73,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        font-size: calc(1.2vw);
 
         p{
             padding-bottom: 1rem;
@@ -82,9 +83,10 @@
     button{
         display: flex;
         align-items: center;
+        padding: clamp(0.5rem, 1.5vw, 1.5rem);
 
         svg{
-            width: 1rem;
+            width: clamp(0.8rem, 1.2vw, 1.4rem);
             margin-left: 0.5rem;
         }
     }
@@ -95,12 +97,23 @@
         border-radius: 50%;
         transition: var(--transition);
         cursor: pointer;
+        animation: pulse 3s ease-in-out infinite;
 
         &:hover{
             background-color: rgba(255, 255, 255, 0.5);
             color: rgba(0, 0, 0, 0.4);
+            animation: none;
             scale: 1.2;
         }
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(2);
     }
 
 }
@@ -112,7 +125,21 @@
         .nav {
             margin-inline: 1rem;
         }
-    } 
+    }
+}
+
+/* Mobile - menu hamburger */
+@media screen and (max-width: 724px){
+    .header-hero {
+        h1 {
+            font-size: calc(7vw);
+            margin: 0 1.5rem;
+        }
+
+        .header-call_to_action {
+            font-size: calc(2.4vw);
+        }
+    }
 }
 
 
