@@ -1,11 +1,14 @@
 .materiel-section{
     background-color: transparent;
     margin-top: 5rem;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
 }
 
 .materiel {
-  max-width: 2000px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
   position: relative;
   padding: 4rem 0;
   overflow: hidden;
@@ -54,23 +57,17 @@
         z-index: 10;
     }
 
-    &:hover .materiel-slider {
-        animation-play-state: paused;
-    }
-
-    &:hover .materiel-line::after {
-        animation-play-state: paused;
-    }
+    /* pause gérée en JS */
 
 }
 
 
 .materiel-slider {
   display: flex;
-  gap: 4rem;
+  gap: 3rem;
   width: max-content;
   padding: 2rem 0;
-  animation: materiel-slide 20s linear infinite;
+  /* animation gérée en JS */
 
     .materiel-item {
         text-align: center;
@@ -81,10 +78,10 @@
 
         ul {
             padding: 0;
-            margin: 0;
-            list-style: disc;
-            text-align: left;
-            display: inline-block;
+            margin: 0 auto;
+            list-style: none;
+            text-align: center;
+            display: block;
         }
 
         li {

@@ -1,5 +1,4 @@
 .formules {
-  padding-bottom: 4rem;
   background-image: url('/images/background-offres.png');
   background-position: center center;
   background-size: cover;
@@ -37,6 +36,7 @@
     width: 100%;
     max-width: 1100px;
     margin-top: 2rem;
+    margin-bottom: 3rem;
     }
 
     .formules-arrow {
