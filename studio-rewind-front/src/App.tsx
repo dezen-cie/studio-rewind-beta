@@ -22,6 +22,7 @@ import Team from './pages/Team';
 import CGV from './pages/CGV';
 import MentionsLegales from './pages/MentionsLegales';
 import PolitiqueConfidentialite from './pages/PolitiqueConfidentialite';
+import NotFound from './pages/NotFound';
 import AdminArchivesPage from './pages/admin/AdminArchivesPage';
 
 type PrivateRouteProps = {
@@ -105,8 +106,8 @@ function App() {
         <Route path="blocked-slots" element={<AdminBlockedSlotsPage />} />
       </Route>
 
-      {/* 404 -> home */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* 404 */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
