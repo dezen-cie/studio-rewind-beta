@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { FormulaKey, PricingBreakdown } from '../../pages/ReservationPage';
-import api from '../../api/client';
+import api, { setStoredToken } from '../../api/client';
 import './StepThreeSummary.css';
 
 // Stripe
@@ -251,6 +251,10 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
       if (res.data?.user) {
         localStorage.setItem('sr_user', JSON.stringify(res.data.user));
       }
+      // Stocke le token pour Safari iOS (fallback si cookies bloqués)
+      if (res.data?.token) {
+        setStoredToken(res.data.token);
+      }
 
       // On enchaîne avec la création du PaymentIntent
       await startStripeReservationFlow();
@@ -286,6 +290,10 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
 
       if (res.data?.user) {
         localStorage.setItem('sr_user', JSON.stringify(res.data.user));
+      }
+      // Stocke le token pour Safari iOS (fallback si cookies bloqués)
+      if (res.data?.token) {
+        setStoredToken(res.data.token);
       }
 
       await startStripeReservationFlow();

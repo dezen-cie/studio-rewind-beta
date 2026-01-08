@@ -1,5 +1,5 @@
 // src/utils/auth.ts
-import api from '../api/client';
+import api, { removeStoredToken } from '../api/client';
 import type { LoginResponseUser } from '../api/auth';
 
 const STORAGE_KEY = 'sr_user';
@@ -42,6 +42,7 @@ export async function logout(): Promise<void> {
   } finally {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(STORAGE_KEY);
+      removeStoredToken(); // Supprime aussi le token JWT
     }
   }
 }

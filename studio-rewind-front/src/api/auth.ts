@@ -1,5 +1,5 @@
 // src/api/auth.ts
-import api from './client';
+import api, { setStoredToken } from './client';
 
 export interface LoginResponseUser {
   id: string;
@@ -16,6 +16,7 @@ export interface LoginResponseUser {
 
 export interface LoginResponse {
   user: LoginResponseUser;
+  token?: string; // Ajouté pour Safari iOS
 }
 
 export async function login(
@@ -26,6 +27,12 @@ export async function login(
     email,
     password,
   });
+
+  // Stocke le token pour Safari iOS (fallback si cookies bloqués)
+  if (response.data.token) {
+    setStoredToken(response.data.token);
+  }
+
   return response.data;
 }
 

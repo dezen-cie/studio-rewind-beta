@@ -49,6 +49,7 @@ function sendAuthResponse(res, user) {
 
   return res.json({
     user: sanitizeUser(user),
+    token, // Pour Safari iOS qui bloque les cookies tiers
   });
 }
 
