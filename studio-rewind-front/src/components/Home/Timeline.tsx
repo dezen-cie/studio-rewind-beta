@@ -137,7 +137,12 @@ function Timeline() {
     function onImageLoad() {
       loadedCount++;
       if (loadedCount >= totalImages) {
-        updateLinePosition();
+        // Double requestAnimationFrame pour Safari iOS
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            updateLinePosition();
+          });
+        });
       }
     }
 
@@ -149,15 +154,26 @@ function Timeline() {
       }
     });
 
-    // Si toutes les images sont déjà chargées, mettre à jour immédiatement
+    // Si toutes les images sont déjà chargées
     if (loadedCount >= totalImages) {
-      updateLinePosition();
+      // Double requestAnimationFrame pour Safari iOS
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          updateLinePosition();
+        });
+      });
     }
+
+    // Fallback: recalculer après un court délai (Safari iOS peut être lent)
+    const fallbackTimer = setTimeout(() => {
+      updateLinePosition();
+    }, 500);
 
     window.addEventListener('resize', updateLinePosition);
 
     return () => {
       window.removeEventListener('resize', updateLinePosition);
+      clearTimeout(fallbackTimer);
       images?.forEach(img => {
         img.removeEventListener('load', onImageLoad);
       });
