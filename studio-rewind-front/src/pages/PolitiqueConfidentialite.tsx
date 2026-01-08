@@ -4,7 +4,7 @@ function PolitiqueConfidentialite() {
   return (
     <div className="legal-page">
       <div className="legal-header">
-        <img src="/images/logo-header.png" alt="Studio Rewind" className="legal-logo" />
+        <img src="/images/logo.png" alt="Studio Rewind" className="legal-logo" />
         <h1>Politique de Confidentialité</h1>
         <p className="legal-update">Dernière mise à jour : Janvier 2025</p>
       </div>
