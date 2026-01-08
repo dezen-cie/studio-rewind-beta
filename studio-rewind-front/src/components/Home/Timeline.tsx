@@ -24,7 +24,7 @@ const items = [
   },
   {
     img: "/images/objectif.png",
-    title: "Parcs d'objectifs Sony",
+    title: "Parc d'objectifs Sony",
     icon: "📷",
     features: [
       "Sony E PZ 18–105 mm G (zoom cinéma polyvalent)",
