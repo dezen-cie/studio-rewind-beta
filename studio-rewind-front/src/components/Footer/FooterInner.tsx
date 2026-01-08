@@ -51,7 +51,7 @@ function FooterInner(){
             </nav>
 
             <div className="footer-social">
-              <a href="https://www.instagram.com/" className="icon-insta" target="_blank" rel="noreferrer">
+              <a href="https://www.instagram.com/studio_rewind_official/" className="icon-insta" target="_blank" rel="noreferrer">
                 <Instagram />
               </a>
               <a href="https://www.facebook.com/" className="icon-fb" target="_blank" rel="noreferrer">
