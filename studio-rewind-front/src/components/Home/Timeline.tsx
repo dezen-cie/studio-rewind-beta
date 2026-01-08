@@ -23,7 +23,7 @@ const items = [
     ]
   },
   {
-    img: "/images/camera.png",
+    img: "/images/objectif.png",
     title: "Parcs d'objectifs Sony",
     icon: "📷",
     features: [
@@ -43,7 +43,7 @@ const items = [
     ]
   },
   {
-    img: "/images/light.png",
+    img: "/images/regie.png",
     title: "Régie & accessoires",
     icon: "🖥️",
     features: [
@@ -52,7 +52,7 @@ const items = [
     ]
   },
   {
-    img: "/images/light.png",
+    img: "/images/studio.png",
     title: "Décor & ambiance",
     icon: "🛋️",
     features: [
