@@ -58,11 +58,45 @@ function PublicLayout() {
       );
       break;
 
+     case '/cgv':
+      headerContent = (
+        <>
+          <h1>Studio Rewind
+            <small>Un studio dédié aux créateurs exigeants.</small>
+          </h1>
+          <p>Conditions Générales de Vente</p>
+        </>
+      )
+      break
+
+    case '/mentions-legales':
+      headerContent = (
+        <>
+          <h1>Studio Rewind
+            <small>Un studio dédié aux créateurs exigeants.</small>
+          </h1>
+          <p>Mentions Légales</p>
+        </>
+      )
+      break
+
+    case '/politique-de-confidentialite':
+      headerContent = (
+        <>
+          <h1>Studio Rewind
+            <small>Un studio dédié aux créateurs exigeants.</small>
+          </h1>
+          <p>Politique de Confidentialité</p>
+        </>
+      )
+      break
+
      default:
       headerContent = (
         <>
-          <h1>Studio Rewind</h1>
-          <p>Un studio dédié aux créateurs exigeants.</p>
+          <h1>Studio Rewind
+            <small>Un studio dédié aux créateurs exigeants.</small>
+          </h1>
         </>
       )
       break

@@ -1,5 +1,5 @@
 import type  { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ChevronDown } from 'lucide-react';
 import Menus from './Menus'
 import './Header.css'
@@ -10,12 +10,26 @@ type HeaderProps = {
 }
 
 function Header({ children }: HeaderProps) {
+  const location = useLocation()
+  const isHomePage = location.pathname === '/'
 
   const handleScroll = () => {
-      const formules = document.querySelector(".formules");
-      if (!formules) return;
+      let target: Element | null = null;
 
-      formules.scrollIntoView({
+      if (isHomePage) {
+        target = document.querySelector(".formules");
+      } else {
+        // Pages légales
+        target = document.querySelector(".legal-header");
+        // Sinon, première section du main
+        if (!target) {
+          target = document.querySelector(".sr-public-main > *:first-child");
+        }
+      }
+
+      if (!target) return;
+
+      target.scrollIntoView({
         behavior: "smooth",
       });
     }

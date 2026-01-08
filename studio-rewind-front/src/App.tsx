@@ -19,6 +19,9 @@ import AdminBlockedSlotsPage from './pages/admin/AdminBlockedSlotsPage';
 import { isAuthenticated, getUserRole } from './utils/auth';
 import type { JSX } from 'react';
 import Team from './pages/Team';
+import CGV from './pages/CGV';
+import MentionsLegales from './pages/MentionsLegales';
+import PolitiqueConfidentialite from './pages/PolitiqueConfidentialite';
 import AdminArchivesPage from './pages/admin/AdminArchivesPage';
 
 type PrivateRouteProps = {
@@ -63,6 +66,9 @@ function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/equipe" element={<Team />} />
+        <Route path="/cgv" element={<CGV />} />
+        <Route path="/mentions-legales" element={<MentionsLegales />} />
+        <Route path="/politique-de-confidentialite" element={<PolitiqueConfidentialite />} />
       </Route>
 
       {/* 🔓 Page de login SANS layout */}
