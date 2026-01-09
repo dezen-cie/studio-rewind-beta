@@ -15,7 +15,7 @@ const FAQ_DATA: FaqItem[] = [
   },
   {
     question: "Est-ce que je dois acheter du matériel ?",
-    answer: "Non. Tout est fourni : caméras Sony FX30, micros Rode, éclairage pro, fond vert, etc."
+    answer: "Non. Tout est fourni : caméras Sony FX30, micros Rode, éclairage pro, etc."
   },
   {
     question: "Combien ça coûte ?",
