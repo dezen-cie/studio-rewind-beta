@@ -20,7 +20,8 @@ function PublicLayout() {
       headerContent = (
         <>
           <h1>
-            Ton studio clé en main pour tes Podcast & Interviews
+            Ton studio clé en main 
+              <span>pour tes Podcast & Interviews</span>
           </h1>
 
           <div className="header-call_to_action">

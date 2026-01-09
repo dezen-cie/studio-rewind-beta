@@ -26,7 +26,7 @@ function Menus() {
           state={{ scrollTo: 'studio' }}
           onClick={() => setIsOpen(false)}
         >
-          Notre Studio
+          Studio
         </Link>
         <Link
           className="header-logo_link"
@@ -34,10 +34,13 @@ function Menus() {
           state={{ scrollTo: 'formules' }}
           onClick={() => setIsOpen(false)}
         >
-          Nos Formules
+          Formules
         </Link>
         <Link className="header-logo_link" to="/equipe" onClick={() => setIsOpen(false)}>
-          Notre Equipe
+          Equipe
+        </Link>
+        <Link className="header-logo_link" to="/devenez-podcasteur" onClick={() => setIsOpen(false)}>
+          Devenir podcasteur
         </Link>
         <Link className="header-logo_link btn_link" to="/reservation" onClick={() => setIsOpen(false)}>
           Réserver

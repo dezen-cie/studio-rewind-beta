@@ -24,6 +24,7 @@ import MentionsLegales from './pages/MentionsLegales';
 import PolitiqueConfidentialite from './pages/PolitiqueConfidentialite';
 import NotFound from './pages/NotFound';
 import AdminArchivesPage from './pages/admin/AdminArchivesPage';
+import BecomePodcaster from './pages/BecomePodcaster';
 
 type PrivateRouteProps = {
   children: JSX.Element;
@@ -67,6 +68,7 @@ function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/equipe" element={<Team />} />
+        <Route path="/devenez-podcasteur" element={<BecomePodcaster />} />
         <Route path="/cgv" element={<CGV />} />
         <Route path="/mentions-legales" element={<MentionsLegales />} />
         <Route path="/politique-de-confidentialite" element={<PolitiqueConfidentialite />} />

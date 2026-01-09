@@ -19,6 +19,10 @@
       max-width: 180px;
       height: auto;
     }
+
+    &.footer-top--centered {
+      justify-content: center;
+    }
   }
 
   .footer-separator{

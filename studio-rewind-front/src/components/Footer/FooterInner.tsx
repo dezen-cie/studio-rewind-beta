@@ -1,9 +1,11 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Instagram, Facebook, ArrowUp } from 'lucide-react'
 import './FooterInner.css'
 
 
 function FooterInner(){
+  const location = useLocation();
+  const isPodcasterPage = location.pathname === '/devenez-podcasteur';
 
   const handleScroll = () => {
     const header = document.querySelector('header');
@@ -17,16 +19,18 @@ function FooterInner(){
     return(
       <div className="footer-content">
         <div className="footer-inner">
-          <div className="footer-top">
+          <div className={`footer-top ${isPodcasterPage ? 'footer-top--centered' : ''}`}>
             <img
               src="/images/logo-footer.svg"
               alt="Logo Studio Rewind"
               className="logo-footer"
               loading="lazy"
             />
-            <Link className="footer-nav_link" to="/reservation">
-              <button className="btn btn-primary">Réserver un créneau</button>
-            </Link>
+            {!isPodcasterPage && (
+              <Link className="footer-nav_link" to="/reservation">
+                <button className="btn btn-primary">Réserver un créneau</button>
+              </Link>
+            )}
           </div>
 
           <div className="footer-separator" />

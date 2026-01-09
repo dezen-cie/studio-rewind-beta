@@ -32,7 +32,7 @@ function Hiw() {
             <h3 className="subtitle">Comment ça marche?</h3>
 
             <p className="subtitle-baseline">
-                Réservez et tournez dans le studio en 3 étapes simples
+                Réserve et tourne dans le studio en 3 étapes simples
             </p>
 
             <div className="hiw-grid">
@@ -42,8 +42,8 @@ function Hiw() {
                     itemsRef.current[0] = el
                     }}
                 >
-                    <p className="number-subtitle">Etape 1 / Choisissez Votre formule:</p>
-                    <p className="number-text">Selon votre niveau d'accompagnement. Automome - Ameliorée - Pack d'heures - formule réseaux</p>
+                    <p className="number-subtitle">Etape 1 / Choisis ta formule:</p>
+                    <p className="number-text">Selon ton niveau d'accompagnement. Automome - Ameliorée - Pack d'heures - formule réseaux</p>
                 </article>
 
                 <article
@@ -52,7 +52,7 @@ function Hiw() {
                     itemsRef.current[1] = el
                     }}
                 >
-                    <p className="number-subtitle">Etape 2 / Choisissez un créneau</p>
+                    <p className="number-subtitle">Etape 2 / Choisis un créneau</p>
                     <p className="number-text">Réservation en ligne - calendrier en temps réel - paiement sécurisé</p>
                 </article>
 
@@ -62,8 +62,8 @@ function Hiw() {
                     itemsRef.current[2] = el
                     }}
                 >
-                    <p className="number-subtitle">Etape 3 / Tournez dans un studio prêt à l'emploi</p>
-                    <p className="number-text">Vous arrivez : tout est déjà installé. Vous n'avez plus qu'à enregistrer.</p>
+                    <p className="number-subtitle">Etape 3 / Tourne dans un studio prêt à l'emploi</p>
+                    <p className="number-text">Tu arrives : tout est déjà installé. Tu n'a plus qu'à enregistrer.</p>
                 </article>
             </div>
 
