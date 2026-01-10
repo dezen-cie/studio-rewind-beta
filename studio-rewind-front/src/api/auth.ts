@@ -4,14 +4,15 @@ import api, { setStoredToken } from './client';
 export interface LoginResponseUser {
   id: string;
   email: string;
-  role: 'client' | 'admin' | 'super_admin';
-  account_type: 'particulier' | 'professionnel';
+  role: 'client' | 'admin' | 'super_admin' | 'podcaster';
+  account_type?: 'particulier' | 'professionnel' | null;
   firstname?: string | null;
   lastname?: string | null;
   company_name?: string | null;
   vat_number?: string | null;
-  phone: string;
+  phone?: string | null;
   is_active: boolean;
+  must_change_password?: boolean;
 }
 
 export interface LoginResponse {

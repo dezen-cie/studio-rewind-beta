@@ -15,7 +15,6 @@ function Podcasteurs() {
   const [podcasters, setPodcasters] = useState<Podcaster[]>([])
   const [loading, setLoading] = useState(true)
   const [currentAudio, setCurrentAudio] = useState<string | null>(null)
-  const [activeVideoIndex, setActiveVideoIndex] = useState(0)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
 
@@ -35,7 +34,6 @@ function Podcasteurs() {
 
   // Gerer la lecture des videos - une seule a la fois
   const handleVideoHover = useCallback((index: number) => {
-    setActiveVideoIndex(index)
     videoRefs.current.forEach((video, i) => {
       if (video) {
         if (i === index) {

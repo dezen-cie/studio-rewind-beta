@@ -59,18 +59,6 @@ function buildCalendarMatrix(
   return cells;
 }
 
-function formatDateTime(dateStr: string) {
-  const d = new Date(dateStr);
-  if (Number.isNaN(d.getTime())) return dateStr;
-  return d.toLocaleString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
-
 function formatTime(isoDate: string): string {
   const date = new Date(isoDate);
   return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
