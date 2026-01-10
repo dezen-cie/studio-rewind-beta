@@ -6,7 +6,7 @@ import BookingCalendar from './BookingCalendar';
 import TimeRangeInputs from './TimerangeInputs';
 import api from '../../api/client';
 import { getBlockedSlotsForDate, type BlockedSlot } from '../../api/blockedSlots';
-import { getPublicPodcasters, getPodcasterBlockedSlotsForDate, type Podcaster, type PodcasterBlockedSlotPublic } from '../../api/podcasters';
+import { getPublicPodcasters, getPodcasterBlockedSlotsForDate, getPodcasterFullDayBlocks, type Podcaster, type PodcasterBlockedSlotPublic } from '../../api/podcasters';
 
 import type { FormulaKey, PricingBreakdown, SelectedPodcaster } from '../../pages/ReservationPage';
 
@@ -60,6 +60,9 @@ const StepTwoDateTime = ({
   const [podcasters, setPodcasters] = useState<Podcaster[]>([]);
   const [loadingPodcasters, setLoadingPodcasters] = useState(true);
 
+  // Dates avec jour entier bloque pour le podcasteur selectionne (pour griser le calendrier)
+  const [fullDayBlockedDates, setFullDayBlockedDates] = useState<string[]>([]);
+
   // Charger les podcasteurs au montage du composant
   useEffect(() => {
     async function loadPodcasters() {
@@ -75,6 +78,24 @@ const StepTwoDateTime = ({
     }
     loadPodcasters();
   }, []);
+
+  // Charger les dates bloquees jour entier quand on selectionne un podcasteur
+  useEffect(() => {
+    async function loadFullDayBlocks() {
+      if (!selectedPodcaster) {
+        setFullDayBlockedDates([]);
+        return;
+      }
+      try {
+        const dates = await getPodcasterFullDayBlocks(selectedPodcaster.id);
+        setFullDayBlockedDates(dates);
+      } catch (err) {
+        console.error('Erreur chargement dates bloquees:', err);
+        setFullDayBlockedDates([]);
+      }
+    }
+    loadFullDayBlocks();
+  }, [selectedPodcaster]);
 
   // Formule Réseaux = durée fixe de 2h
   const isReseaux = formula === 'reseaux';
@@ -432,7 +453,7 @@ const StepTwoDateTime = ({
       </div>
 
       <div className="booked-step2">
-        <BookingCalendar value={selectedDate} onChange={handleDateChange} />
+        <BookingCalendar value={selectedDate} onChange={handleDateChange} disabledDates={fullDayBlockedDates} />
 
         <div className="recap">
           {/* RÉCAP EN HAUT : toujours TTC */}

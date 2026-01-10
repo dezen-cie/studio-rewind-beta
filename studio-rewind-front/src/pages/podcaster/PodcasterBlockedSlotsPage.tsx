@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Trash2, Plus, X } from 'lucide-react';
+import { Trash2, Plus, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   getPodcasterBlockedSlots,
   getPodcasterBlockedSlotsByDate,
@@ -100,11 +100,17 @@ function PodcasterBlockedSlotsPage() {
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
 
   const [showModal, setShowModal] = useState(false);
-  const [isFullDay, setIsFullDay] = useState(true);
+  const [blockType, setBlockType] = useState<'fullday' | 'hours' | 'multidays'>('fullday');
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('18:00');
   const [reason, setReason] = useState('');
   const [creating, setCreating] = useState(false);
+
+  // Pour le mode plusieurs jours
+  const [multiDayStart, setMultiDayStart] = useState<string | null>(null);
+  const [multiDayEnd, setMultiDayEnd] = useState<string | null>(null);
+  const [multiDayMonth, setMultiDayMonth] = useState(() => new Date().getMonth());
+  const [multiDayYear, setMultiDayYear] = useState(() => new Date().getFullYear());
 
   // Load all blocked slots
   async function loadAllBlockedSlots() {
@@ -202,50 +208,134 @@ function PodcasterBlockedSlotsPage() {
     return targetDate < today;
   }
 
-  // Create blocked slot
-  async function handleCreateBlocked() {
-    if (!selectedDateKey) return;
+  // Mini calendar pour le mode plusieurs jours
+  const multiDayCalendarCells = useMemo(() => {
+    const firstDayOfMonth = new Date(multiDayYear, multiDayMonth, 1);
+    const lastDayOfMonth = new Date(multiDayYear, multiDayMonth + 1, 0);
+    const startWeekDay = firstDayOfMonth.getDay();
+    const daysInMonth = lastDayOfMonth.getDate();
 
-    if (isDateInPast(selectedDateKey)) {
-      setError('Impossible de bloquer une date passee.');
-      return;
+    const today = new Date();
+    const todayKey = getLocalDateKey(today);
+
+    const cells: { date: Date | null; key: string; isToday: boolean; isPast: boolean }[] = [];
+
+    const offset = startWeekDay === 0 ? 6 : startWeekDay - 1;
+    for (let i = 0; i < offset; i++) {
+      cells.push({ date: null, key: `empty-${i}`, isToday: false, isPast: false });
     }
 
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(multiDayYear, multiDayMonth, day);
+      const key = getLocalDateKey(date);
+      const isPast = key < todayKey;
+      cells.push({ date, key, isToday: key === todayKey, isPast });
+    }
+
+    return cells;
+  }, [multiDayYear, multiDayMonth]);
+
+  const multiDayMonthLabel = useMemo(() => {
+    const d = new Date(multiDayYear, multiDayMonth, 1);
+    return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  }, [multiDayMonth, multiDayYear]);
+
+  // Helper pour obtenir toutes les dates entre start et end
+  function getDateRange(start: string, end: string): string[] {
+    const dates: string[] = [];
+    const [sy, sm, sd] = start.split('-').map(Number);
+    const [ey, em, ed] = end.split('-').map(Number);
+    const startDate = new Date(sy, sm - 1, sd);
+    const endDate = new Date(ey, em - 1, ed);
+
+    const current = new Date(startDate);
+    while (current <= endDate) {
+      dates.push(getLocalDateKey(current));
+      current.setDate(current.getDate() + 1);
+    }
+    return dates;
+  }
+
+  // Create blocked slot
+  async function handleCreateBlocked() {
     try {
       setCreating(true);
       setError(null);
 
-      const payload: {
-        date: string;
-        is_full_day: boolean;
-        start_time?: string;
-        end_time?: string;
-        reason?: string;
-      } = {
-        date: selectedDateKey,
-        is_full_day: isFullDay
-      };
+      if (blockType === 'multidays') {
+        // Mode plusieurs jours
+        if (!multiDayStart || !multiDayEnd) {
+          setError('Veuillez selectionner une date de debut et une date de fin.');
+          setCreating(false);
+          return;
+        }
 
-      if (!isFullDay) {
-        payload.start_time = startTime;
-        payload.end_time = endTime;
+        if (multiDayStart > multiDayEnd) {
+          setError('La date de debut doit etre avant la date de fin.');
+          setCreating(false);
+          return;
+        }
+
+        const dates = getDateRange(multiDayStart, multiDayEnd);
+
+        // Creer un blocage pour chaque jour
+        for (const date of dates) {
+          await createPodcasterBlockedSlot({
+            date,
+            is_full_day: true,
+            reason: reason.trim() || undefined
+          });
+        }
+
+        // Reload data
+        await loadAllBlockedSlots();
+        if (selectedDateKey) {
+          await loadDayBlockedSlots(selectedDateKey);
+        }
+      } else {
+        // Mode jour unique ou creneau
+        if (!selectedDateKey) return;
+
+        if (isDateInPast(selectedDateKey)) {
+          setError('Impossible de bloquer une date passee.');
+          setCreating(false);
+          return;
+        }
+
+        const payload: {
+          date: string;
+          is_full_day: boolean;
+          start_time?: string;
+          end_time?: string;
+          reason?: string;
+        } = {
+          date: selectedDateKey,
+          is_full_day: blockType === 'fullday'
+        };
+
+        if (blockType === 'hours') {
+          payload.start_time = startTime;
+          payload.end_time = endTime;
+        }
+
+        if (reason.trim()) {
+          payload.reason = reason.trim();
+        }
+
+        await createPodcasterBlockedSlot(payload);
+
+        // Reload data
+        await Promise.all([loadAllBlockedSlots(), loadDayBlockedSlots(selectedDateKey)]);
       }
-
-      if (reason.trim()) {
-        payload.reason = reason.trim();
-      }
-
-      await createPodcasterBlockedSlot(payload);
-
-      // Reload data
-      await Promise.all([loadAllBlockedSlots(), loadDayBlockedSlots(selectedDateKey)]);
 
       // Reset modal
       setShowModal(false);
-      setIsFullDay(true);
+      setBlockType('fullday');
       setStartTime('09:00');
       setEndTime('18:00');
       setReason('');
+      setMultiDayStart(null);
+      setMultiDayEnd(null);
     } catch (err: any) {
       console.error('Erreur creation blocage:', err);
       setError(err?.response?.data?.message || 'Impossible de creer le blocage.');
@@ -437,9 +527,9 @@ function PodcasterBlockedSlotsPage() {
       </div>
 
       {/* Modal */}
-      {showModal && selectedDateKey && (
+      {showModal && (
         <div className="pcb-modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="pcb-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="pcb-modal pcb-modal--large" onClick={(e) => e.stopPropagation()}>
             <div className="pcb-modal-header">
               <h3>Ajouter un blocage</h3>
               <button
@@ -452,17 +542,19 @@ function PodcasterBlockedSlotsPage() {
             </div>
 
             <div className="pcb-modal-body">
-              <p className="pcb-modal-date">{selectedDateLabel}</p>
+              {blockType !== 'multidays' && selectedDateKey && (
+                <p className="pcb-modal-date">{selectedDateLabel}</p>
+              )}
 
               <div className="pcb-field">
                 <label className="pcb-label">Type de blocage</label>
-                <div className="pcb-radio-group">
+                <div className="pcb-radio-group pcb-radio-group--vertical">
                   <label className="pcb-radio">
                     <input
                       type="radio"
                       name="blockType"
-                      checked={isFullDay}
-                      onChange={() => setIsFullDay(true)}
+                      checked={blockType === 'fullday'}
+                      onChange={() => setBlockType('fullday')}
                     />
                     <span>Journee entiere</span>
                   </label>
@@ -470,15 +562,24 @@ function PodcasterBlockedSlotsPage() {
                     <input
                       type="radio"
                       name="blockType"
-                      checked={!isFullDay}
-                      onChange={() => setIsFullDay(false)}
+                      checked={blockType === 'hours'}
+                      onChange={() => setBlockType('hours')}
                     />
                     <span>Creneau horaire</span>
+                  </label>
+                  <label className="pcb-radio">
+                    <input
+                      type="radio"
+                      name="blockType"
+                      checked={blockType === 'multidays'}
+                      onChange={() => setBlockType('multidays')}
+                    />
+                    <span>Plusieurs jours</span>
                   </label>
                 </div>
               </div>
 
-              {!isFullDay && (
+              {blockType === 'hours' && (
                 <div className="pcb-time-inputs">
                   <div className="pcb-field">
                     <label className="pcb-label">Heure de debut</label>
@@ -508,6 +609,98 @@ function PodcasterBlockedSlotsPage() {
                 </div>
               )}
 
+              {blockType === 'multidays' && (
+                <div className="pcb-multiday-picker">
+                  <div className="pcb-multiday-header">
+                    <button
+                      type="button"
+                      className="pcb-calendar-arrow-btn"
+                      onClick={() => {
+                        if (multiDayMonth === 0) {
+                          setMultiDayYear(y => y - 1);
+                          setMultiDayMonth(11);
+                        } else {
+                          setMultiDayMonth(m => m - 1);
+                        }
+                      }}
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    <span className="pcb-multiday-month">{multiDayMonthLabel}</span>
+                    <button
+                      type="button"
+                      className="pcb-calendar-arrow-btn"
+                      onClick={() => {
+                        if (multiDayMonth === 11) {
+                          setMultiDayYear(y => y + 1);
+                          setMultiDayMonth(0);
+                        } else {
+                          setMultiDayMonth(m => m + 1);
+                        }
+                      }}
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+
+                  <div className="pcb-multiday-grid">
+                    <div className="pcb-calendar-weekday">L</div>
+                    <div className="pcb-calendar-weekday">M</div>
+                    <div className="pcb-calendar-weekday">M</div>
+                    <div className="pcb-calendar-weekday">J</div>
+                    <div className="pcb-calendar-weekday">V</div>
+                    <div className="pcb-calendar-weekday">S</div>
+                    <div className="pcb-calendar-weekday">D</div>
+
+                    {multiDayCalendarCells.map((cell) => {
+                      const isStart = cell.key === multiDayStart;
+                      const isEnd = cell.key === multiDayEnd;
+                      const isInRange = multiDayStart && multiDayEnd && cell.key >= multiDayStart && cell.key <= multiDayEnd;
+                      return (
+                        <button
+                          key={cell.key}
+                          type="button"
+                          className={[
+                            'pcb-multiday-cell',
+                            !cell.date ? 'pcb-multiday-cell--empty' : '',
+                            cell.isPast ? 'pcb-multiday-cell--past' : '',
+                            isStart || isEnd ? 'pcb-multiday-cell--selected' : '',
+                            isInRange && !isStart && !isEnd ? 'pcb-multiday-cell--inrange' : ''
+                          ].filter(Boolean).join(' ')}
+                          onClick={() => {
+                            if (!cell.date || cell.isPast) return;
+                            if (!multiDayStart || (multiDayStart && multiDayEnd)) {
+                              setMultiDayStart(cell.key);
+                              setMultiDayEnd(null);
+                            } else {
+                              if (cell.key < multiDayStart) {
+                                setMultiDayEnd(multiDayStart);
+                                setMultiDayStart(cell.key);
+                              } else {
+                                setMultiDayEnd(cell.key);
+                              }
+                            }
+                          }}
+                          disabled={!cell.date || cell.isPast}
+                        >
+                          <span>{cell.date ? cell.date.getDate() : ''}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="pcb-multiday-selection">
+                    {multiDayStart && multiDayEnd ? (
+                      <p>Du <strong>{multiDayStart}</strong> au <strong>{multiDayEnd}</strong></p>
+                    ) : multiDayStart ? (
+                      <p>Debut: <strong>{multiDayStart}</strong> - Selectionnez la date de fin</p>
+                    ) : (
+                      <p>Selectionnez la date de debut</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="pcb-field">
                 <label className="pcb-label">Raison (optionnel)</label>
                 <input
@@ -533,7 +726,7 @@ function PodcasterBlockedSlotsPage() {
                 type="button"
                 className="pcb-btn pcb-btn--primary"
                 onClick={handleCreateBlocked}
-                disabled={creating}
+                disabled={creating || (blockType === 'multidays' && (!multiDayStart || !multiDayEnd))}
               >
                 {creating ? 'Creation...' : 'Creer le blocage'}
               </button>

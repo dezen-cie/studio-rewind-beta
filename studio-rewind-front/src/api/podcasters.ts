@@ -112,3 +112,10 @@ export async function getPodcasterBlockedSlotsForDate(
   );
   return res.data;
 }
+
+// Recuperer toutes les dates avec jour entier bloque pour un podcasteur (public)
+// Utilise pour griser les dates dans le calendrier client
+export async function getPodcasterFullDayBlocks(podcasterId: string): Promise<string[]> {
+  const res = await api.get<string[]>(`/podcasters/${podcasterId}/full-day-blocks`);
+  return res.data;
+}

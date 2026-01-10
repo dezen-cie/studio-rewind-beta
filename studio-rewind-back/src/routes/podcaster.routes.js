@@ -82,4 +82,34 @@ router.get('/:podcasterId/blocked-slots/:date', async (req, res) => {
   }
 });
 
+// Route publique pour recuperer toutes les dates avec jour entier bloque pour un podcasteur
+// Utilise pour griser les dates dans le calendrier client
+router.get('/:podcasterId/full-day-blocks', async (req, res) => {
+  try {
+    const { podcasterId } = req.params;
+
+    // Recuperer uniquement les blocages jour entier a partir d'aujourd'hui
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0];
+
+    const blockedSlots = await PodcasterBlockedSlot.findAll({
+      where: {
+        podcaster_id: podcasterId,
+        is_full_day: true,
+        date: { [Op.gte]: todayStr }
+      },
+      attributes: ['date'],
+      order: [['date', 'ASC']]
+    });
+
+    // Retourner un tableau de dates (strings)
+    const dates = blockedSlots.map(slot => slot.date);
+    return res.json(dates);
+  } catch (error) {
+    console.error('Erreur getPodcasterFullDayBlocks:', error);
+    return res.status(error.status || 500).json({ message: error.message });
+  }
+});
+
 export default router;

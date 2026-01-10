@@ -16,6 +16,7 @@ type DaysMatrix = Week[];
 interface BookingCalendarProps {
   value: Date | null;
   onChange: (date: Date) => void;
+  disabledDates?: string[]; // Format YYYY-MM-DD
 }
 
 function getDaysMatrix(year: number, month: number): DaysMatrix {
@@ -52,7 +53,7 @@ function formatMonthYear(date: Date): string {
   return `${month} ${year}`;
 }
 
-const BookingCalendar: React.FC<BookingCalendarProps> = ({ value, onChange }) => {
+const BookingCalendar: React.FC<BookingCalendarProps> = ({ value, onChange, disabledDates = [] }) => {
   // le mois affiché, basé sur la valeur si dispo
   const [currentDate, setCurrentDate] = useState<Date>(() => value ?? new Date());
 
@@ -78,6 +79,20 @@ const isPastDay = (day: Day): boolean => {
   const candidate = new Date(year, month, day);
   candidate.setHours(0, 0, 0, 0);
   return candidate < today;
+};
+
+// Convertir une date en format YYYY-MM-DD
+const toDateKey = (y: number, m: number, d: number): string => {
+  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+};
+
+// Set de dates desactivees pour recherche rapide
+const disabledDatesSet = new Set(disabledDates);
+
+const isDisabledDate = (day: Day): boolean => {
+  if (!day) return false;
+  const dateKey = toDateKey(year, month, day);
+  return disabledDatesSet.has(dateKey);
 };
 
   const handlePrevMonth = () => {
@@ -152,21 +167,27 @@ const isPastDay = (day: Day): boolean => {
         {/* jours */}
         {weeks.map((week: Week, weekIndex: number) => (
           <div key={weekIndex} className="calendar-row">
-            {week.map((day: Day, dayIndex: number) => (
-              <button
-                key={dayIndex}
-                type="button"
-                className={
-                  'calendar-cell calendar-cell-day' +
-                  (day ? '' : ' calendar-cell-empty') +
-                  (isSelected(day) ? ' calendar-cell-selected' : '')
-                }
-                onClick={() => handleSelectDay(day)}
-                disabled={!day || isPastDay(day)}
-              >
-                {day ?? ''}
-              </button>
-            ))}
+            {week.map((day: Day, dayIndex: number) => {
+              const past = isPastDay(day);
+              const disabled = isDisabledDate(day);
+              const isUnavailable = past || disabled;
+              return (
+                <button
+                  key={dayIndex}
+                  type="button"
+                  className={
+                    'calendar-cell calendar-cell-day' +
+                    (day ? '' : ' calendar-cell-empty') +
+                    (isSelected(day) ? ' calendar-cell-selected' : '') +
+                    (isUnavailable ? ' calendar-cell-disabled' : '')
+                  }
+                  onClick={() => handleSelectDay(day)}
+                  disabled={!day || isUnavailable}
+                >
+                  {day ?? ''}
+                </button>
+              );
+            })}
           </div>
         ))}
       </div>

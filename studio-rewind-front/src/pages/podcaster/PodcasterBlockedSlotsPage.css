@@ -514,6 +514,105 @@
   cursor: not-allowed;
 }
 
+/* Modal large pour plusieurs jours */
+.pcb-modal--large {
+  max-width: 500px;
+}
+
+/* Radio group vertical */
+.pcb-radio-group--vertical {
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Multi-day picker */
+.pcb-multiday-picker {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.pcb-multiday-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.pcb-multiday-month {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.pcb-multiday-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.pcb-multiday-cell {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.4rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pcb-multiday-cell > span {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.pcb-multiday-cell:not(.pcb-multiday-cell--empty):not(.pcb-multiday-cell--past):hover > span {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pcb-multiday-cell--empty {
+  cursor: default;
+}
+
+.pcb-multiday-cell--empty > span {
+  visibility: hidden;
+}
+
+.pcb-multiday-cell--past {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pcb-multiday-cell--selected > span {
+  background: rgba(206, 27, 29, 1);
+  color: #fff;
+}
+
+.pcb-multiday-cell--inrange > span {
+  background: rgba(206, 27, 29, 0.3);
+  color: #fff;
+}
+
+.pcb-multiday-selection {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.pcb-multiday-selection strong {
+  color: var(--color-primary, #f97316);
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .pcb-dashboard-inner {

@@ -160,9 +160,22 @@
 /* jour sélectionné */
 
 .calendar-card .calendar-cell-selected {
-  background: var(--color-primary); 
+  background: var(--color-primary);
   color: #050509;
   font-weight: 600;
+}
+
+/* jours desactives (passes ou bloques) */
+
+.calendar-card .calendar-cell-disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.calendar-card .calendar-cell-disabled:hover {
+  background: transparent;
+  transform: none;
 }
 
 /* ============ PETITES ADAPTATIONS RESPONSIVE ============ */

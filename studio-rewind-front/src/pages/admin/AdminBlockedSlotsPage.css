@@ -398,3 +398,133 @@
 .blocked-modal-footer .button {
   min-width: 100px;
 }
+
+/* Modal large pour plusieurs jours */
+.blocked-modal--large {
+  max-width: 500px;
+}
+
+/* Radio group vertical */
+.blocked-radio-group--vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.blocked-radio-group--vertical .radio {
+  margin-left: 0 !important;
+}
+
+/* Multi-day picker */
+.blocked-multiday-picker {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.blocked-multiday-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.blocked-multiday-month {
+  font-weight: 600;
+  text-transform: capitalize;
+  color: var(--text-color, #fff);
+}
+
+.blocked-multiday-arrow {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 0.3rem;
+  cursor: pointer;
+  color: var(--text-color, #fff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.blocked-multiday-arrow:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.blocked-multiday-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.blocked-multiday-weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 0.25rem 0;
+  font-weight: 500;
+}
+
+.blocked-multiday-cell {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.4rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blocked-multiday-cell > span {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.blocked-multiday-cell:not(.blocked-multiday-cell--empty):not(.blocked-multiday-cell--past):hover > span {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.blocked-multiday-cell--empty {
+  cursor: default;
+}
+
+.blocked-multiday-cell--empty > span {
+  visibility: hidden;
+}
+
+.blocked-multiday-cell--past {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.blocked-multiday-cell--selected > span {
+  background: #646cff;
+  color: #fff;
+}
+
+.blocked-multiday-cell--inrange > span {
+  background: rgba(100, 108, 255, 0.3);
+  color: #fff;
+}
+
+.blocked-multiday-selection {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.blocked-multiday-selection strong {
+  color: #646cff;
+}
