@@ -7,6 +7,8 @@ import Subscription from './subscription.model.js';
 import Reservation from './reservation.model.js';
 import Formula from './formula.model.js';
 import BlockedSlot from './blockedSlot.model.js';
+import Podcaster from './podcaster.model.js';
+import PodcasterBlockedSlot from './podcasterBlockedSlot.model.js';
 
 // ====== Modèle Message ======
 class Message extends Model {}
@@ -71,7 +73,20 @@ User.hasMany(Message, {
 });
 Message.belongsTo(User, { foreignKey: 'user_id' });
 
-// Pas de relation particulière pour Formula pour l’instant
+// Pas de relation particulière pour Formula pour l'instant
+
+// ====== Relations Podcaster ======
+// Un podcasteur a un compte utilisateur
+Podcaster.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+User.hasOne(Podcaster, { foreignKey: 'user_id', as: 'podcaster' });
+
+// Une réservation est liée à un podcasteur
+Podcaster.hasMany(Reservation, { foreignKey: 'podcaster_id', as: 'reservations' });
+Reservation.belongsTo(Podcaster, { foreignKey: 'podcaster_id', as: 'podcaster' });
+
+// Un podcasteur peut avoir plusieurs creneaux bloques
+Podcaster.hasMany(PodcasterBlockedSlot, { foreignKey: 'podcaster_id', as: 'blockedSlots' });
+PodcasterBlockedSlot.belongsTo(Podcaster, { foreignKey: 'podcaster_id', as: 'podcaster' });
 
 export {
   sequelize,
@@ -80,5 +95,7 @@ export {
   Reservation,
   Message,
   Formula,
-  BlockedSlot
+  BlockedSlot,
+  Podcaster,
+  PodcasterBlockedSlot
 };

@@ -17,6 +17,11 @@ export interface PricingBreakdown {
   price_ttc: number;
 }
 
+export interface SelectedPodcaster {
+  id: string;
+  name: string;
+}
+
 function ReservationPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -37,6 +42,7 @@ function ReservationPage() {
   const [startTime, setStartTime] = useState<string>('');
   const [endTime, setEndTime] = useState<string>('');
   const [pricing, setPricing] = useState<PricingBreakdown | null>(null);
+  const [selectedPodcaster, setSelectedPodcaster] = useState<SelectedPodcaster | null>(null);
 
   function updateUrl(nextStep: number, nextFormula: FormulaKey | null = formula) {
     const params = new URLSearchParams();
@@ -51,6 +57,7 @@ function ReservationPage() {
     setStartTime('');
     setEndTime('');
     setPricing(null);
+    setSelectedPodcaster(null);
 
     if (f === 'abonnement') {
       setStep(3);
@@ -68,6 +75,7 @@ function ReservationPage() {
     setStartTime('');
     setEndTime('');
     setPricing(null);
+    setSelectedPodcaster(null);
     updateUrl(1, null);
   }
 
@@ -115,6 +123,8 @@ function ReservationPage() {
             setStartTime={setStartTime}
             endTime={endTime}
             setEndTime={setEndTime}
+            selectedPodcaster={selectedPodcaster}
+            setSelectedPodcaster={setSelectedPodcaster}
             onBack={goToStep1}
             onConfirm={handleConfirmStep2}
           />
@@ -127,6 +137,7 @@ function ReservationPage() {
             startTime={startTime}
             endTime={endTime}
             pricing={pricing}
+            selectedPodcaster={selectedPodcaster}
             onBack={formula === 'abonnement' ? goToStep1 : goToStep2}
           />
         )}

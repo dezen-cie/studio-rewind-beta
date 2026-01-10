@@ -25,13 +25,19 @@ User.init(
     },
 
     role: {
-      type: DataTypes.ENUM('client', 'admin', 'super_admin'),
+      type: DataTypes.ENUM('client', 'admin', 'super_admin', 'podcaster'),
       defaultValue: 'client'
+    },
+
+    // Pour les podcasteurs : flag indiquant que le mot de passe doit être changé à la première connexion
+    must_change_password: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     },
 
     account_type: {
       type: DataTypes.ENUM('particulier', 'professionnel'),
-      allowNull: false
+      allowNull: true // Nullable pour les podcasteurs
     },
 
     firstname: { type: DataTypes.STRING, allowNull: true },
@@ -40,7 +46,7 @@ User.init(
     company_name: { type: DataTypes.STRING, allowNull: true },
     vat_number: { type: DataTypes.STRING, allowNull: true },
 
-    phone: { type: DataTypes.STRING, allowNull: false },
+    phone: { type: DataTypes.STRING, allowNull: true },
 
     is_active: {
       type: DataTypes.BOOLEAN,

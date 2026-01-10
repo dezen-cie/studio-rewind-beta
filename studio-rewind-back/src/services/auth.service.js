@@ -111,7 +111,8 @@ export async function loginUser(email, password) {
       company_name: user.company_name,
       vat_number: user.vat_number,
       phone: user.phone,
-      is_active: user.is_active
+      is_active: user.is_active,
+      must_change_password: user.must_change_password || false
     }
   };
 }

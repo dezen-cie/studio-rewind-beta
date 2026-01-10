@@ -12,12 +12,13 @@ import {
 export async function createReservationIntent(req, res) {
   try {
     const userId = req.user.id;
-    const { formula, start_date, end_date } = req.body;
+    const { formula, start_date, end_date, podcaster_id } = req.body;
 
     const result = await createReservationPaymentIntent(userId, {
       formula,
       start_date,
-      end_date
+      end_date,
+      podcaster_id
     });
 
     return res.json(result);

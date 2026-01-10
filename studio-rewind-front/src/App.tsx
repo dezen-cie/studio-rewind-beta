@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import PublicLayout from './layouts/PublicLayout';
 import MemberLayout from './layouts/MemberLayout';
 import AdminLayout from './layouts/AdminLayout';
+import PodcasterLayout from './layouts/PodcasterLayout';
 
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -15,6 +16,11 @@ import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminMessagesPage from './pages/admin/AdminMessagesPage';
 import AdminFormulasPage from './pages/admin/AdminFormulasPage';
 import AdminBlockedSlotsPage from './pages/admin/AdminBlockedSlotsPage';
+import AdminPodcastersPage from './pages/admin/AdminPodcastersPage';
+
+import PodcasterCalendarPage from './pages/podcaster/PodcasterCalendarPage';
+import PodcasterPasswordPage from './pages/podcaster/PodcasterPasswordPage';
+import PodcasterBlockedSlotsPage from './pages/podcaster/PodcasterBlockedSlotsPage';
 
 import { isAuthenticated, getUserRole } from './utils/auth';
 import type { JSX } from 'react';
@@ -55,6 +61,31 @@ function AdminRoute({ children }: AdminRouteProps) {
   const isAdmin = role === 'admin' || role === 'super_admin';
 
   if (!isAdmin) {
+    return <Navigate to="/member" state={{ from: location }} replace />;
+  }
+
+  return children;
+}
+
+type PodcasterRouteProps = {
+  children: JSX.Element;
+};
+
+function PodcasterRoute({ children }: PodcasterRouteProps) {
+  const location = useLocation();
+
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  const role = getUserRole();
+
+  if (role !== 'podcaster') {
+    // Si c'est un admin, rediriger vers l'admin
+    if (role === 'admin' || role === 'super_admin') {
+      return <Navigate to="/admin" state={{ from: location }} replace />;
+    }
+    // Sinon vers l'espace membre
     return <Navigate to="/member" state={{ from: location }} replace />;
   }
 
@@ -106,6 +137,21 @@ function App() {
         <Route path="archives" element={<AdminArchivesPage />} />
         <Route path="formulas" element={<AdminFormulasPage />} />
         <Route path="blocked-slots" element={<AdminBlockedSlotsPage />} />
+        <Route path="podcasters" element={<AdminPodcastersPage />} />
+      </Route>
+
+      {/* Layout podcasteur */}
+      <Route
+        path="/podcaster/*"
+        element={
+          <PodcasterRoute>
+            <PodcasterLayout />
+          </PodcasterRoute>
+        }
+      >
+        <Route index element={<PodcasterCalendarPage />} />
+        <Route path="disponibilites" element={<PodcasterBlockedSlotsPage />} />
+        <Route path="password" element={<PodcasterPasswordPage />} />
       </Route>
 
       {/* 404 */}

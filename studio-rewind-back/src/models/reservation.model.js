@@ -66,6 +66,15 @@ Reservation.init(
     status: {
       type: DataTypes.ENUM('pending', 'confirmed', 'cancelled'),
       defaultValue: 'pending'
+    },
+
+    podcaster_id: {
+      type: DataTypes.UUID,
+      allowNull: true, // Nullable pour les achats de pack d'heures (abonnement)
+      references: {
+        model: 'podcasters',
+        key: 'id'
+      }
     }
   },
   {

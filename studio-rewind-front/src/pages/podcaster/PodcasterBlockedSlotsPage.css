@@ -1,0 +1,531 @@
+/* src/pages/podcaster/PodcasterBlockedSlotsPage.css */
+
+.pcb-dashboard {
+  min-height: 100vh;
+  padding: 2rem 0;
+  color: #ffffff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.pcb-dashboard-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.pcb-dashboard-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.pcb-dashboard-subtitle {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 1.5rem;
+}
+
+.pcb-error {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 82, 82, 0.15);
+  border: 1px solid rgba(255, 82, 82, 0.3);
+  border-radius: 8px;
+  color: #ff6b6b;
+  font-size: 0.9rem;
+}
+
+.pcb-loading {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 1rem;
+}
+
+/* Layout */
+.pcb-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .pcb-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Calendar Card */
+.pcb-calendar-card {
+  background: #101114;
+  border-radius: 20px;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+}
+
+.pcb-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.pcb-calendar-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.pcb-calendar-header-left-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+/* Month navigation */
+.pcb-calendar-month-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.pcb-calendar-month-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-transform: lowercase;
+}
+
+.pcb-calendar-month-title::first-letter {
+  text-transform: uppercase;
+}
+
+.pcb-calendar-arrow-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+}
+
+.pcb-calendar-arrow-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Calendar grid */
+.pcb-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 0.4rem;
+  column-gap: 0.15rem;
+  font-size: 0.85rem;
+}
+
+.pcb-calendar-weekday {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  padding-bottom: 0.5rem;
+}
+
+.pcb-calendar-day {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.15rem 0;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pcb-calendar-day--empty {
+  cursor: default;
+}
+
+.pcb-calendar-day--empty span {
+  visibility: hidden;
+}
+
+.pcb-calendar-day:not(.pcb-calendar-day--empty) > span {
+  min-width: 32px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.pcb-calendar-day--today > span {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.pcb-calendar-day--selected > span {
+  background: rgba(206, 27, 29, 1);
+  color: #ffffff;
+}
+
+.pcb-calendar-day--fullday > span {
+  background: rgba(255, 82, 82, 0.4);
+  color: #ff5252;
+}
+
+.pcb-calendar-day--partial > span {
+  background: rgba(255, 193, 7, 0.3);
+  color: #ffc107;
+}
+
+.pcb-calendar-day:not(.pcb-calendar-day--empty):hover > span {
+  background: rgba(255, 255, 255, 0.14);
+  transform: translateY(-1px);
+}
+
+.pcb-calendar-day--selected:hover > span {
+  background: rgba(206, 27, 29, 1);
+}
+
+/* Legend */
+.pcb-calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.pcb-calendar-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pcb-calendar-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.pcb-calendar-legend-dot--today {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.pcb-calendar-legend-dot--fullday {
+  background: rgba(255, 82, 82, 0.6);
+}
+
+.pcb-calendar-legend-dot--partial {
+  background: rgba(255, 193, 7, 0.5);
+}
+
+/* Day panel */
+.pcb-day-panel {
+  background: #101114;
+  border-radius: 20px;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+  min-height: 300px;
+}
+
+.pcb-day-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.pcb-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.pcb-day-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  margin: 0;
+}
+
+.pcb-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pcb-add-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--color-primary, #f97316);
+}
+
+.pcb-day-no-blocks {
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  padding: 2rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+/* Blocked slots list */
+.pcb-day-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pcb-slot-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border-left: 3px solid #ff5252;
+}
+
+.pcb-slot-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pcb-slot-time {
+  font-weight: 600;
+  color: white;
+}
+
+.pcb-slot-time--fullday {
+  color: #ff5252;
+}
+
+.pcb-slot-reason {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.pcb-slot-delete {
+  background: transparent;
+  border: 1px solid rgba(255, 82, 82, 0.5);
+  border-radius: 4px;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #ff5252;
+  transition: all 0.2s;
+}
+
+.pcb-slot-delete:hover {
+  background: rgba(255, 82, 82, 0.2);
+}
+
+/* Modal */
+.pcb-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.pcb-modal {
+  background: #1a1a2e;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.pcb-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pcb-modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.pcb-modal-close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.2s;
+}
+
+.pcb-modal-close:hover {
+  color: #fff;
+}
+
+.pcb-modal-body {
+  padding: 1.5rem;
+}
+
+.pcb-modal-date {
+  font-weight: 500;
+  color: var(--color-primary, #f97316);
+  margin-bottom: 1.25rem;
+  text-transform: capitalize;
+}
+
+.pcb-field {
+  margin-bottom: 1rem;
+}
+
+.pcb-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.pcb-radio-group {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.pcb-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.pcb-radio input {
+  margin: 0;
+}
+
+.pcb-time-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.pcb-select,
+.pcb-input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.pcb-select option {
+  background: #1a1a2e;
+  color: white;
+}
+
+.pcb-select:focus,
+.pcb-input:focus {
+  outline: none;
+  border-color: var(--color-primary, #f97316);
+}
+
+.pcb-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.pcb-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pcb-btn {
+  padding: 0.6rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pcb-btn--secondary {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.pcb-btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pcb-btn--primary {
+  background: var(--color-primary, #f97316);
+  border: 1px solid var(--color-primary, #f97316);
+  color: white;
+}
+
+.pcb-btn--primary:hover {
+  opacity: 0.9;
+}
+
+.pcb-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .pcb-dashboard-inner {
+    padding: 0 1rem;
+  }
+
+  .pcb-calendar-card,
+  .pcb-day-panel {
+    padding: 1.25rem 1rem;
+  }
+
+  .pcb-time-inputs {
+    grid-template-columns: 1fr;
+  }
+}

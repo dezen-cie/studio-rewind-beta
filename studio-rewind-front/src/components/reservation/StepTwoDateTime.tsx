@@ -1,13 +1,14 @@
 // StepTwoDateTime.tsx (ou StepTwo.tsx selon ton nom de fichier)
 import { useEffect, useMemo, useState } from 'react';
 import './StepTwoDateTime.css';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, User } from 'lucide-react';
 import BookingCalendar from './BookingCalendar';
 import TimeRangeInputs from './TimerangeInputs';
 import api from '../../api/client';
 import { getBlockedSlotsForDate, type BlockedSlot } from '../../api/blockedSlots';
+import { getPublicPodcasters, getPodcasterBlockedSlotsForDate, type Podcaster, type PodcasterBlockedSlotPublic } from '../../api/podcasters';
 
-import type { FormulaKey, PricingBreakdown } from '../../pages/ReservationPage';
+import type { FormulaKey, PricingBreakdown, SelectedPodcaster } from '../../pages/ReservationPage';
 
 type DayReservation = {
   id: string;
@@ -30,6 +31,8 @@ type StepTwoDateTimeProps = {
   setStartTime: (value: string) => void;
   endTime: string;
   setEndTime: (value: string) => void;
+  selectedPodcaster: SelectedPodcaster | null;
+  setSelectedPodcaster: (podcaster: SelectedPodcaster | null) => void;
   onBack: () => void;
   onConfirm: (nextPricing: PricingBreakdown) => void;
 };
@@ -42,24 +45,48 @@ const StepTwoDateTime = ({
   setStartTime,
   endTime,
   setEndTime,
+  selectedPodcaster,
+  setSelectedPodcaster,
   onBack,
   onConfirm
 }: StepTwoDateTimeProps) => {
   const [dayReservations, setDayReservations] = useState<DayReservation[]>([]);
   const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
+  const [podcasterBlockedSlots, setPodcasterBlockedSlots] = useState<PodcasterBlockedSlotPublic[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [slotsError, setSlotsError] = useState<string | null>(null);
+
+  // Liste des podcasteurs disponibles
+  const [podcasters, setPodcasters] = useState<Podcaster[]>([]);
+  const [loadingPodcasters, setLoadingPodcasters] = useState(true);
+
+  // Charger les podcasteurs au montage du composant
+  useEffect(() => {
+    async function loadPodcasters() {
+      try {
+        setLoadingPodcasters(true);
+        const data = await getPublicPodcasters();
+        setPodcasters(data);
+      } catch (err) {
+        console.error('Erreur chargement podcasteurs:', err);
+      } finally {
+        setLoadingPodcasters(false);
+      }
+    }
+    loadPodcasters();
+  }, []);
 
   // Formule Réseaux = durée fixe de 2h
   const isReseaux = formula === 'reseaux';
   const RESEAUX_DURATION = 2; // heures
 
-  // ====== CHARGER LES RÉSA ET BLOCAGES DU JOUR ======
+  // ====== CHARGER LES RÉSA ET BLOCAGES DU JOUR POUR LE PODCASTEUR SÉLECTIONNÉ ======
   useEffect(() => {
     async function loadDayData() {
-      if (!selectedDate) {
+      if (!selectedDate || !selectedPodcaster) {
         setDayReservations([]);
         setBlockedSlots([]);
+        setPodcasterBlockedSlots([]);
         return;
       }
 
@@ -76,17 +103,20 @@ const StepTwoDateTime = ({
       const dateKey = getLocalDateKey(selectedDate);
 
       try {
-        // Charger les réservations et les blocages en parallèle
-        const [reservationsRes, blockedRes] = await Promise.all([
-          api.get<DayReservation[]>(`/reservations/day/${dateKey}`),
-          getBlockedSlotsForDate(dateKey)
+        // Charger les réservations du podcasteur, les blocages admin ET les blocages podcasteur en parallèle
+        const [reservationsRes, blockedRes, podcasterBlockedRes] = await Promise.all([
+          api.get<DayReservation[]>(`/podcasters/${selectedPodcaster.id}/reservations/${dateKey}`),
+          getBlockedSlotsForDate(dateKey),
+          getPodcasterBlockedSlotsForDate(selectedPodcaster.id, dateKey)
         ]);
         setDayReservations(reservationsRes.data);
         setBlockedSlots(blockedRes);
+        setPodcasterBlockedSlots(podcasterBlockedRes);
       } catch (err: any) {
         console.warn('Erreur chargement créneaux du jour:', err);
         setDayReservations([]);
         setBlockedSlots([]);
+        setPodcasterBlockedSlots([]);
         setSlotsError(
           "Impossible de récupérer les créneaux réservés pour cette date (tout est affiché comme disponible)."
         );
@@ -96,7 +126,7 @@ const StepTwoDateTime = ({
     }
 
     loadDayData();
-  }, [selectedDate]);
+  }, [selectedDate, selectedPodcaster]);
 
   // ====== UTILS POUR LES HEURES ======
   function getHourFloat(dateStr: string): number | null {
@@ -110,31 +140,59 @@ const StepTwoDateTime = ({
     return h + (m || 0) / 60;
   }
 
-  // Vérifie si le jour entier est bloqué
+  // Vérifie si le jour entier est bloqué (admin ou podcasteur)
   function isFullDayBlocked(): boolean {
-    return blockedSlots.some((b) => b.is_full_day);
+    // Verifier les blocages admin
+    const adminFullDay = blockedSlots.some((b) => b.is_full_day);
+    // Verifier les blocages podcasteur
+    const podcasterFullDay = podcasterBlockedSlots.some((b) => b.is_full_day);
+    return adminFullDay || podcasterFullDay;
   }
 
-  // Vérifie si une heure est dans un blocage
+  // Vérifie si une heure est dans un blocage (admin ou podcasteur)
   function isHourInsideBlocked(hour: number): boolean {
-    return blockedSlots.some((b) => {
+    // Verifier les blocages admin
+    const inAdminBlocked = blockedSlots.some((b) => {
       if (b.is_full_day) return true;
       if (!b.start_time || !b.end_time) return false;
       const s = getTimeFloat(b.start_time);
       const e = getTimeFloat(b.end_time);
       return hour >= s && hour < e;
     });
+
+    // Verifier les blocages podcasteur
+    const inPodcasterBlocked = podcasterBlockedSlots.some((b) => {
+      if (b.is_full_day) return true;
+      if (!b.start_time || !b.end_time) return false;
+      const s = getTimeFloat(b.start_time);
+      const e = getTimeFloat(b.end_time);
+      return hour >= s && hour < e;
+    });
+
+    return inAdminBlocked || inPodcasterBlocked;
   }
 
-  // Vérifie si un intervalle chevauche un blocage
+  // Vérifie si un intervalle chevauche un blocage (admin ou podcasteur)
   function doesIntervalOverlapBlocked(startHour: number, endHour: number): boolean {
-    return blockedSlots.some((b) => {
+    // Verifier les blocages admin
+    const adminOverlap = blockedSlots.some((b) => {
       if (b.is_full_day) return true;
       if (!b.start_time || !b.end_time) return false;
       const s = getTimeFloat(b.start_time);
       const e = getTimeFloat(b.end_time);
       return startHour < e && endHour > s;
     });
+
+    // Verifier les blocages podcasteur
+    const podcasterOverlap = podcasterBlockedSlots.some((b) => {
+      if (b.is_full_day) return true;
+      if (!b.start_time || !b.end_time) return false;
+      const s = getTimeFloat(b.start_time);
+      const e = getTimeFloat(b.end_time);
+      return startHour < e && endHour > s;
+    });
+
+    return adminOverlap || podcasterOverlap;
   }
 
   function isHourInsideReservations(hour: number): boolean {
@@ -236,7 +294,7 @@ const StepTwoDateTime = ({
   }
 
   return disabled;
-}, [selectedDate, dayReservations, blockedSlots, isReseaux]);
+}, [selectedDate, dayReservations, blockedSlots, podcasterBlockedSlots, isReseaux]);
 
 
   const disabledEndTimes = useMemo(() => {
@@ -256,7 +314,7 @@ const StepTwoDateTime = ({
     }
 
     return disabled;
-  }, [selectedDate, startTime, dayReservations]);
+  }, [selectedDate, startTime, dayReservations, blockedSlots, podcasterBlockedSlots]);
 
   // ====== CALCUL AUTOMATIQUE HEURE DE FIN POUR RÉSEAUX ======
   // Quand on sélectionne une heure de début pour 'reseaux', on calcule automatiquement +2h
@@ -309,8 +367,8 @@ const StepTwoDateTime = ({
 
   // ====== VALIDATION BOUTON ======
   const canConfirm = isReseaux
-    ? selectedDate !== null && startTime !== '' && bookedHours !== null && bookedHours > 0
-    : selectedDate !== null && startTime !== '' && endTime !== '' && bookedHours !== null && bookedHours > 0;
+    ? selectedPodcaster !== null && selectedDate !== null && startTime !== '' && bookedHours !== null && bookedHours > 0
+    : selectedPodcaster !== null && selectedDate !== null && startTime !== '' && endTime !== '' && bookedHours !== null && bookedHours > 0;
 
   const handleConfirm = () => {
     if (!canConfirm) return;
@@ -331,9 +389,47 @@ const StepTwoDateTime = ({
     setEndTime('');
   };
 
+  const handlePodcasterChange = (podcasterId: string) => {
+    const podcaster = podcasters.find(p => p.id === podcasterId);
+    if (podcaster) {
+      setSelectedPodcaster({ id: podcaster.id, name: podcaster.name });
+    } else {
+      setSelectedPodcaster(null);
+    }
+    // Reset les créneaux quand on change de podcasteur
+    setStartTime('');
+    setEndTime('');
+  };
+
   return (
     <main className="booked-main">
-      <h2>Choisir votre date</h2>
+      <h2>Choisir votre podcasteur et votre date</h2>
+
+      {/* Sélection du podcasteur */}
+      <div className="podcaster-selection">
+        <label className="podcaster-label">
+          <User size={18} />
+          <span>Choisissez votre podcasteur :</span>
+        </label>
+        {loadingPodcasters ? (
+          <p className="podcaster-loading">Chargement des podcasteurs...</p>
+        ) : podcasters.length === 0 ? (
+          <p className="podcaster-error">Aucun podcasteur disponible pour le moment.</p>
+        ) : (
+          <div className="podcaster-buttons">
+            {podcasters.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                className={`podcaster-btn ${selectedPodcaster?.id === p.id ? 'selected' : ''}`}
+                onClick={() => handlePodcasterChange(p.id)}
+              >
+                {p.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="booked-step2">
         <BookingCalendar value={selectedDate} onChange={handleDateChange} />

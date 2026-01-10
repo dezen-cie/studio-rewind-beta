@@ -4,6 +4,11 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 import authRoutes from './routes/auth.routes.js';
 import reservationRoutes from './routes/reservation.routes.js';
@@ -16,6 +21,9 @@ import adminDashboardRoutes from './routes/admin.dashboard.routes.js';
 import adminBlockedSlotRoutes from './routes/admin.blockedSlot.routes.js';
 import subscriptionRoutes from './routes/subscription.routes.js';
 import formulaRoutes from './routes/formula.routes.js';
+import adminPodcasterRoutes from './routes/admin.podcaster.routes.js';
+import podcasterRoutes from './routes/podcaster.routes.js';
+import podcasterDashboardRoutes from './routes/podcaster.dashboard.routes.js';
 
 const app = express();
 
@@ -60,6 +68,14 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// Servir les fichiers uploades (videos/audios podcasteurs)
+// Avec headers CORS pour permettre l'acces depuis le frontend
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  next();
+}, express.static(path.join(__dirname, '../uploads')));
+
 // Routes API
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/reservations', reservationRoutes);
@@ -72,6 +88,9 @@ app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/admin/blocked-slots', adminBlockedSlotRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/formulas', formulaRoutes);
+app.use('/api/admin/podcasters', adminPodcasterRoutes);
+app.use('/api/podcasters', podcasterRoutes);
+app.use('/api/podcaster', podcasterDashboardRoutes);
 
 // Route de santé
 app.get('/health', (req, res) => {

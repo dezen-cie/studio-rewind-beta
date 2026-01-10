@@ -25,6 +25,8 @@ function LoginPage() {
       // Redirection en fonction du rôle
       if (data.user.role === 'admin' || data.user.role === 'super_admin') {
         navigate('/admin', { replace: true });
+      } else if (data.user.role === 'podcaster') {
+        navigate('/podcaster', { replace: true });
       } else {
         // Soit vers la page demandée, soit vers /member
         navigate(from || '/member', { replace: true });

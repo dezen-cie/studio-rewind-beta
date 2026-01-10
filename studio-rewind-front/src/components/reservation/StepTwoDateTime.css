@@ -140,9 +140,73 @@
 
 @media screen and (max-width: 850px){
     .booked-step2{
-        grid-template-areas: 
-            "left" "bottom" "right" 
+        grid-template-areas:
+            "left" "bottom" "right"
         ;
     }
+}
+
+/* ============================
+   SÉLECTION PODCASTEUR
+   ============================ */
+
+.podcaster-selection {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba(12, 12, 16, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.podcaster-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.podcaster-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.podcaster-btn {
+    padding: 0.75rem 1.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.podcaster-btn:hover {
+    border-color: var(--color-primary);
+    background: rgba(249, 115, 22, 0.1);
+    color: white;
+}
+
+.podcaster-btn.selected {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: white;
+    font-weight: 500;
+}
+
+.podcaster-loading,
+.podcaster-error {
+    font-size: 0.9rem;
+    opacity: 0.7;
+    margin: 0;
+}
+
+.podcaster-error {
+    color: #ef4444;
 }
 

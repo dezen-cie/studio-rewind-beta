@@ -1,9 +1,51 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import './Podcasteurs.css'
+import { getPublicPodcasters, type Podcaster } from '../../api/podcasters'
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:4000'
+
+function getMediaUrl(url: string) {
+  if (url.startsWith('/uploads')) {
+    return API_BASE + url
+  }
+  return url
+}
 
 function Podcasteurs() {
+  const [podcasters, setPodcasters] = useState<Podcaster[]>([])
+  const [loading, setLoading] = useState(true)
   const [currentAudio, setCurrentAudio] = useState<string | null>(null)
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
+
+  useEffect(() => {
+    async function loadPodcasters() {
+      try {
+        const data = await getPublicPodcasters()
+        setPodcasters(data)
+      } catch (error) {
+        console.error('Erreur chargement podcasteurs:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadPodcasters()
+  }, [])
+
+  // Gerer la lecture des videos - une seule a la fois
+  const handleVideoHover = useCallback((index: number) => {
+    setActiveVideoIndex(index)
+    videoRefs.current.forEach((video, i) => {
+      if (video) {
+        if (i === index) {
+          video.play().catch(() => {})
+        } else {
+          video.pause()
+        }
+      }
+    })
+  }, [])
 
   const handleSelectPodcasteur = (audioFile: string) => {
     const audio = audioRef.current
@@ -27,8 +69,26 @@ function Podcasteurs() {
     }, 50)
   }
 
+  // Ne pas afficher la section s'il n'y a pas de podcasteurs
+  if (!loading && podcasters.length === 0) {
+    return null
+  }
+
+  // Determiner la classe de layout selon le nombre de podcasteurs
+  const getLayoutClass = () => {
+    const count = podcasters.length
+    if (count >= 9) return 'layout-9plus'
+    if (count === 8) return 'layout-8'
+    if (count === 7) return 'layout-7'
+    if (count === 6) return 'layout-6'
+    return 'layout-default'
+  }
+
   return (
-    <section className="podcasteurs">
+    <section
+      className={`podcasteurs ${getLayoutClass()}`}
+      style={{ '--podcaster-count': podcasters.length } as React.CSSProperties}
+    >
       <audio ref={audioRef} src={currentAudio || undefined} />
 
       <div className="casting-text">
@@ -36,26 +96,25 @@ function Podcasteurs() {
         <p>Clique & Ecoute tes podcasteurs</p>
       </div>
 
-      <div className="casting-video" onClick={() => handleSelectPodcasteur('/audios/pod1.mp3')}>
-        <span className="casting_label">Podcasteur 1</span>
-        <video autoPlay muted loop playsInline>
-          <source src="/videos/video-podcasteur1.mp4" type="video/mp4" />
-        </video>
-      </div>
-
-      <div className="casting-video" onClick={() => handleSelectPodcasteur('/audios/pod2.mp3')}>
-        <span className="casting_label">Podcasteur 2</span>
-        <video autoPlay muted loop playsInline>
-          <source src="/videos/video-podcasteur2.mp4" type="video/mp4" />
-        </video>
-      </div>
-
-      <div className="casting-video" onClick={() => handleSelectPodcasteur('/audios/pod3.mp3')}>
-        <span className="casting_label">Podcasteur 3</span>
-        <video autoPlay muted loop playsInline>
-          <source src="/videos/video-podcasteur3.mp4" type="video/mp4" />
-        </video>
-      </div>
+      {podcasters.map((podcaster, index) => (
+        <div
+          key={podcaster.id}
+          className="casting-video"
+          onClick={() => handleSelectPodcasteur(getMediaUrl(podcaster.audio_url))}
+          onMouseEnter={() => handleVideoHover(index)}
+        >
+          <span className="casting_label">{podcaster.name}</span>
+          <video
+            ref={(el) => { videoRefs.current[index] = el }}
+            autoPlay={index === 0}
+            muted
+            loop
+            playsInline
+          >
+            <source src={getMediaUrl(podcaster.video_url)} type="video/mp4" />
+          </video>
+        </div>
+      ))}
     </section>
   )
 }

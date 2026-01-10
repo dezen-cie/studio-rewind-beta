@@ -1,119 +1,204 @@
+/* ===== Layout par defaut (1-5 podcasteurs) ===== */
 .podcasteurs {
     width: 100%;
     max-width: 100vw;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
+    grid-template-columns: 2fr repeat(var(--podcaster-count, 3), 1fr);
     overflow: hidden;
-
-    .casting-text{
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 3rem;
-
-        .subtitle{
-            margin: 0 auto;
-            text-align:center;
-            font-size: 2rem;
-        }
-
-        p{
-            text-align: center;
-            font-weight: 300;
-            margin: 0 3rem;
-        }
-    }
-
-    .casting-video video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
 }
 
+.podcasteurs .casting-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3rem;
+}
 
+.podcasteurs .casting-text .subtitle {
+    margin: 0 auto;
+    text-align: center;
+    font-size: 2rem;
+}
 
-.casting-video{
+.podcasteurs .casting-text p {
+    text-align: center;
+    font-weight: 300;
+    margin: 0 3rem;
+}
+
+.podcasteurs .casting-video video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.casting-video {
     position: relative;
     transition: var(--transition);
     cursor: pointer;
+}
 
-     &:hover{
-        filter: grayscale(80%);
-     }
+.casting-video:hover {
+    filter: grayscale(80%);
+}
 
-    &::after{
-        content: "";
-        position: absolute;
-        inset: 0; 
-        z-index: 10;
+.casting-video::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+}
 
-        &:hover{
-            background-color: rgba(255, 255, 255, 0.3);
-        }
+.casting-video:hover::after {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.casting-video .casting_label {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.5);
+    padding: 0.7rem 1.5rem;
+    text-align: center;
+    z-index: 15;
+    cursor: pointer;
+}
+
+/* ===== Layout 6 podcasteurs: 2 lignes de 3 ===== */
+.podcasteurs.layout-6 {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto repeat(2, 1fr);
+}
+
+.podcasteurs.layout-6 .casting-text {
+    grid-column: 1 / -1;
+    padding: 2rem 0;
+}
+
+.podcasteurs.layout-6 .casting-video {
+    aspect-ratio: 1;
+}
+
+/* ===== Layout 7 podcasteurs: ligne de 4 + ligne de 3 ===== */
+.podcasteurs.layout-7 {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto auto auto;
+}
+
+.podcasteurs.layout-7 .casting-text {
+    grid-column: 1 / -1;
+    padding: 2rem 0;
+}
+
+.podcasteurs.layout-7 .casting-video {
+    aspect-ratio: 1;
+}
+
+/* Centrer les 3 derniers elements de la 2eme ligne */
+.podcasteurs.layout-7 .casting-video:nth-child(6) {
+    grid-column: 1 / 2;
+}
+.podcasteurs.layout-7 .casting-video:nth-child(7) {
+    grid-column: 2 / 3;
+}
+.podcasteurs.layout-7 .casting-video:nth-child(8) {
+    grid-column: 3 / 4;
+}
+
+/* ===== Layout 8 podcasteurs: 2 lignes de 4 ===== */
+.podcasteurs.layout-8 {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto repeat(2, 1fr);
+}
+
+.podcasteurs.layout-8 .casting-text {
+    grid-column: 1 / -1;
+    padding: 2rem 0;
+}
+
+.podcasteurs.layout-8 .casting-video {
+    aspect-ratio: 1;
+}
+
+/* ===== Layout 9+ podcasteurs: texte centre + grille en dessous ===== */
+.podcasteurs.layout-9plus {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto;
+    gap: 0;
+}
+
+.podcasteurs.layout-9plus .casting-text {
+    grid-column: 1 / -1;
+    padding: 3rem 2rem;
+    text-align: center;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.05), transparent);
+}
+
+.podcasteurs.layout-9plus .casting-video {
+    aspect-ratio: 1;
+}
+
+/* ===== Responsive Mobile ===== */
+@media screen and (max-width: 700px) {
+    .podcasteurs,
+    .podcasteurs.layout-6,
+    .podcasteurs.layout-7,
+    .podcasteurs.layout-8,
+    .podcasteurs.layout-9plus {
+        grid-template-columns: repeat(2, 1fr);
     }
 
-    .casting_label {
-        position: absolute;
-        bottom: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: rgba(255, 255, 255, 0.5);
-        padding: 0.7rem 1.5rem;
-        text-align: center;
-        z-index: 15;
-        cursor: pointer;
+    .podcasteurs .casting-text,
+    .podcasteurs.layout-6 .casting-text,
+    .podcasteurs.layout-7 .casting-text,
+    .podcasteurs.layout-8 .casting-text,
+    .podcasteurs.layout-9plus .casting-text {
+        grid-column: 1 / -1;
+        margin-bottom: 1rem;
+        margin-top: 1rem;
+        padding: 1rem;
+    }
+
+    .podcasteurs.layout-7 .casting-video:nth-child(6),
+    .podcasteurs.layout-7 .casting-video:nth-child(7),
+    .podcasteurs.layout-7 .casting-video:nth-child(8) {
+        grid-column: auto;
+    }
+
+    .casting-video .casting_label {
+        font-size: 0.725rem;
+        padding: 0.5rem 1rem;
     }
 }
 
-
-
-@media screen and (max-width: 700px){
-    .podcasteurs {
-        grid-template-columns: repeat(3, 1fr);
-        
-        .casting-text {
-            grid-column: 1 / -1;  
-            margin-bottom: 1rem;
-            margin-top: 1rem;
-        }
-
-        .casting_label {
-            font-size: 0.725rem;
-            padding: 0.5rem 1rem;
+/* ===== Grands ecrans ===== */
+@media screen and (min-width: 2000px) {
+    .podcasteurs .casting-text {
+        gap: 6rem;
     }
-    }  
-}
 
-@media screen and (min-width: 2000px){
-    .podcasteurs{
-        .casting-text{
-            gap: 6rem;
+    .podcasteurs .casting-text h3.subtitle {
+        font-size: 4rem;
+    }
 
-            h3.subtitle{
-                font-size: 4rem;
-            }
-            p{
-                font-size: 2rem;
-            }
-        }
+    .podcasteurs .casting-text p {
+        font-size: 2rem;
     }
 }
 
+@media screen and (min-width: 3000px) {
+    .podcasteurs .casting-text {
+        gap: 8rem;
+    }
 
-@media screen and (min-width: 3000px){
-    .podcasteurs{
-        .casting-text{
-            gap: 8rem;
+    .podcasteurs .casting-text h3.subtitle {
+        font-size: 6rem;
+    }
 
-            h3.subtitle{
-                font-size: 6rem;
-            }
-            p{
-                font-size: 2.5rem;
-            }
-        }
+    .podcasteurs .casting-text p {
+        font-size: 2.5rem;
     }
 }

@@ -11,7 +11,7 @@ import { checkAvailability } from './reservation.service.js';
 
 export async function createReservationPaymentIntent(
   userId,
-  { formula, start_date, end_date }
+  { formula, start_date, end_date, podcaster_id }
 ) {
   const user = await User.findByPk(userId);
   if (!user || !user.is_active) {
@@ -24,6 +24,13 @@ export async function createReservationPaymentIntent(
     const err = new Error(
       'Formule, date de début et date de fin sont obligatoires.'
     );
+    err.status = 400;
+    throw err;
+  }
+
+  // Pour les formules classiques (pas abonnement), le podcasteur est obligatoire
+  if (formula !== 'abonnement' && !podcaster_id) {
+    const err = new Error('Le podcasteur est obligatoire.');
     err.status = 400;
     throw err;
   }
@@ -65,7 +72,7 @@ export async function createReservationPaymentIntent(
   // Pour les formules classiques (autonome / améliorée / reseaux), on vérifie que le créneau n'est pas déjà pris.
   // Pour "abonnement" (achat de pack d'heures), on NE bloque PAS le studio.
   if (formula !== 'abonnement') {
-    await checkAvailability(startDate, endDate);
+    await checkAvailability(startDate, endDate, podcaster_id);
   }
 
   // On crée une "réservation" en pending, qui sert soit :
@@ -73,6 +80,7 @@ export async function createReservationPaymentIntent(
   // - de trace d'achat de pack (abonnement)
   const reservation = await Reservation.create({
     user_id: userId,
+    podcaster_id: podcaster_id || null,
     formula,
     start_date: startDate,
     end_date: endDate,

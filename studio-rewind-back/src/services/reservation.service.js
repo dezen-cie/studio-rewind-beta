@@ -128,10 +128,11 @@ export async function checkSubscriptionQuota(userId, hoursToAdd) {
   }
 }
 
-// Vérifie les chevauchements de créneaux pour le studio
+// Vérifie les chevauchements de créneaux pour un podcasteur spécifique
 export async function checkAvailability(
   startDate,
   endDate,
+  podcasterId,
   excludeReservationId = null
 ) {
   // Vérifier d'abord si le créneau est bloqué par l'admin
@@ -142,8 +143,9 @@ export async function checkAvailability(
     throw error;
   }
 
-  // Vérifier les réservations existantes
+  // Vérifier les réservations existantes pour ce podcasteur
   const whereClause = {
+    podcaster_id: podcasterId,
     status: { [Op.ne]: 'cancelled' },
     start_date: { [Op.lt]: endDate },
     end_date: { [Op.gt]: startDate }
@@ -156,7 +158,7 @@ export async function checkAvailability(
   const conflict = await Reservation.findOne({ where: whereClause });
 
   if (conflict) {
-    const error = new Error('Ce créneau est déjà réservé.');
+    const error = new Error('Ce créneau est déjà réservé pour ce podcasteur.');
     error.status = 400;
     throw error;
   }
@@ -214,10 +216,16 @@ export async function getReservationsByDayPublic(date) {
 
 export async function previewReservation(
   userId,
-  { formula, start_date, end_date }
+  { formula, start_date, end_date, podcaster_id }
 ) {
   // Validation des dates en entrée
   validateDateRange(start_date, end_date);
+
+  if (!podcaster_id) {
+    const error = new Error('Le podcasteur est obligatoire.');
+    error.status = 400;
+    throw error;
+  }
 
   const user = await User.findByPk(userId);
   if (!user || !user.is_active) {
@@ -234,22 +242,29 @@ export async function previewReservation(
 
   // Ici, on ne consomme PAS les packs d'heures :
   // previewReservation est utilisé par le tunnel public (paiement à l'acte).
-  await checkAvailability(start_date, end_date);
+  await checkAvailability(start_date, end_date, podcaster_id);
 
   return {
     formula,
     start_date,
     end_date,
+    podcaster_id,
     ...pricing
   };
 }
 
 export async function createReservation(
   userId,
-  { formula, start_date, end_date, is_subscription = false }
+  { formula, start_date, end_date, podcaster_id, is_subscription = false }
 ) {
   // Validation des dates en entrée
   validateDateRange(start_date, end_date);
+
+  if (!podcaster_id) {
+    const error = new Error('Le podcasteur est obligatoire.');
+    error.status = 400;
+    throw error;
+  }
 
   const user = await User.findByPk(userId);
   if (!user || !user.is_active) {
@@ -270,10 +285,11 @@ export async function createReservation(
     await checkSubscriptionQuota(userId, pricing.total_hours);
   }
 
-  await checkAvailability(start_date, end_date);
+  await checkAvailability(start_date, end_date, podcaster_id);
 
   const reservation = await Reservation.create({
     user_id: userId,
+    podcaster_id,
     formula,
     start_date,
     end_date,
@@ -395,7 +411,7 @@ export async function adminUpdateReservation(
     await checkSubscriptionQuota(user.id, pricing.total_hours);
   }
 
-  await checkAvailability(start_date, end_date, reservation.id);
+  await checkAvailability(start_date, end_date, reservation.podcaster_id, reservation.id);
 
   reservation.start_date = start_date;
   reservation.end_date = end_date;

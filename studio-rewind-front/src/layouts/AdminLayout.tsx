@@ -146,6 +146,17 @@ function AdminLayout() {
                   <span>Créneaux bloqués</span>
                 </NavLink>
               </li>
+              <li>
+                <NavLink
+                  to="/admin/podcasters"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">🎙️</span>
+                  <span>Podcasteurs</span>
+                </NavLink>
+              </li>
             </ul>
           </nav>
 

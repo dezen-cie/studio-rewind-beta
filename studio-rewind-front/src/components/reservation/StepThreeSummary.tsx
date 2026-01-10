@@ -1,7 +1,7 @@
 // src/components/reservation/StepThree.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { FormulaKey, PricingBreakdown } from '../../pages/ReservationPage';
+import type { FormulaKey, PricingBreakdown, SelectedPodcaster } from '../../pages/ReservationPage';
 import api, { setStoredToken } from '../../api/client';
 import './StepThreeSummary.css';
 
@@ -22,6 +22,7 @@ type StepThreeSummaryProps = {
   startTime: string;
   endTime: string;
   pricing: PricingBreakdown | null;
+  selectedPodcaster: SelectedPodcaster | null;
   onBack: () => void;
 };
 
@@ -43,6 +44,7 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
   startTime,
   endTime,
   pricing,
+  selectedPodcaster,
   onBack
 }) => {
   const navigate = useNavigate();
@@ -154,13 +156,18 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
       );
     }
 
+    if (!selectedPodcaster) {
+      throw new Error('Le choix du podcasteur est obligatoire.');
+    }
+
     const startIso = buildDateTime(selectedDate, startTime);
     const endIso = buildDateTime(selectedDate, endTime);
 
     const res = await api.post('/payments/reservation-intent', {
       formula,
       start_date: startIso,
-      end_date: endIso
+      end_date: endIso,
+      podcaster_id: selectedPodcaster.id
     });
 
     const data = res.data || {};
@@ -347,6 +354,12 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
               <p>
                 Formule : <strong>{getFormulaLabel()}</strong>
               </p>
+
+              {!isSubscription && selectedPodcaster && (
+                <p>
+                  Podcasteur : <strong>{selectedPodcaster.name}</strong>
+                </p>
+              )}
 
               {!isSubscription && selectedDate && (
                 <p>
