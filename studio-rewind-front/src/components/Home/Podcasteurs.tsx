@@ -2,11 +2,11 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import './Podcasteurs.css'
 import { getPublicPodcasters, type Podcaster } from '../../api/podcasters'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:4000'
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'
 
 function getMediaUrl(url: string) {
   if (url.startsWith('/uploads')) {
-    return API_BASE + url
+    return BACKEND_URL + url
   }
   return url
 }
