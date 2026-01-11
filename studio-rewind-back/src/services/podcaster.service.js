@@ -180,6 +180,21 @@ export async function updatePodcaster(id, { name, video_url, audio_url, display_
   return podcaster;
 }
 
+// Mettre à jour is_core_team d'un podcaster (super admin uniquement)
+export async function updatePodcasterCoreTeam(id, is_core_team) {
+  const podcaster = await Podcaster.findByPk(id);
+
+  if (!podcaster) {
+    const error = new Error('Podcasteur introuvable.');
+    error.status = 404;
+    throw error;
+  }
+
+  podcaster.is_core_team = is_core_team;
+  await podcaster.save();
+  return podcaster;
+}
+
 // Supprimer un podcaster et son compte utilisateur
 export async function deletePodcaster(id, requestingUser = null) {
   const podcaster = await Podcaster.findByPk(id);

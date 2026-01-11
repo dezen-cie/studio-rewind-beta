@@ -157,6 +157,17 @@ function AdminLayout() {
                   <span>Podcasteurs</span>
                 </NavLink>
               </li>
+              <li>
+                <NavLink
+                  to="/admin/revenue"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">💵</span>
+                  <span>Commission</span>
+                </NavLink>
+              </li>
             </ul>
 
             {user?.podcaster_id && (

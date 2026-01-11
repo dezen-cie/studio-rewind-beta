@@ -16,6 +16,7 @@ export interface Podcaster {
   profile_online?: boolean;
   team_role?: string; // Rôle affiché sur la page équipe (ex: "CEO & Podcasteur", "CSO")
   role?: 'podcaster' | 'admin' | 'super_admin'; // Rôle de l'utilisateur associé
+  is_core_team?: boolean; // Membres principaux affichés avant Clément
 }
 
 export interface CreatePodcasterData {
@@ -107,6 +108,12 @@ export async function deleteAdminPodcaster(id: string): Promise<void> {
 // Toggle le statut admin d'un podcaster (super admin uniquement)
 export async function togglePodcasterAdmin(id: string, makeAdmin: boolean): Promise<Podcaster> {
   const res = await api.patch<Podcaster>(`/admin/podcasters/${id}/toggle-admin`, { makeAdmin });
+  return res.data;
+}
+
+// Toggle le statut core team d'un podcaster (super admin uniquement)
+export async function togglePodcasterCoreTeam(id: string, is_core_team: boolean): Promise<Podcaster> {
+  const res = await api.patch<Podcaster>(`/admin/podcasters/${id}/toggle-core-team`, { is_core_team });
   return res.data;
 }
 

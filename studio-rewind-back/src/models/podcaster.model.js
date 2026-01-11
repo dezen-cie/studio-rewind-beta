@@ -57,6 +57,11 @@ Podcaster.init(
       allowNull: true,
       defaultValue: 'Podcasteur'
     },
+    is_core_team: {
+      // Membres principaux de l'équipe (Karim, Gregory) affichés avant Clément
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     user_id: {
       // Lien vers le compte utilisateur du podcasteur
       type: DataTypes.UUID,

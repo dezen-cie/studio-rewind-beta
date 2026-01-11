@@ -5,7 +5,8 @@ import {
   createPodcasterController,
   updatePodcasterController,
   deletePodcasterController,
-  togglePodcasterAdminController
+  togglePodcasterAdminController,
+  toggleCoreTeamController
 } from '../controllers/admin.podcaster.controller.js';
 import { authenticate, requireAdmin, requireSuperAdmin } from '../middlewares/auth.middleware.js';
 import { uploadPodcasterFiles } from '../config/upload.js';
@@ -21,5 +22,8 @@ router.delete('/:id', deletePodcasterController);
 
 // Toggle admin status - super admin uniquement
 router.patch('/:id/toggle-admin', requireSuperAdmin, togglePodcasterAdminController);
+
+// Toggle core team status - super admin uniquement
+router.patch('/:id/toggle-core-team', requireSuperAdmin, toggleCoreTeamController);
 
 export default router;

@@ -20,7 +20,7 @@ const staticTeamMembers: TeamMember[] = [
 ]
 
 const teamDescriptions: Record<string, string> = {
-  'static-3': `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Description de Clément à personnaliser.`,
+  'static-3': `Description de Clément à compléter`,
 }
 
 function Team() {
@@ -39,10 +39,10 @@ function Team() {
     loadPodcasters()
   }, [])
 
-  // Combiner les podcasters de l'API avec les membres statiques
-  const allMembers: TeamMember[] = [
-    // D'abord les membres de l'API (Karim, Gregory, etc.)
-    ...podcasters.map(p => ({
+  // Séparer les membres principaux (Karim, Gregory) des autres podcasteurs
+  const coreTeamMembers = podcasters
+    .filter(p => p.is_core_team)
+    .map(p => ({
       id: p.id,
       name: p.name,
       role: p.team_role || 'Podcasteur',
@@ -51,9 +51,26 @@ function Team() {
         : '/images/default-avatar.jpg',
       description: p.description,
       isFromApi: true
-    })),
-    // Puis les membres statiques
-    ...staticTeamMembers
+    }))
+
+  const regularPodcasters = podcasters
+    .filter(p => !p.is_core_team)
+    .map(p => ({
+      id: p.id,
+      name: p.name,
+      role: p.team_role || 'Podcasteur',
+      image: p.photo_url
+        ? (p.photo_url.startsWith('/images') ? p.photo_url : BACKEND_URL + p.photo_url)
+        : '/images/default-avatar.jpg',
+      description: p.description,
+      isFromApi: true
+    }))
+
+  // Ordre final : Karim, Gregory (core team) -> Clément (static) -> Autres podcasteurs
+  const allMembers: TeamMember[] = [
+    ...coreTeamMembers,
+    ...staticTeamMembers,
+    ...regularPodcasters
   ]
 
   const handleMemberClick = (id: string | number) => {

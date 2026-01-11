@@ -5,7 +5,8 @@ import {
   createAdminPodcaster,
   updateAdminPodcaster,
   deleteAdminPodcaster,
-  togglePodcasterAdmin
+  togglePodcasterAdmin,
+  togglePodcasterCoreTeam
 } from '../../api/podcasters';
 import { getUserRole } from '../../utils/auth';
 
@@ -20,6 +21,7 @@ function AdminPodcastersPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [togglingAdminId, setTogglingAdminId] = useState<string | null>(null);
+  const [togglingCoreTeamId, setTogglingCoreTeamId] = useState<string | null>(null);
 
   // Form state for creating
   const [isCreating, setIsCreating] = useState(false);
@@ -273,6 +275,25 @@ function AdminPodcastersPage() {
       setError(message);
     } finally {
       setTogglingAdminId(null);
+    }
+  }
+
+  async function handleToggleCoreTeam(p: Podcaster) {
+    try {
+      setTogglingCoreTeamId(p.id);
+      setError(null);
+      const updated = await togglePodcasterCoreTeam(p.id, !p.is_core_team);
+      setPodcasters((prev) =>
+        prev.map((x) => (x.id === updated.id ? { ...x, is_core_team: updated.is_core_team } : x))
+      );
+    } catch (err: any) {
+      console.error('Erreur togglePodcasterCoreTeam:', err);
+      const message =
+        err?.response?.data?.message ||
+        "Impossible de modifier le statut equipe principale.";
+      setError(message);
+    } finally {
+      setTogglingCoreTeamId(null);
     }
   }
 
@@ -623,27 +644,70 @@ function AdminPodcastersPage() {
                             </span>
                           )}
                         </div>
-                        {isSuperAdmin && !isPodcasterSuperAdmin && (
-                          <div className="column is-2">
+                        {isSuperAdmin && (
+                          <div className="column is-2" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {!isPodcasterSuperAdmin && (
+                              <div
+                                onClick={() => !togglingAdminId && handleToggleAdmin(p)}
+                                title={p.role === 'admin' ? 'Retirer les droits admin' : 'Promouvoir en admin'}
+                                style={{
+                                  position: 'relative',
+                                  width: '90px',
+                                  height: '28px',
+                                  backgroundColor: p.role === 'admin' ? '#23d160' : '#dbdbdb',
+                                  borderRadius: '14px',
+                                  cursor: togglingAdminId === p.id ? 'wait' : 'pointer',
+                                  transition: 'background-color 0.3s',
+                                  opacity: togglingAdminId === p.id ? 0.6 : 1
+                                }}
+                              >
+                                {/* Knob */}
+                                <div style={{
+                                  position: 'absolute',
+                                  top: '2px',
+                                  left: p.role === 'admin' ? '64px' : '2px',
+                                  width: '24px',
+                                  height: '24px',
+                                  backgroundColor: '#fff',
+                                  borderRadius: '50%',
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                  transition: 'left 0.3s'
+                                }} />
+                                {/* Label */}
+                                <span style={{
+                                  position: 'absolute',
+                                  top: '50%',
+                                  left: p.role === 'admin' ? '8px' : '32px',
+                                  transform: 'translateY(-50%)',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 600,
+                                  color: p.role === 'admin' ? '#fff' : '#7a7a7a',
+                                  transition: 'left 0.3s',
+                                  userSelect: 'none'
+                                }}>
+                                  {togglingAdminId === p.id ? '...' : (p.role === 'admin' ? 'Admin' : 'No Admin')}
+                                </span>
+                              </div>
+                            )}
                             <div
-                              onClick={() => !togglingAdminId && handleToggleAdmin(p)}
-                              title={p.role === 'admin' ? 'Retirer les droits admin' : 'Promouvoir en admin'}
+                              onClick={() => !togglingCoreTeamId && handleToggleCoreTeam(p)}
+                              title={p.is_core_team ? 'Retirer de l\'equipe principale' : 'Ajouter a l\'equipe principale'}
                               style={{
                                 position: 'relative',
                                 width: '90px',
                                 height: '28px',
-                                backgroundColor: p.role === 'admin' ? '#23d160' : '#dbdbdb',
+                                backgroundColor: p.is_core_team ? '#3273dc' : '#dbdbdb',
                                 borderRadius: '14px',
-                                cursor: togglingAdminId === p.id ? 'wait' : 'pointer',
+                                cursor: togglingCoreTeamId === p.id ? 'wait' : 'pointer',
                                 transition: 'background-color 0.3s',
-                                opacity: togglingAdminId === p.id ? 0.6 : 1
+                                opacity: togglingCoreTeamId === p.id ? 0.6 : 1
                               }}
                             >
                               {/* Knob */}
                               <div style={{
                                 position: 'absolute',
                                 top: '2px',
-                                left: p.role === 'admin' ? '64px' : '2px',
+                                left: p.is_core_team ? '64px' : '2px',
                                 width: '24px',
                                 height: '24px',
                                 backgroundColor: '#fff',
@@ -655,20 +719,20 @@ function AdminPodcastersPage() {
                               <span style={{
                                 position: 'absolute',
                                 top: '50%',
-                                left: p.role === 'admin' ? '8px' : '32px',
+                                left: p.is_core_team ? '8px' : '32px',
                                 transform: 'translateY(-50%)',
-                                fontSize: '0.7rem',
+                                fontSize: '0.65rem',
                                 fontWeight: 600,
-                                color: p.role === 'admin' ? '#fff' : '#7a7a7a',
+                                color: p.is_core_team ? '#fff' : '#7a7a7a',
                                 transition: 'left 0.3s',
                                 userSelect: 'none'
                               }}>
-                                {togglingAdminId === p.id ? '...' : (p.role === 'admin' ? 'Admin' : 'No Admin')}
+                                {togglingCoreTeamId === p.id ? '...' : (p.is_core_team ? 'Equipe' : 'Externe')}
                               </span>
                             </div>
                           </div>
                         )}
-                        <div className={`column ${isSuperAdmin && !isPodcasterSuperAdmin ? 'is-2' : 'is-4'}`}>
+                        <div className={`column ${isSuperAdmin ? 'is-2' : 'is-4'}`}>
                           {canModifyThisPodcaster ? (
                             <div className="buttons are-small">
                               <button

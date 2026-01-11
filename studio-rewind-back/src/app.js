@@ -24,6 +24,7 @@ import formulaRoutes from './routes/formula.routes.js';
 import adminPodcasterRoutes from './routes/admin.podcaster.routes.js';
 import podcasterRoutes from './routes/podcaster.routes.js';
 import podcasterDashboardRoutes from './routes/podcaster.dashboard.routes.js';
+import adminRevenueRoutes from './routes/admin.revenue.routes.js';
 
 const app = express();
 
@@ -99,6 +100,7 @@ app.use('/api/formulas', formulaRoutes);
 app.use('/api/admin/podcasters', adminPodcasterRoutes);
 app.use('/api/podcasters', podcasterRoutes);
 app.use('/api/podcaster', podcasterDashboardRoutes);
+app.use('/api/admin/revenue', adminRevenueRoutes);
 
 // Route de santé
 app.get('/health', (req, res) => {

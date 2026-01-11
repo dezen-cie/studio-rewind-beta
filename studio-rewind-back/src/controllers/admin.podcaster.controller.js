@@ -4,7 +4,8 @@ import {
   createPodcaster,
   updatePodcaster,
   deletePodcaster,
-  togglePodcasterAdmin
+  togglePodcasterAdmin,
+  updatePodcasterCoreTeam
 } from '../services/podcaster.service.js';
 import { deleteFile, processAndUploadFile } from '../config/upload.js';
 
@@ -130,6 +131,23 @@ export async function togglePodcasterAdminController(req, res) {
     return res.json(podcaster);
   } catch (error) {
     console.error('Erreur togglePodcasterAdmin:', error);
+    return res.status(error.status || 500).json({ message: error.message });
+  }
+}
+
+export async function toggleCoreTeamController(req, res) {
+  try {
+    const { id } = req.params;
+    const { is_core_team } = req.body;
+
+    if (typeof is_core_team !== 'boolean') {
+      return res.status(400).json({ message: 'Le paramètre is_core_team est obligatoire (true/false).' });
+    }
+
+    const podcaster = await updatePodcasterCoreTeam(id, is_core_team);
+    return res.json(podcaster);
+  } catch (error) {
+    console.error('Erreur toggleCoreTeam:', error);
     return res.status(error.status || 500).json({ message: error.message });
   }
 }

@@ -1,0 +1,204 @@
+/* AdminRevenuePage.css */
+
+/* Navigation des mois */
+.revenue-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+}
+
+.revenue-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-color, #fff);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.revenue-nav-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.revenue-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.revenue-month-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 150px;
+}
+
+.revenue-month-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-color, #fff);
+}
+
+.revenue-month-year {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Cards récapitulatives */
+.revenue-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .revenue-summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .revenue-summary-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.revenue-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.revenue-card--commission {
+  background: rgba(100, 108, 255, 0.15);
+  border-color: rgba(100, 108, 255, 0.3);
+}
+
+.revenue-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #646cff;
+}
+
+.revenue-card--commission .revenue-card-icon {
+  background: rgba(100, 108, 255, 0.3);
+  color: #fff;
+}
+
+.revenue-card-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.revenue-card-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-color, #fff);
+}
+
+.revenue-card-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Tableau */
+.revenue-table-title {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color, #fff);
+}
+
+.revenue-table-container {
+  overflow-x: auto;
+}
+
+.revenue-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.revenue-table th,
+.revenue-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.revenue-table th {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.revenue-table td {
+  color: var(--text-color, #fff);
+}
+
+.revenue-table .text-right {
+  text-align: right;
+}
+
+.revenue-podcaster-name {
+  font-weight: 500;
+}
+
+.revenue-amount {
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.revenue-commission {
+  color: #646cff;
+  font-weight: 600;
+}
+
+.revenue-row-empty td {
+  opacity: 0.5;
+}
+
+.revenue-totals-row {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.revenue-totals-row td {
+  border-bottom: none;
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+
+/* États */
+.revenue-loading,
+.revenue-no-data {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.revenue-no-data {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
