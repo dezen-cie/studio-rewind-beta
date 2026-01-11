@@ -686,11 +686,7 @@ function AdminPodcastersPage() {
                                 Supprimer
                               </button>
                             </div>
-                          ) : (
-                            <span className="tag is-light" title="Le super admin ne peut pas \u00eatre modifi\u00e9">
-                              Prot\u00e9g\u00e9
-                            </span>
-                          )}
+                          ) : null}
                         </div>
                       </div>
                     )}

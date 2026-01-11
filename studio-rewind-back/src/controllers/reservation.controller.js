@@ -5,7 +5,11 @@ import {
   getUserReservations,
   getReservationsByDayPublic
 } from '../services/reservation.service.js';
-import { getBlockedSlotsForDate } from '../services/blockedSlot.service.js';
+import {
+  getBlockedSlotsForDate,
+  getUnblocksForDate,
+  getDefaultBlockedRanges
+} from '../services/blockedSlot.service.js';
 
 // ============= PUBLIC : créneaux du jour (step 2 tunnel, espace membre abo) =============
 
@@ -106,6 +110,39 @@ export async function getBlockedByDayPublic(req, res) {
     return res.json(blockedSlots);
   } catch (error) {
     console.error('Erreur getBlockedByDayPublic:', error);
+    return res
+      .status(error.status || 500)
+      .json({ message: error.message || 'Erreur serveur.' });
+  }
+}
+
+// ============= PUBLIC : heures bloquées par défaut =============
+
+export async function getDefaultBlockedHoursPublic(_req, res) {
+  try {
+    const ranges = getDefaultBlockedRanges();
+    return res.json(ranges);
+  } catch (error) {
+    console.error('Erreur getDefaultBlockedHoursPublic:', error);
+    return res
+      .status(error.status || 500)
+      .json({ message: error.message || 'Erreur serveur.' });
+  }
+}
+
+// ============= PUBLIC : déblocages du jour =============
+
+export async function getUnblocksByDayPublic(req, res) {
+  try {
+    const { date } = req.params;
+    if (!date) {
+      return res.status(400).json({ message: 'Date manquante.' });
+    }
+
+    const unblocks = await getUnblocksForDate(date);
+    return res.json(unblocks);
+  } catch (error) {
+    console.error('Erreur getUnblocksByDayPublic:', error);
     return res
       .status(error.status || 500)
       .json({ message: error.message || 'Erreur serveur.' });

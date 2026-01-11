@@ -179,6 +179,33 @@ export async function getUpcomingReservations(selectedDate = null) {
  * Calcule le taux d'occupation du studio pour un jour donné
  * Heures d'ouverture : 9h - 18h = 9 heures disponibles
  */
+/**
+ * Récupère les dates qui ont des réservations pour un mois donné
+ * Retourne un tableau de dates au format 'YYYY-MM-DD'
+ */
+export async function getMonthReservationDays(year, month) {
+  const start = new Date(year, month, 1, 0, 0, 0);
+  const end = new Date(year, month + 1, 0, 23, 59, 59);
+
+  const reservations = await Reservation.findAll({
+    where: {
+      status: { [Op.ne]: 'cancelled' },
+      start_date: { [Op.between]: [start, end] }
+    },
+    attributes: ['start_date']
+  });
+
+  // Extraire les dates uniques
+  const daysSet = new Set();
+  for (const r of reservations) {
+    const d = new Date(r.start_date);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    daysSet.add(key);
+  }
+
+  return Array.from(daysSet);
+}
+
 export async function getDayOccupancyRate(selectedDate = null) {
   const targetDate = selectedDate ? new Date(selectedDate) : new Date();
   const { start, end } = getDayRange(targetDate);

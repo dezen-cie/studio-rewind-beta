@@ -3,7 +3,8 @@ import {
   getDashboardSummary,
   getDayReservations,
   getUpcomingReservations,
-  getDayOccupancyRate
+  getDayOccupancyRate,
+  getMonthReservationDays
 } from '../services/admin.dashboard.service.js';
 
 export async function getDashboardSummaryController(req, res) {
@@ -46,6 +47,20 @@ export async function getDayOccupancyController(req, res) {
     return res.json(occupancy);
   } catch (error) {
     console.error('Erreur getDayOccupancy:', error);
+    return res.status(error.status || 500).json({ message: error.message });
+  }
+}
+
+export async function getMonthReservationDaysController(req, res) {
+  try {
+    const { year, month } = req.query;
+    if (!year || !month) {
+      return res.status(400).json({ message: 'Les paramètres year et month sont requis.' });
+    }
+    const days = await getMonthReservationDays(parseInt(year), parseInt(month) - 1);
+    return res.json(days);
+  } catch (error) {
+    console.error('Erreur getMonthReservationDays:', error);
     return res.status(error.status || 500).json({ message: error.message });
   }
 }

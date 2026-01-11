@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Clock, Calendar, Users, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   getDashboardSummary,
   getDayReservations,
   getUpcomingReservations,
   getDayOccupancy,
+  getMonthReservationDays,
   type DashboardReservation,
   type OccupancyData
 } from '../../api/adminDashboard';
@@ -15,11 +16,53 @@ const STUDIO_START = 9;
 const STUDIO_END = 18;
 const STUDIO_HOURS = STUDIO_END - STUDIO_START;
 
+interface CalendarDay {
+  date: Date | null;
+  key: string;
+  isToday: boolean;
+  isSelected: boolean;
+  hasReservation: boolean;
+}
+
 function toDateKey(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function buildCalendarMatrix(
+  year: number,
+  month: number,
+  selectedDateKey: string,
+  reservationDays: Set<string>
+): CalendarDay[] {
+  const firstDayOfMonth = new Date(year, month, 1);
+  const lastDayOfMonth = new Date(year, month + 1, 0);
+  const startWeekDay = firstDayOfMonth.getDay();
+  const daysInMonth = lastDayOfMonth.getDate();
+  const today = new Date();
+  const todayKey = toDateKey(today);
+  const cells: CalendarDay[] = [];
+
+  const offset = startWeekDay === 0 ? 6 : startWeekDay - 1;
+  for (let i = 0; i < offset; i++) {
+    cells.push({ date: null, key: `empty-${i}`, isToday: false, isSelected: false, hasReservation: false });
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day);
+    const key = toDateKey(date);
+    cells.push({
+      date,
+      key,
+      isToday: key === todayKey,
+      isSelected: selectedDateKey === key,
+      hasReservation: reservationDays.has(key)
+    });
+  }
+
+  return cells;
 }
 
 function isSameDay(d1: Date, d2: Date): boolean {
@@ -46,9 +89,27 @@ function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // États pour le calendrier
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date().getMonth());
+  const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear());
+  const [reservationDays, setReservationDays] = useState<Set<string>>(new Set());
+
   const isToday = isSameDay(selectedDate, new Date());
   const dateKey = toDateKey(selectedDate);
 
+  // Construire la matrice du calendrier
+  const calendarCells = useMemo(
+    () => buildCalendarMatrix(calendarYear, calendarMonth, dateKey, reservationDays),
+    [calendarYear, calendarMonth, dateKey, reservationDays]
+  );
+
+  const calendarMonthLabel = useMemo(() => {
+    const d = new Date(calendarYear, calendarMonth, 1);
+    return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  }, [calendarMonth, calendarYear]);
+
+  // Charger les données du jour sélectionné
   useEffect(() => {
     async function load() {
       try {
@@ -79,6 +140,20 @@ function AdminDashboardPage() {
     load();
   }, [dateKey]);
 
+  // Charger les jours avec réservations pour le mois du calendrier (seulement si visible)
+  useEffect(() => {
+    if (!showCalendar) return;
+    async function loadMonthDays() {
+      try {
+        const days = await getMonthReservationDays(calendarYear, calendarMonth + 1);
+        setReservationDays(new Set(days));
+      } catch (err) {
+        console.error('Erreur chargement jours réservations:', err);
+      }
+    }
+    loadMonthDays();
+  }, [calendarYear, calendarMonth, showCalendar]);
+
   function goToPreviousDay() {
     setSelectedDate((prev) => {
       const newDate = new Date(prev);
@@ -97,6 +172,35 @@ function AdminDashboardPage() {
 
   function goToToday() {
     setSelectedDate(new Date());
+    // Synchroniser le calendrier avec aujourd'hui
+    const now = new Date();
+    setCalendarMonth(now.getMonth());
+    setCalendarYear(now.getFullYear());
+  }
+
+  function handleCalendarPrevMonth() {
+    setCalendarMonth((prev) => {
+      if (prev === 0) {
+        setCalendarYear((y) => y - 1);
+        return 11;
+      }
+      return prev - 1;
+    });
+  }
+
+  function handleCalendarNextMonth() {
+    setCalendarMonth((prev) => {
+      if (prev === 11) {
+        setCalendarYear((y) => y + 1);
+        return 0;
+      }
+      return prev + 1;
+    });
+  }
+
+  function handleCalendarDayClick(cell: CalendarDay) {
+    if (!cell.date) return;
+    setSelectedDate(cell.date);
   }
 
   function handleDateInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -332,6 +436,82 @@ function AdminDashboardPage() {
                 </div>
               </div>
             </div>
+
+            {/* CHECKBOX CALENDRIER */}
+            <label className="dashboard-calendar-toggle">
+              <input
+                type="checkbox"
+                checked={showCalendar}
+                onChange={(e) => setShowCalendar(e.target.checked)}
+              />
+              <span>Voir le calendrier</span>
+            </label>
+
+            {/* CALENDRIER */}
+            {showCalendar && (
+              <div className="dashboard-calendar">
+                <div className="dashboard-calendar-header">
+                  <button
+                    type="button"
+                    className="dashboard-calendar-arrow"
+                    onClick={handleCalendarPrevMonth}
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <span className="dashboard-calendar-month">{calendarMonthLabel}</span>
+                  <button
+                    type="button"
+                    className="dashboard-calendar-arrow"
+                    onClick={handleCalendarNextMonth}
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+
+                <div className="dashboard-calendar-grid">
+                  <div className="dashboard-calendar-weekday">L</div>
+                  <div className="dashboard-calendar-weekday">M</div>
+                  <div className="dashboard-calendar-weekday">M</div>
+                  <div className="dashboard-calendar-weekday">J</div>
+                  <div className="dashboard-calendar-weekday">V</div>
+                  <div className="dashboard-calendar-weekday">S</div>
+                  <div className="dashboard-calendar-weekday">D</div>
+
+                  {calendarCells.map((cell) => (
+                    <button
+                      key={cell.key}
+                      type="button"
+                      className={[
+                        'dashboard-calendar-day',
+                        !cell.date ? 'dashboard-calendar-day--empty' : '',
+                        cell.isToday ? 'dashboard-calendar-day--today' : '',
+                        cell.isSelected ? 'dashboard-calendar-day--selected' : '',
+                        cell.hasReservation ? 'dashboard-calendar-day--has-reservation' : ''
+                      ].filter(Boolean).join(' ')}
+                      onClick={() => handleCalendarDayClick(cell)}
+                      disabled={!cell.date}
+                    >
+                      <span>{cell.date ? cell.date.getDate() : ''}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="dashboard-calendar-legend">
+                  <span className="dashboard-calendar-legend-item">
+                    <span className="dashboard-calendar-legend-dot dashboard-calendar-legend-dot--today" />
+                    Aujourd'hui
+                  </span>
+                  <span className="dashboard-calendar-legend-item">
+                    <span className="dashboard-calendar-legend-dot dashboard-calendar-legend-dot--selected" />
+                    Sélectionné
+                  </span>
+                  <span className="dashboard-calendar-legend-item">
+                    <span className="dashboard-calendar-legend-dot dashboard-calendar-legend-dot--reservation" />
+                    Réservation
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* TIMELINE DU JOUR */}
             <section className="sr-section">

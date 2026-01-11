@@ -124,59 +124,21 @@ function Timeline() {
 
       const sectionRect = sectionRef.current.getBoundingClientRect();
       const dotRect = dot.getBoundingClientRect();
-      const dotCenter = dotRect.top + dotRect.height / 2 - sectionRect.top;
+      const dotCenter = dotRect.top + dotRect.height / 2;
 
-      lineRef.current.style.top = `${dotCenter}px`;
+      // Positionner par rapport au bas (plus stable car le contenu sous le dot est fixe)
+      const distanceFromBottom = sectionRect.bottom - dotCenter;
+      lineRef.current.style.top = 'auto';
+      lineRef.current.style.bottom = `${distanceFromBottom}px`;
     }
 
-    // Attendre que les images soient chargées avant de calculer la position
-    const images = sectionRef.current?.querySelectorAll('img');
-    let loadedCount = 0;
-    const totalImages = images?.length || 0;
-
-    function onImageLoad() {
-      loadedCount++;
-      if (loadedCount >= totalImages) {
-        // Double requestAnimationFrame pour Safari iOS
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            updateLinePosition();
-          });
-        });
-      }
-    }
-
-    images?.forEach(img => {
-      if (img.complete) {
-        loadedCount++;
-      } else {
-        img.addEventListener('load', onImageLoad);
-      }
-    });
-
-    // Si toutes les images sont déjà chargées
-    if (loadedCount >= totalImages) {
-      // Double requestAnimationFrame pour Safari iOS
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          updateLinePosition();
-        });
-      });
-    }
-
-    // Fallback: recalculer après un court délai (Safari iOS peut être lent)
-    const fallbackTimer = setTimeout(() => {
-      updateLinePosition();
-    }, 500);
+    // Calcul immédiat (la distance du bas est stable même sans images)
+    requestAnimationFrame(updateLinePosition);
 
     window.addEventListener('resize', updateLinePosition);
 
     return () => {
       window.removeEventListener('resize', updateLinePosition);
-      clearTimeout(fallbackTimer);
-      images?.forEach(img => {
-        img.removeEventListener('load', onImageLoad);
-      });
     };
   }, []);
 

@@ -53,9 +53,19 @@ function toDateKey(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-const HOURS: string[] = [];
+// Heures disponibles pour blocages (9h-18h)
+const BLOCK_HOURS: string[] = [];
 for (let h = 9; h <= 18; h++) {
-  HOURS.push(`${h.toString().padStart(2, '0')}:00`);
+  BLOCK_HOURS.push(`${h.toString().padStart(2, '0')}:00`);
+}
+
+// Heures hors horaires (0-9h et 18-24h) pour les déblocages
+const UNBLOCK_HOURS: string[] = [];
+for (let h = 0; h <= 9; h++) {
+  UNBLOCK_HOURS.push(`${h.toString().padStart(2, '0')}:00`);
+}
+for (let h = 18; h <= 23; h++) {
+  UNBLOCK_HOURS.push(`${h.toString().padStart(2, '0')}:00`);
 }
 
 function AdminBlockedSlotsPage() {
@@ -68,9 +78,11 @@ function AdminBlockedSlotsPage() {
   const [loadingDay, setLoadingDay] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
-  const [blockType, setBlockType] = useState<'fullday' | 'hours' | 'multidays'>('fullday');
+  const [blockType, setBlockType] = useState<'fullday' | 'hours' | 'multidays' | 'unblock'>('fullday');
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('18:00');
+  const [unblockStartTime, setUnblockStartTime] = useState('07:00');
+  const [unblockEndTime, setUnblockEndTime] = useState('09:00');
   const [reason, setReason] = useState('');
   const [creating, setCreating] = useState(false);
 
@@ -142,14 +154,17 @@ function AdminBlockedSlotsPage() {
     setSelectedDate(dateKey);
   };
 
-  // Vérifie si un jour a des blocages
-  function getDayBlockedInfo(day: Day): { hasBlocked: boolean; isFullDayBlocked: boolean } {
-    if (!day) return { hasBlocked: false, isFullDayBlocked: false };
+  // Vérifie si un jour a des blocages ou déblocages
+  function getDayBlockedInfo(day: Day): { hasBlocked: boolean; isFullDayBlocked: boolean; hasUnblock: boolean } {
+    if (!day) return { hasBlocked: false, isFullDayBlocked: false, hasUnblock: false };
     const dateKey = toDateKey(year, month, day);
     const dayBlocks = monthBlockedSlots.filter((b) => b.date === dateKey);
-    const hasBlocked = dayBlocks.length > 0;
-    const isFullDayBlocked = dayBlocks.some((b) => b.is_full_day);
-    return { hasBlocked, isFullDayBlocked };
+    const blocks = dayBlocks.filter((b) => !b.is_unblock);
+    const unblocks = dayBlocks.filter((b) => b.is_unblock);
+    const hasBlocked = blocks.length > 0;
+    const isFullDayBlocked = blocks.some((b) => b.is_full_day);
+    const hasUnblock = unblocks.length > 0;
+    return { hasBlocked, isFullDayBlocked, hasUnblock };
   }
 
   const isSelected = (day: Day): boolean => {
@@ -243,12 +258,13 @@ function AdminBlockedSlotsPage() {
           await loadDayBlockedSlots(selectedDate);
         }
       } else {
-        // Mode jour unique ou créneau
+        // Mode jour unique, créneau ou déblocage
         if (!selectedDate) return;
 
         const payload: {
           date: string;
           is_full_day: boolean;
+          is_unblock?: boolean;
           start_time?: string;
           end_time?: string;
           reason?: string;
@@ -260,6 +276,13 @@ function AdminBlockedSlotsPage() {
         if (blockType === 'hours') {
           payload.start_time = startTime;
           payload.end_time = endTime;
+        }
+
+        if (blockType === 'unblock') {
+          payload.is_full_day = false;
+          payload.is_unblock = true;
+          payload.start_time = unblockStartTime;
+          payload.end_time = unblockEndTime;
         }
 
         if (reason.trim()) {
@@ -370,7 +393,7 @@ function AdminBlockedSlotsPage() {
               {weeks.map((week: Week, weekIndex: number) => (
                 <div key={weekIndex} className="blocked-calendar-row">
                   {week.map((day: Day, dayIndex: number) => {
-                    const { hasBlocked, isFullDayBlocked } = getDayBlockedInfo(day);
+                    const { hasBlocked, isFullDayBlocked, hasUnblock } = getDayBlockedInfo(day);
                     return (
                       <button
                         key={dayIndex}
@@ -380,7 +403,8 @@ function AdminBlockedSlotsPage() {
                           (day ? '' : ' blocked-calendar-cell-empty') +
                           (isSelected(day) ? ' blocked-calendar-cell-selected' : '') +
                           (isFullDayBlocked ? ' blocked-calendar-cell-fullday' : '') +
-                          (hasBlocked && !isFullDayBlocked ? ' blocked-calendar-cell-partial' : '')
+                          (hasBlocked && !isFullDayBlocked ? ' blocked-calendar-cell-partial' : '') +
+                          (hasUnblock ? ' blocked-calendar-cell-unblock' : '')
                         }
                         onClick={() => handleSelectDay(day)}
                         disabled={!day}
@@ -402,7 +426,14 @@ function AdminBlockedSlotsPage() {
                 <span className="blocked-legend-dot partial"></span>
                 <span>Créneaux bloqués</span>
               </div>
+              <div className="blocked-legend-item">
+                <span className="blocked-legend-dot unblock"></span>
+                <span>Ouverture exceptionnelle</span>
+              </div>
             </div>
+            <p className="blocked-info-text">
+              Par défaut, le studio est ouvert de 9h à 18h. Les créneaux hors de ces horaires sont automatiquement bloqués.
+            </p>
           </div>
 
           {/* PANNEAU DÉTAIL DU JOUR */}
@@ -437,13 +468,17 @@ function AdminBlockedSlotsPage() {
                 {!loadingDay && dayBlockedSlots.length > 0 && (
                   <div className="blocked-day-list">
                     {dayBlockedSlots.map((slot) => (
-                      <div key={slot.id} className="blocked-slot-item">
+                      <div key={slot.id} className={`blocked-slot-item ${slot.is_unblock ? 'blocked-slot-item--unblock' : ''}`}>
                         <div className="blocked-slot-info">
-                          {slot.is_full_day ? (
-                            <span className="blocked-slot-time fullday">Journée entière</span>
+                          {slot.is_unblock ? (
+                            <span className="blocked-slot-time unblock">
+                              Ouverture {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
+                            </span>
+                          ) : slot.is_full_day ? (
+                            <span className="blocked-slot-time fullday">Journée entière bloquée</span>
                           ) : (
                             <span className="blocked-slot-time">
-                              {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
+                              Blocage {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
                             </span>
                           )}
                           {slot.reason && (
@@ -454,7 +489,7 @@ function AdminBlockedSlotsPage() {
                           type="button"
                           className="blocked-slot-delete"
                           onClick={() => handleDeleteBlocked(slot.id)}
-                          title="Supprimer ce blocage"
+                          title={slot.is_unblock ? "Supprimer cette ouverture" : "Supprimer ce blocage"}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -489,7 +524,7 @@ function AdminBlockedSlotsPage() {
               )}
 
               <div className="field">
-                <label className="label">Type de blocage</label>
+                <label className="label">Type d'action</label>
                 <div className="control blocked-radio-group--vertical">
                   <label className="radio">
                     <input
@@ -498,7 +533,7 @@ function AdminBlockedSlotsPage() {
                       checked={blockType === 'fullday'}
                       onChange={() => setBlockType('fullday')}
                     />
-                    <span>Journée entière</span>
+                    <span>Bloquer la journée entière</span>
                   </label>
                   <label className="radio">
                     <input
@@ -507,7 +542,7 @@ function AdminBlockedSlotsPage() {
                       checked={blockType === 'hours'}
                       onChange={() => setBlockType('hours')}
                     />
-                    <span>Créneau horaire</span>
+                    <span>Bloquer un créneau (9h-18h)</span>
                   </label>
                   <label className="radio">
                     <input
@@ -516,7 +551,16 @@ function AdminBlockedSlotsPage() {
                       checked={blockType === 'multidays'}
                       onChange={() => setBlockType('multidays')}
                     />
-                    <span>Plusieurs jours</span>
+                    <span>Bloquer plusieurs jours</span>
+                  </label>
+                  <label className="radio">
+                    <input
+                      type="radio"
+                      name="blockType"
+                      checked={blockType === 'unblock'}
+                      onChange={() => setBlockType('unblock')}
+                    />
+                    <span>Ouvrir un créneau hors horaires (0h-9h ou 18h-24h)</span>
                   </label>
                 </div>
               </div>
@@ -528,7 +572,7 @@ function AdminBlockedSlotsPage() {
                     <div className="control">
                       <div className="select">
                         <select value={startTime} onChange={(e) => setStartTime(e.target.value)}>
-                          {HOURS.map((h) => (
+                          {BLOCK_HOURS.map((h) => (
                             <option key={h} value={h}>
                               {h}
                             </option>
@@ -543,7 +587,44 @@ function AdminBlockedSlotsPage() {
                     <div className="control">
                       <div className="select">
                         <select value={endTime} onChange={(e) => setEndTime(e.target.value)}>
-                          {HOURS.map((h) => (
+                          {BLOCK_HOURS.map((h) => (
+                            <option key={h} value={h}>
+                              {h}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {blockType === 'unblock' && (
+                <div className="blocked-time-inputs">
+                  <p className="blocked-unblock-info">
+                    Ouvrez un créneau en dehors des horaires d'ouverture habituels (9h-18h).
+                  </p>
+                  <div className="field">
+                    <label className="label">Heure de début</label>
+                    <div className="control">
+                      <div className="select">
+                        <select value={unblockStartTime} onChange={(e) => setUnblockStartTime(e.target.value)}>
+                          {UNBLOCK_HOURS.map((h) => (
+                            <option key={h} value={h}>
+                              {h}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="field">
+                    <label className="label">Heure de fin</label>
+                    <div className="control">
+                      <div className="select">
+                        <select value={unblockEndTime} onChange={(e) => setUnblockEndTime(e.target.value)}>
+                          {UNBLOCK_HOURS.map((h) => (
                             <option key={h} value={h}>
                               {h}
                             </option>
@@ -672,7 +753,7 @@ function AdminBlockedSlotsPage() {
                 onClick={handleCreateBlocked}
                 disabled={creating || (blockType === 'multidays' && (!multiDayStart || !multiDayEnd))}
               >
-                {creating ? 'Création...' : 'Créer le blocage'}
+                {creating ? 'Création...' : blockType === 'unblock' ? 'Ouvrir le créneau' : 'Créer le blocage'}
               </button>
             </div>
           </div>

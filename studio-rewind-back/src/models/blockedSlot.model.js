@@ -31,6 +31,11 @@ BlockedSlot.init(
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
+    // true = déblocage d'un créneau hors horaires par défaut (0-9h ou 18-24h)
+    is_unblock: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     // Raison du blocage (optionnel, pour l'admin)
     reason: {
       type: DataTypes.STRING,

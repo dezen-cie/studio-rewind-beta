@@ -513,3 +513,190 @@
   color: #10b981;
   text-align: right;
 }
+
+/* DASHBOARD CALENDAR TOGGLE */
+.dashboard-calendar-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  user-select: none;
+}
+
+.dashboard-calendar-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #646cff;
+  cursor: pointer;
+}
+
+.dashboard-calendar-toggle:hover {
+  color: #fff;
+}
+
+/* DASHBOARD CALENDAR */
+.dashboard-calendar {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.dashboard-calendar-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dashboard-calendar-arrow:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.dashboard-calendar-month {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  text-transform: capitalize;
+}
+
+.dashboard-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.dashboard-calendar-weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 0.5rem 0;
+  text-transform: uppercase;
+}
+
+.dashboard-calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.dashboard-calendar-day:hover:not(.dashboard-calendar-day--empty) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dashboard-calendar-day--empty {
+  cursor: default;
+}
+
+.dashboard-calendar-day--today {
+  border-color: rgba(100, 108, 255, 0.6);
+}
+
+.dashboard-calendar-day--selected {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+}
+
+.dashboard-calendar-day--selected:hover {
+  background: #dc2626;
+}
+
+/* Indicateur de réservation (point sous le jour) */
+.dashboard-calendar-day--has-reservation::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: #10b981;
+  border-radius: 50%;
+}
+
+.dashboard-calendar-day--selected.dashboard-calendar-day--has-reservation::after {
+  background: #fff;
+}
+
+/* Légende */
+.dashboard-calendar-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dashboard-calendar-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.dashboard-calendar-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dashboard-calendar-legend-dot--reservation {
+  background: #10b981;
+}
+
+.dashboard-calendar-legend-dot--today {
+  background: transparent;
+  border: 2px solid rgba(100, 108, 255, 0.6);
+}
+
+.dashboard-calendar-legend-dot--selected {
+  background: #ef4444;
+}
+
+@media (max-width: 600px) {
+  .dashboard-calendar {
+    padding: 1rem;
+  }
+
+  .dashboard-calendar-day {
+    font-size: 0.75rem;
+  }
+
+  .dashboard-calendar-legend {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+}

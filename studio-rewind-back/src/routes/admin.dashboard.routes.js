@@ -4,7 +4,8 @@ import {
   getDashboardSummaryController,
   getDayReservationsController,
   getUpcomingReservationsController,
-  getDayOccupancyController
+  getDayOccupancyController,
+  getMonthReservationDaysController
 } from '../controllers/admin.dashboard.controller.js';
 import { authenticate, requireAdmin } from '../middlewares/auth.middleware.js';
 
@@ -23,5 +24,8 @@ router.get('/upcoming', getUpcomingReservationsController);
 
 // GET /admin/dashboard/occupancy?date=YYYY-MM-DD - Taux d'occupation du jour
 router.get('/occupancy', getDayOccupancyController);
+
+// GET /admin/dashboard/month-days?year=YYYY&month=MM - Jours avec réservations pour un mois
+router.get('/month-days', getMonthReservationDaysController);
 
 export default router;

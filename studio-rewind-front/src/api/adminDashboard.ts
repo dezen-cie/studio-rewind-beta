@@ -59,3 +59,10 @@ export async function getDayOccupancy(date?: string): Promise<OccupancyData> {
   const res = await api.get<OccupancyData>('/admin/dashboard/occupancy', { params });
   return res.data;
 }
+
+export async function getMonthReservationDays(year: number, month: number): Promise<string[]> {
+  const res = await api.get<string[]>('/admin/dashboard/month-days', {
+    params: { year, month }
+  });
+  return res.data;
+}

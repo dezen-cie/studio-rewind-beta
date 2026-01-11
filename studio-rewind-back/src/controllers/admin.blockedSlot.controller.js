@@ -2,9 +2,11 @@
 import {
   getBlockedSlotsForMonth,
   getBlockedSlotsForDate,
+  getUnblocksForDate,
   createBlockedSlot,
   deleteBlockedSlot,
-  deleteBlockedSlotsForDate
+  deleteBlockedSlotsForDate,
+  getDefaultBlockedRanges
 } from '../services/blockedSlot.service.js';
 
 /**
@@ -42,11 +44,11 @@ export async function listBlockedSlotsForDate(req, res) {
 
 /**
  * POST /admin/blocked-slots
- * Crée un nouveau blocage
+ * Crée un nouveau blocage ou déblocage
  */
 export async function createBlockedSlotController(req, res) {
   try {
-    const { date, start_time, end_time, is_full_day, reason } = req.body;
+    const { date, start_time, end_time, is_full_day, is_unblock, reason } = req.body;
     const created_by = req.user?.id;
 
     const blockedSlot = await createBlockedSlot({
@@ -54,6 +56,7 @@ export async function createBlockedSlotController(req, res) {
       start_time,
       end_time,
       is_full_day,
+      is_unblock: is_unblock || false,
       reason,
       created_by
     });
@@ -91,6 +94,35 @@ export async function deleteBlockedSlotsForDateController(req, res) {
     return res.json(result);
   } catch (error) {
     console.error('Erreur deleteBlockedSlotsForDate:', error);
+    return res.status(error.status || 500).json({ message: error.message });
+  }
+}
+
+/**
+ * GET /admin/blocked-slots/default-hours
+ * Retourne les plages horaires bloquées par défaut
+ */
+export async function getDefaultBlockedRangesController(_req, res) {
+  try {
+    const ranges = getDefaultBlockedRanges();
+    return res.json(ranges);
+  } catch (error) {
+    console.error('Erreur getDefaultBlockedRanges:', error);
+    return res.status(error.status || 500).json({ message: error.message });
+  }
+}
+
+/**
+ * GET /admin/blocked-slots/unblocks/:date
+ * Récupère les déblocages pour une date
+ */
+export async function getUnblocksForDateController(req, res) {
+  try {
+    const { date } = req.params;
+    const unblocks = await getUnblocksForDate(date);
+    return res.json(unblocks);
+  } catch (error) {
+    console.error('Erreur getUnblocksForDate:', error);
     return res.status(error.status || 500).json({ message: error.message });
   }
 }

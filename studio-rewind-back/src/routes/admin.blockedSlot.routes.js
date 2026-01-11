@@ -5,7 +5,9 @@ import {
   listBlockedSlotsForDate,
   createBlockedSlotController,
   deleteBlockedSlotController,
-  deleteBlockedSlotsForDateController
+  deleteBlockedSlotsForDateController,
+  getDefaultBlockedRangesController,
+  getUnblocksForDateController
 } from '../controllers/admin.blockedSlot.controller.js';
 import { authenticate, requireAdmin } from '../middlewares/auth.middleware.js';
 
@@ -14,11 +16,17 @@ const router = Router();
 // Toutes les routes nécessitent d'être admin
 router.use(authenticate, requireAdmin);
 
+// GET /admin/blocked-slots/default-hours - Heures bloquées par défaut
+router.get('/default-hours', getDefaultBlockedRangesController);
+
 // GET /admin/blocked-slots/month/:year/:month
 router.get('/month/:year/:month', listBlockedSlotsForMonth);
 
 // GET /admin/blocked-slots/date/:date
 router.get('/date/:date', listBlockedSlotsForDate);
+
+// GET /admin/blocked-slots/unblocks/:date - Déblocages pour une date
+router.get('/unblocks/:date', getUnblocksForDateController);
 
 // POST /admin/blocked-slots
 router.post('/', createBlockedSlotController);

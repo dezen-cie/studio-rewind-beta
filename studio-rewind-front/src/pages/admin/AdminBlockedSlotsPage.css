@@ -528,3 +528,51 @@
 .blocked-multiday-selection strong {
   color: #646cff;
 }
+
+/* UNBLOCK (ouverture exceptionnelle) */
+.blocked-calendar-cell-unblock {
+  position: relative;
+}
+
+.blocked-calendar-cell-unblock::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background: #10b981;
+  border-radius: 50%;
+}
+
+.blocked-legend-dot.unblock {
+  background: #10b981;
+}
+
+.blocked-slot-item--unblock {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.blocked-slot-time.unblock {
+  color: #10b981;
+}
+
+.blocked-info-text {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.blocked-unblock-info {
+  grid-column: span 2;
+  margin-bottom: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(16, 185, 129, 0.15);
+  border-radius: 6px;
+  color: #10b981;
+  font-size: 0.85rem;
+  text-align: center;
+}
