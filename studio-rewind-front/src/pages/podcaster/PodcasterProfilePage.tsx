@@ -338,7 +338,7 @@ function PodcasterProfilePage() {
   }
 
   // Variable pour savoir si le profil podcaster est inactif
-  const isPodcasterInactive = podcaster && !podcaster.is_active;
+  const isPodcasterInactive = !!(podcaster && !podcaster.is_active);
 
   // Cas 2: Podcaster avec profil (actif ou inactif)
   return (
