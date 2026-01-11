@@ -4,7 +4,8 @@ import { getPublicPodcasters, type Podcaster } from '../../api/podcasters'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'
 
-function getMediaUrl(url: string) {
+function getMediaUrl(url: string | null | undefined): string {
+  if (!url) return ''
   if (url.startsWith('/uploads')) {
     return BACKEND_URL + url
   }
@@ -22,7 +23,9 @@ function Podcasteurs() {
     async function loadPodcasters() {
       try {
         const data = await getPublicPodcasters()
-        setPodcasters(data)
+        // Filtrer les podcasters qui ont video et audio
+        const validPodcasters = data.filter(p => p.video_url && p.audio_url)
+        setPodcasters(validPodcasters)
       } catch (error) {
         console.error('Erreur chargement podcasteurs:', error)
       } finally {

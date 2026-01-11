@@ -4,9 +4,10 @@ import {
   listPodcasters,
   createPodcasterController,
   updatePodcasterController,
-  deletePodcasterController
+  deletePodcasterController,
+  togglePodcasterAdminController
 } from '../controllers/admin.podcaster.controller.js';
-import { authenticate, requireAdmin } from '../middlewares/auth.middleware.js';
+import { authenticate, requireAdmin, requireSuperAdmin } from '../middlewares/auth.middleware.js';
 import { uploadPodcasterFiles } from '../config/upload.js';
 
 const router = Router();
@@ -17,5 +18,8 @@ router.get('/', listPodcasters);
 router.post('/', uploadPodcasterFiles, createPodcasterController);
 router.patch('/:id', uploadPodcasterFiles, updatePodcasterController);
 router.delete('/:id', deletePodcasterController);
+
+// Toggle admin status - super admin uniquement
+router.patch('/:id/toggle-admin', requireSuperAdmin, togglePodcasterAdminController);
 
 export default router;

@@ -57,6 +57,8 @@ function AdminUsersPage() {
         return 'Admin';
       case 'super_admin':
         return 'Super admin';
+      case 'podcaster':
+        return 'Podcasteur';
       default:
         return role;
     }

@@ -18,12 +18,12 @@ Podcaster.init(
     video_url: {
       // URL de la vidéo (ex: /videos/video-podcasteur1.mp4)
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
     audio_url: {
       // URL de l'audio (ex: /audios/pod1.mp3)
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
     display_order: {
       // Ordre d'affichage (1, 2, 3...)
@@ -35,6 +35,27 @@ Podcaster.init(
       // Permet de masquer un podcasteur sans le supprimer
       type: DataTypes.BOOLEAN,
       defaultValue: true
+    },
+    photo_url: {
+      // Photo de profil pour la page équipe
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    description: {
+      // Description du podcasteur (max 450 mots)
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    profile_online: {
+      // Afficher le profil sur la page équipe
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    team_role: {
+      // Rôle affiché sur la page équipe (ex: "CEO & Podcasteur", "CSO")
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: 'Podcasteur'
     },
     user_id: {
       // Lien vers le compte utilisateur du podcasteur

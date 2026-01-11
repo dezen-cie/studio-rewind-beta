@@ -3,7 +3,8 @@ import {
   createAdmin,
   setUserActiveStatus,
   deleteUserPermanent,
-  listUsers
+  listUsers,
+  toggleAdminStatus
 } from '../services/admin.service.js';
 
 export async function createAdminAccount(req, res) {
@@ -61,6 +62,23 @@ export async function getUsers(req, res) {
     return res.json(users);
   } catch (error) {
     console.error('Erreur getUsers:', error);
+    return res.status(error.status || 500).json({ message: error.message });
+  }
+}
+
+export async function toggleAdmin(req, res) {
+  try {
+    const { userId } = req.params;
+    const { makeAdmin } = req.body;
+
+    if (typeof makeAdmin !== 'boolean') {
+      return res.status(400).json({ message: "Le paramètre makeAdmin est obligatoire (true/false)." });
+    }
+
+    const user = await toggleAdminStatus(userId, makeAdmin, req.user.id);
+    return res.json(user);
+  } catch (error) {
+    console.error('Erreur toggleAdmin:', error);
     return res.status(error.status || 500).json({ message: error.message });
   }
 }

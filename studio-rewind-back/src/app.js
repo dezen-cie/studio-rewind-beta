@@ -76,6 +76,14 @@ app.use('/uploads', (req, res, next) => {
   next();
 }, express.static(path.join(__dirname, '../uploads')));
 
+// Servir les images statiques (photos de profil des membres fondateurs)
+// Avec headers CORS pour permettre l'acces depuis le frontend
+app.use('/images', (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  next();
+}, express.static(path.join(__dirname, '../public/images')));
+
 // Routes API
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/reservations', reservationRoutes);

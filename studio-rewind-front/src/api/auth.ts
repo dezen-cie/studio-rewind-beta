@@ -13,6 +13,7 @@ export interface LoginResponseUser {
   phone?: string | null;
   is_active: boolean;
   must_change_password?: boolean;
+  podcaster_id?: string | null;
 }
 
 export interface LoginResponse {

@@ -1,7 +1,7 @@
 // src/controllers/auth.controller.js
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { User } from '../models/index.js';
+import { User, Podcaster } from '../models/index.js';
 
 const { JWT_SECRET, JWT_EXPIRES_IN = '7d', NODE_ENV } = process.env;
 
@@ -22,7 +22,7 @@ function signToken(user) {
   );
 }
 
-function sanitizeUser(user) {
+function sanitizeUser(user, podcasterId = null) {
   return {
     id: user.id,
     email: user.email,
@@ -34,10 +34,11 @@ function sanitizeUser(user) {
     vat_number: user.vat_number,
     phone: user.phone,
     is_active: user.is_active,
+    podcaster_id: podcasterId,
   };
 }
 
-function sendAuthResponse(res, user) {
+function sendAuthResponse(res, user, podcasterId = null) {
   const token = signToken(user);
 
   res.cookie('token', token, {
@@ -48,7 +49,7 @@ function sendAuthResponse(res, user) {
   });
 
   return res.json({
-    user: sanitizeUser(user),
+    user: sanitizeUser(user, podcasterId),
     token, // Pour Safari iOS qui bloque les cookies tiers
   });
 }
@@ -136,7 +137,11 @@ export async function login(req, res) {
         .json({ message: 'Identifiants invalides.' });
     }
 
-    return sendAuthResponse(res, user);
+    // Vérifier si l'utilisateur est aussi un podcaster
+    const podcaster = await Podcaster.findOne({ where: { user_id: user.id } });
+    const podcasterId = podcaster ? podcaster.id : null;
+
+    return sendAuthResponse(res, user, podcasterId);
   } catch (error) {
     console.error('Erreur login:', error);
     return res.status(500).json({ message: 'Erreur serveur.' });
@@ -160,8 +165,12 @@ export async function me(req, res) {
         .json({ message: 'Utilisateur introuvable.' });
     }
 
+    // Vérifier si l'utilisateur est aussi un podcaster
+    const podcaster = await Podcaster.findOne({ where: { user_id: user.id } });
+    const podcasterId = podcaster ? podcaster.id : null;
+
     return res.json({
-      user: sanitizeUser(user),
+      user: sanitizeUser(user, podcasterId),
     });
   } catch (error) {
     console.error('Erreur me:', error);

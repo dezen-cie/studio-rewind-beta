@@ -4,13 +4,18 @@ import api from './client';
 export interface Podcaster {
   id: string;
   name: string;
-  video_url: string;
-  audio_url: string;
+  video_url: string | null;
+  audio_url: string | null;
   display_order: number;
   is_active: boolean;
   email?: string;
   user_id?: string;
   defaultPassword?: string; // Retourné uniquement à la création
+  photo_url?: string;
+  description?: string;
+  profile_online?: boolean;
+  team_role?: string; // Rôle affiché sur la page équipe (ex: "CEO & Podcasteur", "CSO")
+  role?: 'podcaster' | 'admin' | 'super_admin'; // Rôle de l'utilisateur associé
 }
 
 export interface CreatePodcasterData {
@@ -33,6 +38,12 @@ export interface UpdatePodcasterData {
 // --- Public API ---
 export async function getPublicPodcasters(): Promise<Podcaster[]> {
   const res = await api.get<Podcaster[]>('/podcasters');
+  return res.data;
+}
+
+// Récupérer les podcasters avec profil en ligne (page équipe)
+export async function getTeamPodcasters(): Promise<Podcaster[]> {
+  const res = await api.get<Podcaster[]>('/podcasters/team');
   return res.data;
 }
 
@@ -93,6 +104,12 @@ export async function deleteAdminPodcaster(id: string): Promise<void> {
   await api.delete(`/admin/podcasters/${id}`);
 }
 
+// Toggle le statut admin d'un podcaster (super admin uniquement)
+export async function togglePodcasterAdmin(id: string, makeAdmin: boolean): Promise<Podcaster> {
+  const res = await api.patch<Podcaster>(`/admin/podcasters/${id}/toggle-admin`, { makeAdmin });
+  return res.data;
+}
+
 // --- Public API pour les creneaux bloques ---
 export interface PodcasterBlockedSlotPublic {
   id: string;
@@ -117,5 +134,32 @@ export async function getPodcasterBlockedSlotsForDate(
 // Utilise pour griser les dates dans le calendrier client
 export async function getPodcasterFullDayBlocks(podcasterId: string): Promise<string[]> {
   const res = await api.get<string[]>(`/podcasters/${podcasterId}/full-day-blocks`);
+  return res.data;
+}
+
+// --- Podcaster Dashboard API ---
+export interface UpdatePodcasterProfileData {
+  photo?: File;
+  description?: string;
+  profile_online?: boolean;
+}
+
+// Mettre à jour le profil du podcaster (photo, description, profile_online)
+export async function updatePodcasterProfile(data: UpdatePodcasterProfileData): Promise<Podcaster> {
+  const formData = new FormData();
+
+  if (data.photo) {
+    formData.append('photo', data.photo);
+  }
+  if (data.description !== undefined) {
+    formData.append('description', data.description);
+  }
+  if (data.profile_online !== undefined) {
+    formData.append('profile_online', String(data.profile_online));
+  }
+
+  const res = await api.patch<Podcaster>('/podcaster/profile', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
   return res.data;
 }

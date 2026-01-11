@@ -4,16 +4,22 @@ import {
   getAdminPodcasters,
   createAdminPodcaster,
   updateAdminPodcaster,
-  deleteAdminPodcaster
+  deleteAdminPodcaster,
+  togglePodcasterAdmin
 } from '../../api/podcasters';
+import { getUserRole } from '../../utils/auth';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
 function AdminPodcastersPage() {
+  const currentUserRole = getUserRole();
+  const isSuperAdmin = currentUserRole === 'super_admin';
+
   const [podcasters, setPodcasters] = useState<Podcaster[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [togglingAdminId, setTogglingAdminId] = useState<string | null>(null);
 
   // Form state for creating
   const [isCreating, setIsCreating] = useState(false);
@@ -250,7 +256,28 @@ function AdminPodcastersPage() {
     }
   }
 
-  function getMediaUrl(url: string) {
+  async function handleToggleAdmin(p: Podcaster) {
+    const isCurrentlyAdmin = p.role === 'admin';
+    try {
+      setTogglingAdminId(p.id);
+      setError(null);
+      const updated = await togglePodcasterAdmin(p.id, !isCurrentlyAdmin);
+      setPodcasters((prev) =>
+        prev.map((x) => (x.id === updated.id ? updated : x))
+      );
+    } catch (err: any) {
+      console.error('Erreur togglePodcasterAdmin:', err);
+      const message =
+        err?.response?.data?.message ||
+        "Impossible de modifier le statut admin.";
+      setError(message);
+    } finally {
+      setTogglingAdminId(null);
+    }
+  }
+
+  function getMediaUrl(url: string | null | undefined): string {
+    if (!url) return '';
     if (url.startsWith('/uploads')) {
       return BACKEND_URL + url;
     }
@@ -431,6 +458,9 @@ function AdminPodcastersPage() {
             <div className="podcasters-list">
               {podcasters.map((p) => {
                 const isEditing = editingId === p.id;
+                // Le super admin ne peut être modifié que par lui-même
+                const isPodcasterSuperAdmin = p.role === 'super_admin';
+                const canModifyThisPodcaster = !isPodcasterSuperAdmin || isSuperAdmin;
 
                 return (
                   <div key={p.id} className="box mb-4" style={{ opacity: p.is_active ? 1 : 0.6 }}>
@@ -494,7 +524,7 @@ function AdminPodcastersPage() {
                                   </span>
                                 </label>
                               </div>
-                              <p className="help">Video actuelle: {p.video_url.split('/').pop()}</p>
+                              <p className="help">Video actuelle: {p.video_url ? p.video_url.split('/').pop() : 'Aucune'}</p>
                             </div>
                           </div>
                           <div className="column is-4">
@@ -518,7 +548,7 @@ function AdminPodcastersPage() {
                                   </span>
                                 </label>
                               </div>
-                              <p className="help">Audio actuel: {p.audio_url.split('/').pop()}</p>
+                              <p className="help">Audio actuel: {p.audio_url ? p.audio_url.split('/').pop() : 'Aucun'}</p>
                             </div>
                           </div>
                         </div>
@@ -548,50 +578,119 @@ function AdminPodcastersPage() {
                         <div className="column is-2">
                           <strong>{p.name}</strong>
                         </div>
-                        <div className="column is-3">
-                          <video
-                            src={getMediaUrl(p.video_url)}
-                            style={{ width: '120px', height: '80px', objectFit: 'cover', borderRadius: '4px' }}
-                            muted
-                            loop
-                            autoPlay
-                            playsInline
-                          />
+                        <div className="column is-2">
+                          {p.video_url ? (
+                            <video
+                              src={getMediaUrl(p.video_url)}
+                              style={{ width: '100px', height: '70px', objectFit: 'cover', borderRadius: '4px' }}
+                              muted
+                              loop
+                              autoPlay
+                              playsInline
+                            />
+                          ) : (
+                            <span className="tag is-light" style={{ fontSize: '0.7rem' }}>Pas de video</span>
+                          )}
                         </div>
                         <div className="column is-2">
-                          <audio
-                            src={getMediaUrl(p.audio_url)}
-                            controls
-                            style={{ width: '100%', height: '32px' }}
-                          />
+                          {p.audio_url ? (
+                            <audio
+                              src={getMediaUrl(p.audio_url)}
+                              controls
+                              style={{ width: '100%', height: '32px' }}
+                            />
+                          ) : (
+                            <span className="tag is-light" style={{ fontSize: '0.7rem' }}>Pas d'audio</span>
+                          )}
                         </div>
                         <div className="column is-1">
-                          <span
-                            className={`tag ${p.is_active ? 'is-success' : 'is-warning'}`}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => toggleActive(p)}
-                            title="Cliquer pour changer"
-                          >
-                            {p.is_active ? 'Actif' : 'Inactif'}
-                          </span>
+                          {canModifyThisPodcaster ? (
+                            <span
+                              className={`tag ${p.is_active ? 'is-success' : 'is-warning'}`}
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => toggleActive(p)}
+                              title="Cliquer pour changer"
+                            >
+                              {p.is_active ? 'Actif' : 'Inactif'}
+                            </span>
+                          ) : (
+                            <span
+                              className="tag is-light"
+                              style={{ cursor: 'not-allowed', opacity: 0.7 }}
+                              title="Super admin - non modifiable"
+                            >
+                              {p.is_active ? 'Actif' : 'Inactif'}
+                            </span>
+                          )}
                         </div>
-                        <div className="column is-3">
-                          <div className="buttons are-small">
-                            <button
-                              className="button is-info"
-                              onClick={() => startEdit(p)}
-                              disabled={isCreating || editingId !== null}
+                        {isSuperAdmin && !isPodcasterSuperAdmin && (
+                          <div className="column is-2">
+                            <div
+                              onClick={() => !togglingAdminId && handleToggleAdmin(p)}
+                              title={p.role === 'admin' ? 'Retirer les droits admin' : 'Promouvoir en admin'}
+                              style={{
+                                position: 'relative',
+                                width: '90px',
+                                height: '28px',
+                                backgroundColor: p.role === 'admin' ? '#23d160' : '#dbdbdb',
+                                borderRadius: '14px',
+                                cursor: togglingAdminId === p.id ? 'wait' : 'pointer',
+                                transition: 'background-color 0.3s',
+                                opacity: togglingAdminId === p.id ? 0.6 : 1
+                              }}
                             >
-                              Modifier
-                            </button>
-                            <button
-                              className="button is-danger"
-                              onClick={() => handleDelete(p)}
-                              disabled={saving || isCreating || editingId !== null}
-                            >
-                              Supprimer
-                            </button>
+                              {/* Knob */}
+                              <div style={{
+                                position: 'absolute',
+                                top: '2px',
+                                left: p.role === 'admin' ? '64px' : '2px',
+                                width: '24px',
+                                height: '24px',
+                                backgroundColor: '#fff',
+                                borderRadius: '50%',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                transition: 'left 0.3s'
+                              }} />
+                              {/* Label */}
+                              <span style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: p.role === 'admin' ? '8px' : '32px',
+                                transform: 'translateY(-50%)',
+                                fontSize: '0.7rem',
+                                fontWeight: 600,
+                                color: p.role === 'admin' ? '#fff' : '#7a7a7a',
+                                transition: 'left 0.3s',
+                                userSelect: 'none'
+                              }}>
+                                {togglingAdminId === p.id ? '...' : (p.role === 'admin' ? 'Admin' : 'No Admin')}
+                              </span>
+                            </div>
                           </div>
+                        )}
+                        <div className={`column ${isSuperAdmin && !isPodcasterSuperAdmin ? 'is-2' : 'is-4'}`}>
+                          {canModifyThisPodcaster ? (
+                            <div className="buttons are-small">
+                              <button
+                                className="button is-info"
+                                onClick={() => startEdit(p)}
+                                disabled={isCreating || editingId !== null}
+                              >
+                                Modifier
+                              </button>
+                              <button
+                                className="button is-danger"
+                                onClick={() => handleDelete(p)}
+                                disabled={saving || isCreating || editingId !== null}
+                              >
+                                Supprimer
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="tag is-light" title="Le super admin ne peut pas \u00eatre modifi\u00e9">
+                              Prot\u00e9g\u00e9
+                            </span>
+                          )}
                         </div>
                       </div>
                     )}

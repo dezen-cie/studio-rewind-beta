@@ -6,6 +6,7 @@ import {
   deactivateUser,
   deleteUser,
   getUsers,
+  toggleAdmin,
 } from '../controllers/admin.controller.js';
 
 import adminSubscriptionRoutes from './admin.subscription.routes.js';
@@ -27,6 +28,8 @@ router.patch('/deactivate/:userId', authenticate, requireAdmin, deactivateUser);
 // Suppression définitive → super admin
 router.delete('/delete/:userId', authenticate, requireSuperAdmin, deleteUser);
 
+// Toggle admin status → super admin uniquement
+router.patch('/toggle-admin/:userId', authenticate, requireSuperAdmin, toggleAdmin);
 
 router.use('/subscriptions', adminSubscriptionRoutes);
 export default router;

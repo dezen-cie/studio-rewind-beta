@@ -73,3 +73,49 @@ export async function deleteUserPermanent(userId) {
   await user.destroy();
   return { message: "Utilisateur supprimé définitivement." };
 }
+
+// Toggle admin status (uniquement via cette fonction, pas autrement)
+export async function toggleAdminStatus(userId, makeAdmin, requestingUserId) {
+  const user = await User.findByPk(userId);
+
+  if (!user) {
+    const error = new Error("Utilisateur introuvable.");
+    error.status = 404;
+    throw error;
+  }
+
+  // Ne pas permettre de modifier un super_admin
+  if (user.role === 'super_admin') {
+    const error = new Error("Impossible de modifier le statut d'un super admin.");
+    error.status = 403;
+    throw error;
+  }
+
+  // Ne pas permettre de se modifier soi-même
+  if (userId === requestingUserId) {
+    const error = new Error("Vous ne pouvez pas modifier votre propre statut.");
+    error.status = 403;
+    throw error;
+  }
+
+  if (makeAdmin) {
+    // Promouvoir en admin (garder le lien podcaster s'il existe)
+    user.role = 'admin';
+  } else {
+    // Rétrograder : si c'est un podcaster, revenir à podcaster, sinon client
+    const { Podcaster } = await import('../models/index.js');
+    const podcaster = await Podcaster.findOne({ where: { user_id: userId } });
+
+    if (podcaster) {
+      user.role = 'podcaster';
+    } else {
+      user.role = 'client';
+    }
+  }
+
+  await user.save();
+
+  // Retourner l'utilisateur sans le mot de passe
+  const { password, ...userWithoutPassword } = user.toJSON();
+  return userWithoutPassword;
+}

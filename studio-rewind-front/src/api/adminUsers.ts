@@ -1,7 +1,7 @@
 // src/api/adminUsers.ts
 import api from './client';
 
-export type UserRole = 'client' | 'admin' | 'super_admin';
+export type UserRole = 'client' | 'admin' | 'super_admin' | 'podcaster';
 export type AccountType = 'particulier' | 'professionnel';
 
 export interface AdminUser {
@@ -36,5 +36,10 @@ export async function deactivateAdminUser(userId: string): Promise<AdminUser> {
 
 export async function deleteAdminUser(userId: string): Promise<{ message: string }> {
   const res = await api.delete<{ message: string }>(`/admin/delete/${userId}`);
+  return res.data;
+}
+
+export async function toggleAdminUser(userId: string, makeAdmin: boolean): Promise<AdminUser> {
+  const res = await api.patch<AdminUser>(`/admin/toggle-admin/${userId}`, { makeAdmin });
   return res.data;
 }

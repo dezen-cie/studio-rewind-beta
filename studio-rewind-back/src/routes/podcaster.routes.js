@@ -1,7 +1,7 @@
 // src/routes/podcaster.routes.js
 import { Router } from 'express';
 import { Op } from 'sequelize';
-import { getActivePodcasters } from '../services/podcaster.service.js';
+import { getActivePodcasters, getOnlinePodcasters } from '../services/podcaster.service.js';
 import { Reservation, PodcasterBlockedSlot } from '../models/index.js';
 
 const router = Router();
@@ -13,6 +13,17 @@ router.get('/', async (req, res) => {
     return res.json(podcasters);
   } catch (error) {
     console.error('Erreur getActivePodcasters:', error);
+    return res.status(error.status || 500).json({ message: error.message });
+  }
+});
+
+// Route publique pour récupérer les podcasteurs avec profil en ligne (page équipe)
+router.get('/team', async (req, res) => {
+  try {
+    const podcasters = await getOnlinePodcasters();
+    return res.json(podcasters);
+  } catch (error) {
+    console.error('Erreur getOnlinePodcasters:', error);
     return res.status(error.status || 500).json({ message: error.message });
   }
 });

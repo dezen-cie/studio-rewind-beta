@@ -77,6 +77,17 @@ function PodcasterLayout() {
               </li>
               <li>
                 <NavLink
+                  to="/podcaster/profil"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">👤</span>
+                  <span>Mon Profil Equipe</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
                   to="/podcaster/password"
                   className={({ isActive }) =>
                     `sr-admin-navlink ${isActive ? 'is-active' : ''}`

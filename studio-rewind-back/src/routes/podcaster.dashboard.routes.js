@@ -4,16 +4,32 @@ import { Op } from 'sequelize';
 import bcrypt from 'bcrypt';
 import { authenticate } from '../middlewares/auth.middleware.js';
 import { Reservation, User, Podcaster, PodcasterBlockedSlot } from '../models/index.js';
+import { uploadPodcasterPhoto, uploadPodcasterFiles, processAndUploadFile, deleteFile } from '../config/upload.js';
+import { updatePodcasterProfile } from '../services/podcaster.service.js';
 
 const router = Router();
 const SALT_ROUNDS = 10;
 
-// Middleware pour vérifier que l'utilisateur est un podcasteur
-function requirePodcaster(req, res, next) {
-  if (!req.user || req.user.role !== 'podcaster') {
+// Middleware pour vérifier que l'utilisateur est un podcasteur (ou admin avec profil podcaster)
+async function requirePodcaster(req, res, next) {
+  if (!req.user) {
     return res.status(403).json({ message: 'Acces reserve aux podcasteurs.' });
   }
-  next();
+
+  // Si le rôle est podcaster, c'est ok
+  if (req.user.role === 'podcaster') {
+    return next();
+  }
+
+  // Si le rôle est admin ou super_admin, vérifier qu'il a un profil podcaster
+  if (req.user.role === 'admin' || req.user.role === 'super_admin') {
+    const podcaster = await Podcaster.findOne({ where: { user_id: req.user.id } });
+    if (podcaster) {
+      return next();
+    }
+  }
+
+  return res.status(403).json({ message: 'Acces reserve aux podcasteurs.' });
 }
 
 // Récupérer les informations du podcasteur connecté
@@ -178,6 +194,46 @@ router.post('/change-password', authenticate, requirePodcaster, async (req, res)
   }
 });
 
+// ====== GESTION DU PROFIL EQUIPE ======
+
+// Mettre à jour le profil du podcasteur (photo, description, profile_online)
+router.patch('/profile', authenticate, requirePodcaster, uploadPodcasterPhoto, async (req, res) => {
+  let photo_url = undefined;
+
+  try {
+    const podcaster = await Podcaster.findOne({
+      where: { user_id: req.user.id }
+    });
+
+    if (!podcaster) {
+      return res.status(404).json({ message: 'Profil podcasteur introuvable.' });
+    }
+
+    const { description, profile_online } = req.body;
+
+    // Gérer l'upload de photo
+    let oldPhotoUrl = false;
+    if (req.files && req.files.photo && req.files.photo[0]) {
+      photo_url = await processAndUploadFile(req.files.photo[0]);
+      oldPhotoUrl = !!podcaster.photo_url;
+    }
+
+    const updatedPodcaster = await updatePodcasterProfile(podcaster.id, {
+      photo_url,
+      description,
+      profile_online: profile_online === 'true' || profile_online === true,
+      oldPhotoUrl
+    });
+
+    return res.json(updatedPodcaster);
+  } catch (error) {
+    console.error('Erreur updateProfile:', error);
+    // Supprimer le fichier uploadé en cas d'erreur
+    if (photo_url) deleteFile(photo_url);
+    return res.status(error.status || 500).json({ message: error.message });
+  }
+});
+
 // ====== GESTION DES CRENEAUX BLOQUES ======
 
 // Recuperer tous les creneaux bloques du podcasteur
@@ -318,6 +374,205 @@ router.delete('/blocked-slots/:id', authenticate, requirePodcaster, async (req, 
     return res.json({ success: true, message: 'Creneau bloque supprime.' });
   } catch (error) {
     console.error('Erreur deleteBlockedSlot:', error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// ====== DEVENIR / QUITTER PODCASTER ======
+
+// Vérifier si l'utilisateur actuel a un profil podcaster
+router.get('/check-podcaster', authenticate, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Non authentifié.' });
+    }
+
+    // Seuls les admins/super_admins peuvent accéder à cette route
+    if (req.user.role !== 'admin' && req.user.role !== 'super_admin' && req.user.role !== 'podcaster') {
+      return res.status(403).json({ message: 'Accès non autorisé.' });
+    }
+
+    const podcaster = await Podcaster.findOne({ where: { user_id: req.user.id } });
+
+    return res.json({
+      hasPodcasterProfile: !!podcaster,
+      podcaster: podcaster || null
+    });
+  } catch (error) {
+    console.error('Erreur checkPodcaster:', error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// Devenir podcaster (pour admin/super_admin sans profil podcaster)
+router.post('/become-podcaster', authenticate, uploadPodcasterFiles, async (req, res) => {
+  let video_url = null;
+  let audio_url = null;
+
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Non authentifié.' });
+    }
+
+    // Seuls les admins/super_admins peuvent devenir podcaster via cette route
+    if (req.user.role !== 'admin' && req.user.role !== 'super_admin') {
+      return res.status(403).json({ message: 'Seuls les administrateurs peuvent utiliser cette fonctionnalité.' });
+    }
+
+    // Vérifier qu'il n'a pas déjà un profil podcaster
+    const existingPodcaster = await Podcaster.findOne({ where: { user_id: req.user.id } });
+    if (existingPodcaster) {
+      return res.status(400).json({ message: 'Vous avez déjà un profil podcaster.' });
+    }
+
+    const { name } = req.body;
+    const videoFile = req.files?.video?.[0];
+    const audioFile = req.files?.audio?.[0];
+
+    // Le nom est obligatoire
+    if (!name || !name.trim()) {
+      return res.status(400).json({ message: 'Le nom est obligatoire.' });
+    }
+
+    // Uploader les fichiers si fournis
+    if (videoFile) {
+      video_url = await processAndUploadFile(videoFile);
+    }
+    if (audioFile) {
+      audio_url = await processAndUploadFile(audioFile);
+    }
+
+    // Récupérer l'ordre max actuel
+    const maxOrder = await Podcaster.max('display_order') || 0;
+
+    const podcaster = await Podcaster.create({
+      name: name.trim(),
+      video_url,
+      audio_url,
+      display_order: maxOrder + 1,
+      is_active: true,
+      profile_online: false,
+      user_id: req.user.id
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Profil podcaster créé avec succès.',
+      podcaster
+    });
+  } catch (error) {
+    console.error('Erreur becomePodcaster:', error);
+    // Supprimer les fichiers uploadés en cas d'erreur
+    if (video_url) deleteFile(video_url);
+    if (audio_url) deleteFile(audio_url);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// Désactiver le profil podcaster (ne plus être podcaster)
+router.patch('/deactivate-podcaster', authenticate, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Non authentifié.' });
+    }
+
+    const podcaster = await Podcaster.findOne({ where: { user_id: req.user.id } });
+
+    if (!podcaster) {
+      return res.status(404).json({ message: 'Profil podcaster introuvable.' });
+    }
+
+    // Désactiver le profil (ne pas supprimer)
+    podcaster.is_active = false;
+    podcaster.profile_online = false;
+    await podcaster.save();
+
+    return res.json({
+      success: true,
+      message: 'Profil podcaster désactivé.',
+      podcaster
+    });
+  } catch (error) {
+    console.error('Erreur deactivatePodcaster:', error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// Réactiver le profil podcaster
+router.patch('/reactivate-podcaster', authenticate, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Non authentifié.' });
+    }
+
+    const podcaster = await Podcaster.findOne({ where: { user_id: req.user.id } });
+
+    if (!podcaster) {
+      return res.status(404).json({ message: 'Profil podcaster introuvable.' });
+    }
+
+    // Réactiver le profil
+    podcaster.is_active = true;
+    await podcaster.save();
+
+    return res.json({
+      success: true,
+      message: 'Profil podcaster réactivé.',
+      podcaster
+    });
+  } catch (error) {
+    console.error('Erreur reactivatePodcaster:', error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// Uploader/mettre à jour les fichiers video/audio du podcaster
+router.patch('/upload-media', authenticate, uploadPodcasterFiles, async (req, res) => {
+  let video_url = null;
+  let audio_url = null;
+
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Non authentifié.' });
+    }
+
+    const podcaster = await Podcaster.findOne({ where: { user_id: req.user.id } });
+
+    if (!podcaster) {
+      return res.status(404).json({ message: 'Profil podcaster introuvable.' });
+    }
+
+    const videoFile = req.files?.video?.[0];
+    const audioFile = req.files?.audio?.[0];
+
+    if (!videoFile && !audioFile) {
+      return res.status(400).json({ message: 'Aucun fichier fourni.' });
+    }
+
+    // Supprimer les anciens fichiers et uploader les nouveaux
+    if (videoFile) {
+      if (podcaster.video_url) deleteFile(podcaster.video_url);
+      video_url = await processAndUploadFile(videoFile);
+      podcaster.video_url = video_url;
+    }
+    if (audioFile) {
+      if (podcaster.audio_url) deleteFile(podcaster.audio_url);
+      audio_url = await processAndUploadFile(audioFile);
+      podcaster.audio_url = audio_url;
+    }
+
+    await podcaster.save();
+
+    return res.json({
+      success: true,
+      message: 'Fichiers mis à jour.',
+      podcaster
+    });
+  } catch (error) {
+    console.error('Erreur uploadMedia:', error);
+    // Supprimer les fichiers uploadés en cas d'erreur
+    if (video_url) deleteFile(video_url);
+    if (audio_url) deleteFile(audio_url);
     return res.status(500).json({ message: error.message });
   }
 });

@@ -21,6 +21,7 @@ import AdminPodcastersPage from './pages/admin/AdminPodcastersPage';
 import PodcasterCalendarPage from './pages/podcaster/PodcasterCalendarPage';
 import PodcasterPasswordPage from './pages/podcaster/PodcasterPasswordPage';
 import PodcasterBlockedSlotsPage from './pages/podcaster/PodcasterBlockedSlotsPage';
+import PodcasterProfilePage from './pages/podcaster/PodcasterProfilePage';
 
 import { isAuthenticated, getUserRole } from './utils/auth';
 import type { JSX } from 'react';
@@ -138,6 +139,10 @@ function App() {
         <Route path="formulas" element={<AdminFormulasPage />} />
         <Route path="blocked-slots" element={<AdminBlockedSlotsPage />} />
         <Route path="podcasters" element={<AdminPodcastersPage />} />
+        {/* Routes pour admin qui est aussi podcaster */}
+        <Route path="mon-calendrier" element={<PodcasterCalendarPage />} />
+        <Route path="mes-disponibilites" element={<PodcasterBlockedSlotsPage />} />
+        <Route path="mon-profil-equipe" element={<PodcasterProfilePage />} />
       </Route>
 
       {/* Layout podcasteur */}
@@ -151,6 +156,7 @@ function App() {
       >
         <Route index element={<PodcasterCalendarPage />} />
         <Route path="disponibilites" element={<PodcasterBlockedSlotsPage />} />
+        <Route path="profil" element={<PodcasterProfilePage />} />
         <Route path="password" element={<PodcasterPasswordPage />} />
       </Route>
 

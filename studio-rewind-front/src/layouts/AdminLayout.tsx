@@ -158,6 +158,47 @@ function AdminLayout() {
                 </NavLink>
               </li>
             </ul>
+
+            {user?.podcaster_id && (
+              <>
+                <p className="sr-admin-nav-section">Mon espace podcasteur</p>
+                <ul>
+                  <li>
+                    <NavLink
+                      to="/admin/mon-calendrier"
+                      className={({ isActive }) =>
+                        `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                      }
+                    >
+                      <span className="sr-admin-navlink-icon">📆</span>
+                      <span>Mon Calendrier</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/admin/mes-disponibilites"
+                      className={({ isActive }) =>
+                        `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                      }
+                    >
+                      <span className="sr-admin-navlink-icon">🕐</span>
+                      <span>Mes Disponibilités</span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/admin/mon-profil-equipe"
+                      className={({ isActive }) =>
+                        `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                      }
+                    >
+                      <span className="sr-admin-navlink-icon">👤</span>
+                      <span>Mon Profil Équipe</span>
+                    </NavLink>
+                  </li>
+                </ul>
+              </>
+            )}
           </nav>
 
           <div className="sr-admin-sidebar-footer">

@@ -3,9 +3,10 @@ import {
   getAllPodcasters,
   createPodcaster,
   updatePodcaster,
-  deletePodcaster
+  deletePodcaster,
+  togglePodcasterAdmin
 } from '../services/podcaster.service.js';
-import { deleteFile } from '../config/upload.js';
+import { deleteFile, processAndUploadFile } from '../config/upload.js';
 
 export async function listPodcasters(req, res) {
   try {
@@ -18,6 +19,9 @@ export async function listPodcasters(req, res) {
 }
 
 export async function createPodcasterController(req, res) {
+  let video_url = null;
+  let audio_url = null;
+
   try {
     const { name, display_order, is_active, email } = req.body;
 
@@ -32,13 +36,12 @@ export async function createPodcasterController(req, res) {
       return res.status(400).json({ message: 'La video est obligatoire.' });
     }
     if (!audioFile) {
-      // Supprimer la video si l'audio manque
-      if (videoFile) deleteFile('/uploads/videos/' + videoFile.filename);
       return res.status(400).json({ message: 'L\'audio est obligatoire.' });
     }
 
-    const video_url = '/uploads/videos/' + videoFile.filename;
-    const audio_url = '/uploads/audios/' + audioFile.filename;
+    // Uploader les fichiers vers le stockage (local ou Supabase)
+    video_url = await processAndUploadFile(videoFile);
+    audio_url = await processAndUploadFile(audioFile);
 
     const podcaster = await createPodcaster({
       name,
@@ -52,18 +55,17 @@ export async function createPodcasterController(req, res) {
     return res.status(201).json(podcaster);
   } catch (error) {
     console.error('Erreur createPodcaster:', error);
-    // Supprimer les fichiers en cas d'erreur
-    if (req.files?.video?.[0]) {
-      deleteFile('/uploads/videos/' + req.files.video[0].filename);
-    }
-    if (req.files?.audio?.[0]) {
-      deleteFile('/uploads/audios/' + req.files.audio[0].filename);
-    }
+    // Supprimer les fichiers uploades en cas d'erreur
+    if (video_url) deleteFile(video_url);
+    if (audio_url) deleteFile(audio_url);
     return res.status(error.status || 500).json({ message: error.message });
   }
 }
 
 export async function updatePodcasterController(req, res) {
+  let newVideoUrl = null;
+  let newAudioUrl = null;
+
   try {
     const { id } = req.params;
     const { name, display_order, is_active } = req.body;
@@ -78,30 +80,28 @@ export async function updatePodcasterController(req, res) {
     if (display_order !== undefined) updateData.display_order = parseInt(display_order, 10);
     if (is_active !== undefined) updateData.is_active = is_active === 'true' || is_active === true;
 
-    // Si nouveau fichier video, mettre a jour l'URL
+    // Si nouveau fichier video, uploader et mettre a jour l'URL
     if (videoFile) {
-      updateData.video_url = '/uploads/videos/' + videoFile.filename;
+      newVideoUrl = await processAndUploadFile(videoFile);
+      updateData.video_url = newVideoUrl;
       updateData.oldVideoUrl = true; // Flag pour supprimer l'ancien
     }
 
-    // Si nouveau fichier audio, mettre a jour l'URL
+    // Si nouveau fichier audio, uploader et mettre a jour l'URL
     if (audioFile) {
-      updateData.audio_url = '/uploads/audios/' + audioFile.filename;
+      newAudioUrl = await processAndUploadFile(audioFile);
+      updateData.audio_url = newAudioUrl;
       updateData.oldAudioUrl = true; // Flag pour supprimer l'ancien
     }
 
-    const podcaster = await updatePodcaster(id, updateData);
+    const podcaster = await updatePodcaster(id, updateData, req.user);
 
     return res.json(podcaster);
   } catch (error) {
     console.error('Erreur updatePodcaster:', error);
-    // Supprimer les nouveaux fichiers en cas d'erreur
-    if (req.files?.video?.[0]) {
-      deleteFile('/uploads/videos/' + req.files.video[0].filename);
-    }
-    if (req.files?.audio?.[0]) {
-      deleteFile('/uploads/audios/' + req.files.audio[0].filename);
-    }
+    // Supprimer les nouveaux fichiers uploades en cas d'erreur
+    if (newVideoUrl) deleteFile(newVideoUrl);
+    if (newAudioUrl) deleteFile(newAudioUrl);
     return res.status(error.status || 500).json({ message: error.message });
   }
 }
@@ -109,10 +109,27 @@ export async function updatePodcasterController(req, res) {
 export async function deletePodcasterController(req, res) {
   try {
     const { id } = req.params;
-    const result = await deletePodcaster(id);
+    const result = await deletePodcaster(id, req.user);
     return res.json(result);
   } catch (error) {
     console.error('Erreur deletePodcaster:', error);
+    return res.status(error.status || 500).json({ message: error.message });
+  }
+}
+
+export async function togglePodcasterAdminController(req, res) {
+  try {
+    const { id } = req.params;
+    const { makeAdmin } = req.body;
+
+    if (typeof makeAdmin !== 'boolean') {
+      return res.status(400).json({ message: 'Le paramètre makeAdmin est obligatoire (true/false).' });
+    }
+
+    const podcaster = await togglePodcasterAdmin(id, makeAdmin, req.user.id);
+    return res.json(podcaster);
+  } catch (error) {
+    console.error('Erreur togglePodcasterAdmin:', error);
     return res.status(error.status || 500).json({ message: error.message });
   }
 }

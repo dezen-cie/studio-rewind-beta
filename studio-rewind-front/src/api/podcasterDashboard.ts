@@ -11,10 +11,14 @@ export interface PodcasterUser {
 export interface PodcasterProfile {
   id: string;
   name: string;
-  video_url: string;
-  audio_url: string;
+  video_url: string | null;
+  audio_url: string | null;
   display_order: number;
   is_active: boolean;
+  photo_url?: string;
+  description?: string;
+  profile_online?: boolean;
+  team_role?: string;
 }
 
 export interface PodcasterMeResponse {
@@ -110,5 +114,106 @@ export async function createPodcasterBlockedSlot(data: {
 // Supprimer un creneau bloque
 export async function deletePodcasterBlockedSlot(id: string): Promise<{ success: boolean; message: string }> {
   const res = await api.delete<{ success: boolean; message: string }>(`/podcaster/blocked-slots/${id}`);
+  return res.data;
+}
+
+// ====== GESTION DU PROFIL EQUIPE ======
+
+export interface UpdatePodcasterProfileData {
+  photo?: File;
+  description?: string;
+  profile_online?: boolean;
+}
+
+// Mettre à jour le profil du podcaster (photo, description, profile_online)
+export async function updatePodcasterProfile(data: UpdatePodcasterProfileData): Promise<PodcasterProfile> {
+  const formData = new FormData();
+
+  if (data.photo) {
+    formData.append('photo', data.photo);
+  }
+  if (data.description !== undefined) {
+    formData.append('description', data.description);
+  }
+  if (data.profile_online !== undefined) {
+    formData.append('profile_online', String(data.profile_online));
+  }
+
+  const res = await api.patch<PodcasterProfile>('/podcaster/profile', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return res.data;
+}
+
+// ====== DEVENIR / QUITTER PODCASTER ======
+
+export interface CheckPodcasterResponse {
+  hasPodcasterProfile: boolean;
+  podcaster: PodcasterProfile | null;
+}
+
+// Vérifier si l'utilisateur a un profil podcaster
+export async function checkPodcasterProfile(): Promise<CheckPodcasterResponse> {
+  const res = await api.get<CheckPodcasterResponse>('/podcaster/check-podcaster');
+  return res.data;
+}
+
+// Devenir podcaster (pour admin/super_admin)
+export async function becomePodcaster(data: {
+  name: string;
+  video?: File;
+  audio?: File;
+}): Promise<{ success: boolean; message: string; podcaster: PodcasterProfile }> {
+  const formData = new FormData();
+  formData.append('name', data.name);
+  if (data.video) {
+    formData.append('video', data.video);
+  }
+  if (data.audio) {
+    formData.append('audio', data.audio);
+  }
+
+  const res = await api.post<{ success: boolean; message: string; podcaster: PodcasterProfile }>(
+    '/podcaster/become-podcaster',
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } }
+  );
+  return res.data;
+}
+
+// Désactiver le profil podcaster
+export async function deactivatePodcasterProfile(): Promise<{ success: boolean; message: string; podcaster: PodcasterProfile }> {
+  const res = await api.patch<{ success: boolean; message: string; podcaster: PodcasterProfile }>(
+    '/podcaster/deactivate-podcaster'
+  );
+  return res.data;
+}
+
+// Réactiver le profil podcaster
+export async function reactivatePodcasterProfile(): Promise<{ success: boolean; message: string; podcaster: PodcasterProfile }> {
+  const res = await api.patch<{ success: boolean; message: string; podcaster: PodcasterProfile }>(
+    '/podcaster/reactivate-podcaster'
+  );
+  return res.data;
+}
+
+// Uploader/mettre à jour les fichiers video/audio
+export async function uploadPodcasterMedia(data: {
+  video?: File;
+  audio?: File;
+}): Promise<{ success: boolean; message: string; podcaster: PodcasterProfile }> {
+  const formData = new FormData();
+  if (data.video) {
+    formData.append('video', data.video);
+  }
+  if (data.audio) {
+    formData.append('audio', data.audio);
+  }
+
+  const res = await api.patch<{ success: boolean; message: string; podcaster: PodcasterProfile }>(
+    '/podcaster/upload-media',
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } }
+  );
   return res.data;
 }
