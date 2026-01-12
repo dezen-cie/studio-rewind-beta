@@ -42,6 +42,21 @@ function AdminFormulasPage() {
     return f.billing_type === 'subscription' ? 'Forfait' : 'À l\'heure';
   }
 
+  function getKeyLabel(key: string) {
+    switch (key) {
+      case 'abonnement':
+        return "Pack d'heures";
+      case 'autonome':
+        return 'Autonome';
+      case 'amelioree':
+        return 'Améliorée';
+      case 'reseaux':
+        return 'Réseaux';
+      default:
+        return key;
+    }
+  }
+
   function startEdit(f: PublicFormula) {
     setEditingId(f.id);
     setEditName(f.name);
@@ -137,7 +152,7 @@ function AdminFormulasPage() {
                   return (
                     <tr key={f.id}>
                       <td>
-                        <code>{f.key}</code>
+                        <code>{getKeyLabel(f.key)}</code>
                       </td>
                       <td>
                         {isEditing ? (

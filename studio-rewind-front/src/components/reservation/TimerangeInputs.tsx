@@ -8,6 +8,7 @@ type TimeRangeInputsProps = {
   disabledEndTimes?: string[];   // ex: ["13:00"]
   hideEndTime?: boolean;         // pour formule Réseaux (durée fixe)
   fixedDurationLabel?: string;   // ex: "Durée fixe : 2h"
+  availableHours?: string[];     // heures à afficher (si non fourni, 9h-18h par défaut)
 };
 
 const TimeRangeInputs = ({
@@ -19,12 +20,16 @@ const TimeRangeInputs = ({
   disabledEndTimes = [],
   hideEndTime = false,
   fixedDurationLabel,
+  availableHours,
 }: TimeRangeInputsProps) => {
-  // heures de 09:00 à 18:00
-  const hours: string[] = [];
-  for (let h = 9; h <= 18; h++) {
-    hours.push(`${h.toString().padStart(2, '0')}:00`);
-  }
+  // heures par défaut de 09:00 à 18:00, ou heures personnalisées si fournies
+  const hours: string[] = availableHours ?? (() => {
+    const defaultHours: string[] = [];
+    for (let h = 9; h <= 18; h++) {
+      defaultHours.push(`${h.toString().padStart(2, '0')}:00`);
+    }
+    return defaultHours;
+  })();
 
   // heures de fin filtrées (uniquement > startTime)
   const filteredEndHours = startTime

@@ -9,6 +9,9 @@ import api from '../api/client';
 import './MemberDashboardPage.css';
 import PasswordCard from '../components/PasswordCard';
 import Contact from '../components/Contact';
+import { getPublicPodcasters, getPodcasterBlockedSlotsForDate, type Podcaster, type PodcasterBlockedSlotPublic } from '../api/podcasters';
+import { getBlockedSlotsForDate, getDefaultBlockedHours, getUnblocksForDate, type BlockedSlot, type DefaultBlockedRange } from '../api/blockedSlots';
+import { User } from 'lucide-react';
 
 type MemberReservationStatus = MemberReservation['status'];
 type MemberReservationFormula = MemberReservation['formula'];
@@ -143,9 +146,9 @@ function getStatusClass(status: MemberReservationStatus) {
   }
 }
 
-// heures disponibles (09:00 -> 18:00)
+// Toutes les heures de la journée (0h à 23h) - pour les calculs de blocage
 const HOURS: string[] = [];
-for (let h = 9; h <= 18; h++) {
+for (let h = 0; h <= 23; h++) {
   HOURS.push(`${h.toString().padStart(2, '0')}:00`);
 }
 
@@ -202,6 +205,15 @@ function MemberDashboardPage() {
   const [subActionSuccess, setSubActionSuccess] = useState<string | null>(null);
   const [subActionLoading, setSubActionLoading] = useState(false);
 
+  // ====== PODCASTEURS POUR PACK ======
+  const [podcasters, setPodcasters] = useState<Podcaster[]>([]);
+  const [loadingPodcasters, setLoadingPodcasters] = useState(true);
+  const [selectedPodcaster, setSelectedPodcaster] = useState<{ id: string; name: string } | null>(null);
+  const [podcasterBlockedSlots, setPodcasterBlockedSlots] = useState<PodcasterBlockedSlotPublic[]>([]);
+  const [adminBlockedSlots, setAdminBlockedSlots] = useState<BlockedSlot[]>([]);
+  const [defaultBlockedRanges, setDefaultBlockedRanges] = useState<DefaultBlockedRange[]>([]);
+  const [unblocks, setUnblocks] = useState<BlockedSlot[]>([]);
+
   useEffect(() => {
     async function load() {
       try {
@@ -240,6 +252,24 @@ function MemberDashboardPage() {
 
     load();
     loadSubscription();
+
+    // Charger les podcasteurs et heures bloquées par défaut
+    async function loadPodcastersAndDefaults() {
+      try {
+        setLoadingPodcasters(true);
+        const [podcastersData, defaultHours] = await Promise.all([
+          getPublicPodcasters(),
+          getDefaultBlockedHours()
+        ]);
+        setPodcasters(podcastersData);
+        setDefaultBlockedRanges(defaultHours);
+      } catch (err) {
+        console.error('Erreur chargement podcasteurs:', err);
+      } finally {
+        setLoadingPodcasters(false);
+      }
+    }
+    loadPodcastersAndDefaults();
   }, []);
 
   // ====== CALENDRIER ======
@@ -314,6 +344,20 @@ function MemberDashboardPage() {
     setSubActionSuccess(null);
   }
 
+  function handlePodcasterChange(podcasterId: string) {
+    const podcaster = podcasters.find(p => p.id === podcasterId);
+    if (podcaster) {
+      setSelectedPodcaster({ id: podcaster.id, name: podcaster.name });
+    } else {
+      setSelectedPodcaster(null);
+    }
+    // Reset les créneaux quand on change de podcasteur
+    setSubStartTime('');
+    setSubEndTime('');
+    setSubActionError(null);
+    setSubActionSuccess(null);
+  }
+
   const monthLabel = useMemo(() => {
     const d = new Date(currentYear, currentMonth, 1);
     return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
@@ -333,8 +377,11 @@ function MemberDashboardPage() {
   // ====== CHARGEMENT DES CRÉNEAUX DU JOUR (pour blocage) ======
   useEffect(() => {
     async function loadDay() {
-      if (!hasSubscription || !selectedDateKey) {
+      if (!hasSubscription || !selectedDateKey || !selectedPodcaster) {
         setDayReservations([]);
+        setPodcasterBlockedSlots([]);
+        setAdminBlockedSlots([]);
+        setUnblocks([]);
         setSlotsError(null);
         return;
       }
@@ -342,13 +389,23 @@ function MemberDashboardPage() {
       setSlotsLoading(true);
       setSlotsError(null);
       try {
-        const res = await api.get<DayReservation[]>(
-          `/reservations/day/${selectedDateKey}`
-        );
-        setDayReservations(res.data);
+        // Charger toutes les données en parallèle
+        const [reservationsRes, adminBlocked, podcasterBlocked, unblocksRes] = await Promise.all([
+          api.get<DayReservation[]>(`/podcasters/${selectedPodcaster.id}/reservations/${selectedDateKey}`),
+          getBlockedSlotsForDate(selectedDateKey),
+          getPodcasterBlockedSlotsForDate(selectedPodcaster.id, selectedDateKey),
+          getUnblocksForDate(selectedDateKey)
+        ]);
+        setDayReservations(reservationsRes.data);
+        setAdminBlockedSlots(adminBlocked);
+        setPodcasterBlockedSlots(podcasterBlocked);
+        setUnblocks(unblocksRes);
       } catch (err: any) {
         console.warn('Erreur chargement créneaux jour (pack):', err);
         setDayReservations([]);
+        setPodcasterBlockedSlots([]);
+        setAdminBlockedSlots([]);
+        setUnblocks([]);
         setSlotsError(
           "Impossible de récupérer les créneaux réservés pour ce jour (tout sera affiché comme disponible)."
         );
@@ -358,13 +415,71 @@ function MemberDashboardPage() {
     }
 
     loadDay();
-  }, [hasSubscription, selectedDateKey]);
+  }, [hasSubscription, selectedDateKey, selectedPodcaster]);
 
   // ====== UTILS POUR BLOQUER LES HEURES ======
   function getHourFloat(dateStr: string): number | null {
     const d = new Date(dateStr);
     if (Number.isNaN(d.getTime())) return null;
     return d.getHours() + d.getMinutes() / 60;
+  }
+
+  function getTimeFloat(timeStr: string): number {
+    const [h, m] = timeStr.split(':').map(Number);
+    return h + (m || 0) / 60;
+  }
+
+  // Vérifie si le jour entier est bloqué (admin ou podcasteur)
+  function isFullDayBlocked(): boolean {
+    const adminFullDay = adminBlockedSlots.some((b) => b.is_full_day);
+    const podcasterFullDay = podcasterBlockedSlots.some((b) => b.is_full_day);
+    return adminFullDay || podcasterFullDay;
+  }
+
+  // Vérifie si une heure est dans les plages bloquées par défaut
+  function isInDefaultBlockedRange(hour: number): boolean {
+    return defaultBlockedRanges.some(range => hour >= range.start && hour < range.end);
+  }
+
+  // Vérifie si une heure est débloquée (ouverture exceptionnelle)
+  function isHourUnblocked(hour: number): boolean {
+    return unblocks.some((u) => {
+      if (!u.start_time || !u.end_time) return false;
+      const s = getTimeFloat(u.start_time);
+      const e = getTimeFloat(u.end_time);
+      return hour >= s && hour < e;
+    });
+  }
+
+  // Vérifie si une heure est dans un blocage
+  function isHourInsideBlocked(hour: number): boolean {
+    // Vérifier les blocages admin
+    const inAdminBlocked = adminBlockedSlots.some((b) => {
+      if (b.is_unblock) return false;
+      if (b.is_full_day) return true;
+      if (!b.start_time || !b.end_time) return false;
+      const s = getTimeFloat(b.start_time);
+      const e = getTimeFloat(b.end_time);
+      return hour >= s && hour < e;
+    });
+    if (inAdminBlocked) return true;
+
+    // Vérifier les blocages podcasteur
+    const inPodcasterBlocked = podcasterBlockedSlots.some((b) => {
+      if (b.is_full_day) return true;
+      if (!b.start_time || !b.end_time) return false;
+      const s = getTimeFloat(b.start_time);
+      const e = getTimeFloat(b.end_time);
+      return hour >= s && hour < e;
+    });
+    if (inPodcasterBlocked) return true;
+
+    // Vérifier les heures par défaut bloquées
+    if (isInDefaultBlockedRange(hour)) {
+      return !isHourUnblocked(hour);
+    }
+
+    return false;
   }
 
   function isHourInsideReservations(hour: number): boolean {
@@ -376,30 +491,119 @@ function MemberDashboardPage() {
     });
   }
 
+  // Vérifie si un intervalle est entièrement couvert par un déblocage
+  function isIntervalFullyUnblocked(startHour: number, endHour: number): boolean {
+    return unblocks.some((u) => {
+      if (!u.start_time || !u.end_time) return false;
+      const s = getTimeFloat(u.start_time);
+      const e = getTimeFloat(u.end_time);
+      return s <= startHour && e >= endHour;
+    });
+  }
+
+  function doesIntervalOverlapBlocked(startHour: number, endHour: number): boolean {
+    // Vérifier les blocages admin
+    const adminOverlap = adminBlockedSlots.some((b) => {
+      if (b.is_unblock) return false;
+      if (b.is_full_day) return true;
+      if (!b.start_time || !b.end_time) return false;
+      const s = getTimeFloat(b.start_time);
+      const e = getTimeFloat(b.end_time);
+      return startHour < e && endHour > s;
+    });
+    if (adminOverlap) return true;
+
+    // Vérifier les blocages podcasteur
+    const podcasterOverlap = podcasterBlockedSlots.some((b) => {
+      if (b.is_full_day) return true;
+      if (!b.start_time || !b.end_time) return false;
+      const s = getTimeFloat(b.start_time);
+      const e = getTimeFloat(b.end_time);
+      return startHour < e && endHour > s;
+    });
+    if (podcasterOverlap) return true;
+
+    // Vérifier si l'intervalle chevauche les heures par défaut bloquées
+    for (const range of defaultBlockedRanges) {
+      if (startHour < range.end && endHour > range.start) {
+        if (!isIntervalFullyUnblocked(Math.max(startHour, range.start), Math.min(endHour, range.end))) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
   function doesIntervalOverlap(startHour: number, endHour: number): boolean {
-    return dayReservations.some((r) => {
+    const reservationConflict = dayReservations.some((r) => {
       const s = getHourFloat(r.start_date);
       const e = getHourFloat(r.end_date);
       if (s === null || e === null) return false;
       return startHour < e && endHour > s;
     });
+
+    const blockedConflict = doesIntervalOverlapBlocked(startHour, endHour);
+
+    return reservationConflict || blockedConflict;
   }
 
   const disabledStartTimes = useMemo(() => {
-    if (!hasSubscription || !selectedDateObject) return HOURS; // tout désactivé tant qu'on n'a pas de date / pack
+    // Tout désactivé tant qu'on n'a pas de date, pack ou podcasteur
+    if (!hasSubscription || !selectedDateObject || !selectedPodcaster) return HOURS;
+
+    // Si le jour entier est bloqué
+    if (isFullDayBlocked()) return HOURS;
+
     const disabled: string[] = [];
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const selectedDay = new Date(
+      selectedDateObject.getFullYear(),
+      selectedDateObject.getMonth(),
+      selectedDateObject.getDate()
+    );
+    const isPastDay = selectedDay < today;
+
+    let minAllowedHour: number | null = null;
+    if (!isPastDay && selectedDay.getTime() === today.getTime()) {
+      const limit = new Date(now.getTime());
+      limit.setHours(limit.getHours() + 2);
+      minAllowedHour = limit.getHours();
+    }
 
     for (const hourStr of HOURS) {
       const [h] = hourStr.split(':').map(Number);
+
+      // Jours déjà passés
+      if (isPastDay) {
+        disabled.push(hourStr);
+        continue;
+      }
+
+      // Jour courant : on interdit les heures à moins de 2h
+      if (minAllowedHour !== null && h < minAllowedHour) {
+        disabled.push(hourStr);
+        continue;
+      }
+
+      // Vérifier si l'heure est dans un blocage
+      if (isHourInsideBlocked(h)) {
+        disabled.push(hourStr);
+        continue;
+      }
+
+      // Créneaux déjà réservés
       if (isHourInsideReservations(h)) {
         disabled.push(hourStr);
       }
     }
     return disabled;
-  }, [hasSubscription, selectedDateObject, dayReservations]);
+  }, [hasSubscription, selectedDateObject, selectedPodcaster, dayReservations, adminBlockedSlots, podcasterBlockedSlots, defaultBlockedRanges, unblocks]);
 
   const disabledEndTimes = useMemo(() => {
-    if (!hasSubscription || !selectedDateObject || !subStartTime) return [];
+    if (!hasSubscription || !selectedDateObject || !selectedPodcaster || !subStartTime) return [];
     const disabled: string[] = [];
 
     const [startHour] = subStartTime.split(':').map(Number);
@@ -415,7 +619,34 @@ function MemberDashboardPage() {
     }
 
     return disabled;
-  }, [hasSubscription, selectedDateObject, subStartTime, dayReservations]);
+  }, [hasSubscription, selectedDateObject, selectedPodcaster, subStartTime, dayReservations, adminBlockedSlots, podcasterBlockedSlots, defaultBlockedRanges, unblocks]);
+
+  // ====== HEURES DISPONIBLES À AFFICHER (incluant les déblocages exceptionnels) ======
+  const availableHours = useMemo(() => {
+    // Heures normales d'ouverture (9h-18h)
+    const normalHours = new Set<number>();
+    for (let h = 9; h <= 18; h++) {
+      normalHours.add(h);
+    }
+
+    // Ajouter les heures des déblocages exceptionnels
+    for (const u of unblocks) {
+      if (!u.start_time || !u.end_time) continue;
+      const startH = getTimeFloat(u.start_time);
+      const endH = getTimeFloat(u.end_time);
+      // Ajouter chaque heure entière dans la plage débloquée
+      for (let h = Math.floor(startH); h <= Math.floor(endH); h++) {
+        if (h >= 0 && h <= 23) {
+          normalHours.add(h);
+        }
+      }
+    }
+
+    // Convertir en tableau trié de strings
+    return Array.from(normalHours)
+      .sort((a, b) => a - b)
+      .map(h => `${h.toString().padStart(2, '0')}:00`);
+  }, [unblocks]);
 
   // durée sélectionnée pour le pack
   let aboSelectedHours: number | null = null;
@@ -444,6 +675,11 @@ function MemberDashboardPage() {
       setSubActionError(
         "Vous n'avez pas d'heures prépayées actives. Cette action n'est pas disponible."
       );
+      return;
+    }
+
+    if (!selectedPodcaster) {
+      setSubActionError('Merci de sélectionner un podcasteur.');
       return;
     }
 
@@ -476,7 +712,8 @@ function MemberDashboardPage() {
         formula: 'amelioree',
         start_date,
         end_date,
-        is_subscription: true
+        is_subscription: true,
+        podcaster_id: selectedPodcaster.id
       });
 
       setSubActionSuccess(
@@ -657,13 +894,47 @@ function MemberDashboardPage() {
                     Réserver un créneau avec vos heures prépayées
                   </h4>
 
-                  {!selectedDateObject && (
+                  {/* Sélection du podcasteur */}
+                  <div className="member-podcaster-selection">
+                    <label className="member-podcaster-label">
+                      <User size={18} />
+                      <span>Choisissez votre podcasteur :</span>
+                    </label>
+                    {loadingPodcasters ? (
+                      <p className="member-subscription-text">Chargement des podcasteurs...</p>
+                    ) : podcasters.length === 0 ? (
+                      <p className="member-subscription-text member-subscription-text--error">
+                        Aucun podcasteur disponible pour le moment.
+                      </p>
+                    ) : (
+                      <div className="member-podcaster-buttons">
+                        {podcasters.map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            className={`member-podcaster-btn ${selectedPodcaster?.id === p.id ? 'selected' : ''}`}
+                            onClick={() => handlePodcasterChange(p.id)}
+                          >
+                            {p.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {!selectedPodcaster && (
                     <p className="member-subscription-text">
-                      Sélectionnez d&apos;abord un jour dans le calendrier.
+                      Sélectionnez d&apos;abord un podcasteur ci-dessus.
                     </p>
                   )}
 
-                  {selectedDateObject && (
+                  {selectedPodcaster && !selectedDateObject && (
+                    <p className="member-subscription-text">
+                      Sélectionnez maintenant un jour dans le calendrier.
+                    </p>
+                  )}
+
+                  {selectedPodcaster && selectedDateObject && (
                     <>
                       {slotsLoading && (
                         <p className="member-subscription-text">
@@ -692,7 +963,7 @@ function MemberDashboardPage() {
                             }}
                           >
                             <option value="">Sélectionner</option>
-                            {HOURS.map((hour) => (
+                            {availableHours.map((hour) => (
                               <option
                                 key={hour}
                                 value={hour}
@@ -717,7 +988,7 @@ function MemberDashboardPage() {
                             disabled={!subStartTime}
                           >
                             <option value="">Sélectionner</option>
-                            {HOURS.filter((hour) => {
+                            {availableHours.filter((hour) => {
                               if (!subStartTime) return true;
                               const [sh] = subStartTime
                                 .split(':')
@@ -763,6 +1034,7 @@ function MemberDashboardPage() {
                         onClick={handleCreateSubscriptionReservation}
                         disabled={
                           subActionLoading ||
+                          !selectedPodcaster ||
                           !selectedDateObject ||
                           !subStartTime ||
                           !subEndTime ||

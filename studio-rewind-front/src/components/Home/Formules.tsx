@@ -92,7 +92,7 @@ const formulaConfig: Record<
       </p>
     ),
     priceSuffix: 'TTC',
-    reservationLink: '/reservation?step=3&formula=reseaux',
+    reservationLink: '/reservation?step=2&formula=reseaux',
     options: [
       <p key="file"><FilePlay /> Rushes vidéos & audio</p>,
       <p key="user"><User /> Un podcasteur à tes côtés</p>,

@@ -95,13 +95,11 @@ export async function createReservationPaymentIntent(
   const amount = Math.round(pricing.price_ttc * 100); // en centimes
   const currency = process.env.STRIPE_CURRENCY || 'eur';
 
-  // Création du PaymentIntent Stripe
+  // Création du PaymentIntent Stripe (uniquement paiement par carte bancaire)
   const paymentIntent = await stripe.paymentIntents.create({
     amount,
     currency,
-    automatic_payment_methods: {
-      enabled: true
-    },
+    payment_method_types: ['card'],
     metadata: {
       user_id: String(userId),
       reservation_id: String(reservation.id),

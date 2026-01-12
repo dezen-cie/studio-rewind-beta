@@ -119,14 +119,16 @@ function AdminReservationsPage() {
     return 'Client inconnu';
   }
 
-  function getFormulaLabel(formula: AdminReservation['formula']) {
+  function getFormulaLabel(formula: string) {
     switch (formula) {
       case 'autonome':
         return 'Formule autonome';
       case 'amelioree':
         return 'Formule améliorée';
       case 'abonnement':
-        return 'Formule abonnement';
+        return "Pack d'heures";
+      case 'reseaux':
+        return 'Formule réseaux';
       default:
         return formula;
     }

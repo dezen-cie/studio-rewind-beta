@@ -165,7 +165,7 @@ function AdminLayout() {
                   }
                 >
                   <span className="sr-admin-navlink-icon">💵</span>
-                  <span>Commission</span>
+                  <span>Commissions</span>
                 </NavLink>
               </li>
             </ul>

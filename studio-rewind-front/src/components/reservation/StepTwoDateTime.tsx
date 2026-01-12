@@ -406,6 +406,33 @@ const StepTwoDateTime = ({
     return disabled;
   }, [selectedDate, startTime, dayReservations, blockedSlots, podcasterBlockedSlots, defaultBlockedRanges, unblocks]);
 
+  // ====== HEURES DISPONIBLES À AFFICHER (incluant les déblocages exceptionnels) ======
+  const availableHours = useMemo(() => {
+    // Heures normales d'ouverture (9h-18h)
+    const normalHours = new Set<number>();
+    for (let h = 9; h <= 18; h++) {
+      normalHours.add(h);
+    }
+
+    // Ajouter les heures des déblocages exceptionnels
+    for (const u of unblocks) {
+      if (!u.start_time || !u.end_time) continue;
+      const startH = getTimeFloat(u.start_time);
+      const endH = getTimeFloat(u.end_time);
+      // Ajouter chaque heure entière dans la plage débloquée
+      for (let h = Math.floor(startH); h <= Math.floor(endH); h++) {
+        if (h >= 0 && h <= 23) {
+          normalHours.add(h);
+        }
+      }
+    }
+
+    // Convertir en tableau trié de strings
+    return Array.from(normalHours)
+      .sort((a, b) => a - b)
+      .map(h => `${h.toString().padStart(2, '0')}:00`);
+  }, [unblocks]);
+
   // ====== CALCUL AUTOMATIQUE HEURE DE FIN POUR RÉSEAUX ======
   // Quand on sélectionne une heure de début pour 'reseaux', on calcule automatiquement +2h
   useEffect(() => {
@@ -621,6 +648,7 @@ const StepTwoDateTime = ({
           disabledEndTimes={disabledEndTimes}
           hideEndTime={isReseaux}
           fixedDurationLabel="Créneau (2h)"
+          availableHours={availableHours}
         />
       </div>
     </main>

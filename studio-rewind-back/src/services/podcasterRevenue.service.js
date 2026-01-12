@@ -1,6 +1,38 @@
 // src/services/podcasterRevenue.service.js
 import { Op } from 'sequelize';
-import { Reservation, Podcaster } from '../models/index.js';
+import { Reservation, Podcaster, Subscription } from '../models/index.js';
+
+/**
+ * Calcule le CA effectif d'une réservation (pour commission)
+ * Pour les réservations via pack, on calcule : (prix_pack / nb_heures_pack) × heures_réservées
+ * @param {Object} reservation - La réservation
+ * @returns {Promise<number>} Le CA effectif
+ */
+async function getEffectiveRevenue(reservation) {
+  // Réservation classique : on prend le prix_ttc directement
+  if (!reservation.is_subscription) {
+    return reservation.price_ttc || 0;
+  }
+
+  // Réservation via pack : calculer le taux horaire du pack
+  // Trouver le pack de l'utilisateur (le plus récent actif ou le dernier créé)
+  const subscription = await Subscription.findOne({
+    where: { user_id: reservation.user_id },
+    order: [['createdAt', 'DESC']]
+  });
+
+  if (!subscription) {
+    // Fallback : utiliser les valeurs par défaut (800€ pour 5h)
+    const hourlyRate = 800 / 5; // = 160€/h
+    return hourlyRate * (reservation.total_hours || 0);
+  }
+
+  const packPrice = subscription.price_ttc || 800;
+  const packHours = subscription.monthly_hours_quota || 5;
+  const hourlyRate = packPrice / packHours; // ex: 800 / 5 = 160€/h
+
+  return hourlyRate * (reservation.total_hours || 0);
+}
 
 /**
  * Récupère le chiffre d'affaires par podcasteur pour un mois donné
@@ -34,8 +66,13 @@ export async function getPodcastersRevenueByMonth(year, month) {
         }
       });
 
-      // Calculer le CA total
-      const totalRevenue = reservations.reduce((sum, r) => sum + (r.price_ttc || 0), 0);
+      // Calculer le CA total (en prenant en compte les packs)
+      let totalRevenue = 0;
+      for (const r of reservations) {
+        const effectiveRevenue = await getEffectiveRevenue(r);
+        totalRevenue += effectiveRevenue;
+      }
+
       const totalReservations = reservations.length;
       const totalHours = reservations.reduce((sum, r) => sum + (r.total_hours || 0), 0);
 

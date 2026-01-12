@@ -249,7 +249,7 @@ function AdminDashboardPage() {
       case 'amelioree':
         return 'Améliorée';
       case 'abonnement':
-        return 'Abonnement';
+        return "Pack d'heures";
       case 'reseaux':
         return 'Réseaux';
       default:

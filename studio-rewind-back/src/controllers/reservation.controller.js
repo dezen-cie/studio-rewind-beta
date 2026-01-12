@@ -60,7 +60,7 @@ export async function preview(req, res) {
 
 export async function create(req, res) {
   try {
-    const { formula, start_date, end_date, is_subscription } = req.body;
+    const { formula, start_date, end_date, is_subscription, podcaster_id } = req.body;
 
     if (!formula || !start_date || !end_date) {
       return res.status(400).json({
@@ -73,6 +73,7 @@ export async function create(req, res) {
       formula,
       start_date,
       end_date,
+      podcaster_id,
       is_subscription: !!is_subscription
     });
 

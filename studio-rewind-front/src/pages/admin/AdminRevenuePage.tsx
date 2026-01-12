@@ -78,7 +78,7 @@ function AdminRevenuePage() {
     <div className="sr-page">
       <div className="sr-page-header">
         <div>
-          <h2 className="sr-page-title">Commission</h2>
+          <h2 className="sr-page-title">Commissions</h2>
           <p className="sr-page-subtitle">
             Suivi mensuel des commissions par podcasteur
           </p>

@@ -126,6 +126,7 @@ export async function getDashboardSummary(selectedDate = null) {
 
 /**
  * Récupère les réservations du jour avec les infos utilisateur
+ * Exclut les achats de pack (formula = 'abonnement') car ils n'occupent pas le studio
  */
 export async function getDayReservations(selectedDate = null) {
   const targetDate = selectedDate ? new Date(selectedDate) : new Date();
@@ -134,7 +135,9 @@ export async function getDayReservations(selectedDate = null) {
   const reservations = await Reservation.findAll({
     where: {
       status: { [Op.ne]: 'cancelled' },
-      start_date: { [Op.between]: [start, end] }
+      start_date: { [Op.between]: [start, end] },
+      // Exclure les achats de pack (formula = 'abonnement') car ils n'occupent pas le studio
+      formula: { [Op.ne]: 'abonnement' }
     },
     include: [
       {
@@ -150,6 +153,7 @@ export async function getDayReservations(selectedDate = null) {
 
 /**
  * Récupère les réservations des prochaines 48h (hors le jour sélectionné pour éviter les doublons)
+ * Exclut les achats de pack (formula = 'abonnement')
  */
 export async function getUpcomingReservations(selectedDate = null) {
   const targetDate = selectedDate ? new Date(selectedDate) : new Date();
@@ -160,7 +164,9 @@ export async function getUpcomingReservations(selectedDate = null) {
   const reservations = await Reservation.findAll({
     where: {
       status: { [Op.ne]: 'cancelled' },
-      start_date: { [Op.between]: [dayEnd, next48hEnd] }
+      start_date: { [Op.between]: [dayEnd, next48hEnd] },
+      // Exclure les achats de pack
+      formula: { [Op.ne]: 'abonnement' }
     },
     include: [
       {
@@ -182,6 +188,7 @@ export async function getUpcomingReservations(selectedDate = null) {
 /**
  * Récupère les dates qui ont des réservations pour un mois donné
  * Retourne un tableau de dates au format 'YYYY-MM-DD'
+ * Exclut les achats de pack (formula = 'abonnement')
  */
 export async function getMonthReservationDays(year, month) {
   const start = new Date(year, month, 1, 0, 0, 0);
@@ -190,7 +197,9 @@ export async function getMonthReservationDays(year, month) {
   const reservations = await Reservation.findAll({
     where: {
       status: { [Op.ne]: 'cancelled' },
-      start_date: { [Op.between]: [start, end] }
+      start_date: { [Op.between]: [start, end] },
+      // Exclure les achats de pack
+      formula: { [Op.ne]: 'abonnement' }
     },
     attributes: ['start_date']
   });
@@ -211,11 +220,13 @@ export async function getDayOccupancyRate(selectedDate = null) {
   const { start, end } = getDayRange(targetDate);
   const STUDIO_HOURS = 9; // 9h à 18h = 9 heures
 
-  // Récupérer les réservations du jour
+  // Récupérer les réservations du jour (exclure les achats de pack)
   const reservations = await Reservation.findAll({
     where: {
       status: { [Op.ne]: 'cancelled' },
-      start_date: { [Op.between]: [start, end] }
+      start_date: { [Op.between]: [start, end] },
+      // Exclure les achats de pack (formula = 'abonnement') car ils n'occupent pas le studio
+      formula: { [Op.ne]: 'abonnement' }
     },
     attributes: ['start_date', 'end_date', 'total_hours']
   });
