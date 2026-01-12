@@ -140,7 +140,7 @@ const StepTwoDateTime = ({
       try {
         // Charger les réservations, blocages admin, blocages podcasteur ET déblocages en parallèle
         const [reservationsRes, blockedRes, podcasterBlockedRes, unblocksRes] = await Promise.all([
-          api.get<DayReservation[]>(`/podcasters/${selectedPodcaster.id}/reservations/${dateKey}`),
+          api.get<DayReservation[]>(`/reservations/day/${dateKey}`),
           getBlockedSlotsForDate(dateKey),
           getPodcasterBlockedSlotsForDate(selectedPodcaster.id, dateKey),
           getUnblocksForDate(dateKey)

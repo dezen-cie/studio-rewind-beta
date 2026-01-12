@@ -128,7 +128,9 @@ export async function checkSubscriptionQuota(userId, hoursToAdd) {
   }
 }
 
-// Vérifie les chevauchements de créneaux pour un podcasteur spécifique
+// Vérifie les chevauchements de créneaux pour le studio (tous podcasteurs confondus)
+// Il n'y a qu'un seul studio, donc un créneau réservé avec n'importe quel podcasteur
+// bloque ce créneau pour tous les autres podcasteurs
 export async function checkAvailability(
   startDate,
   endDate,
@@ -143,9 +145,9 @@ export async function checkAvailability(
     throw error;
   }
 
-  // Vérifier les réservations existantes pour ce podcasteur
+  // Vérifier les réservations existantes pour TOUT le studio (tous podcasteurs)
+  // Car il n'y a qu'un seul studio physique
   const whereClause = {
-    podcaster_id: podcasterId,
     status: { [Op.ne]: 'cancelled' },
     start_date: { [Op.lt]: endDate },
     end_date: { [Op.gt]: startDate }
@@ -158,7 +160,7 @@ export async function checkAvailability(
   const conflict = await Reservation.findOne({ where: whereClause });
 
   if (conflict) {
-    const error = new Error('Ce créneau est déjà réservé pour ce podcasteur.');
+    const error = new Error('Ce créneau est déjà réservé (le studio est occupé).');
     error.status = 400;
     throw error;
   }
