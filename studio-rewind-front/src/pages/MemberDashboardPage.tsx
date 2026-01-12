@@ -391,7 +391,7 @@ function MemberDashboardPage() {
       try {
         // Charger toutes les données en parallèle
         const [reservationsRes, adminBlocked, podcasterBlocked, unblocksRes] = await Promise.all([
-          api.get<DayReservation[]>(`/podcasters/${selectedPodcaster.id}/reservations/${selectedDateKey}`),
+          api.get<DayReservation[]>(`/reservations/day/${selectedDateKey}`),
           getBlockedSlotsForDate(selectedDateKey),
           getPodcasterBlockedSlotsForDate(selectedPodcaster.id, selectedDateKey),
           getUnblocksForDate(selectedDateKey)
