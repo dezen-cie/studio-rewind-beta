@@ -11,7 +11,7 @@ import { deleteFile, processAndUploadFile } from '../config/upload.js';
 
 export async function listPodcasters(req, res) {
   try {
-    const podcasters = await getAllPodcasters();
+    const podcasters = await getAllPodcasters(req.user);
     return res.json(podcasters);
   } catch (error) {
     console.error('Erreur listPodcasters:', error);

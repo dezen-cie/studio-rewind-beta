@@ -24,8 +24,17 @@ export async function getOnlinePodcasters() {
 }
 
 // Récupérer tous les podcasters (pour l'admin)
-export async function getAllPodcasters() {
+// Si l'utilisateur est admin (pas super_admin), on filtre les podcasteurs inactifs
+export async function getAllPodcasters(requestingUser = null) {
+  const whereClause = {};
+
+  // Si l'utilisateur n'est pas super_admin, ne montrer que les podcasteurs actifs
+  if (!requestingUser || requestingUser.role !== 'super_admin') {
+    whereClause.is_active = true;
+  }
+
   const podcasters = await Podcaster.findAll({
+    where: whereClause,
     order: [['display_order', 'ASC']],
     include: [{
       model: User,
