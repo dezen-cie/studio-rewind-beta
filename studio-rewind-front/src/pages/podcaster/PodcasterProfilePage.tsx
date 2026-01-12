@@ -15,6 +15,17 @@ import './PodcasterProfilePage.css';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
+// Helper pour construire les URLs de médias (gère les URLs Supabase, locales et statiques)
+function getMediaUrl(url: string | null | undefined): string {
+  if (!url) return ''
+  // URLs complètes (Supabase, etc.) → retourner telles quelles
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+  // URLs relatives du backend → préfixer avec BACKEND_URL
+  return BACKEND_URL + url
+}
+
 function PodcasterProfilePage() {
   const userRole = getUserRole();
   const isAdminOrSuperAdmin = userRole === 'admin' || userRole === 'super_admin';
@@ -67,7 +78,7 @@ function PodcasterProfilePage() {
           setDescription(checkResult.podcaster.description || '');
           setProfileOnline(checkResult.podcaster.profile_online || false);
           if (checkResult.podcaster.photo_url) {
-            setPhotoPreview(BACKEND_URL + checkResult.podcaster.photo_url);
+            setPhotoPreview(getMediaUrl(checkResult.podcaster.photo_url));
           }
         }
       } else {
@@ -78,7 +89,7 @@ function PodcasterProfilePage() {
         setDescription(data.podcaster.description || '');
         setProfileOnline(data.podcaster.profile_online || false);
         if (data.podcaster.photo_url) {
-          setPhotoPreview(BACKEND_URL + data.podcaster.photo_url);
+          setPhotoPreview(getMediaUrl(data.podcaster.photo_url));
         }
       }
     } catch (err: any) {
@@ -130,7 +141,7 @@ function PodcasterProfilePage() {
       setPodcaster(updatedPodcaster);
       setPhotoFile(null);
       if (updatedPodcaster.photo_url) {
-        setPhotoPreview(BACKEND_URL + updatedPodcaster.photo_url);
+        setPhotoPreview(getMediaUrl(updatedPodcaster.photo_url));
       }
       setSuccess('Profil mis a jour avec succes !');
     } catch (err: any) {

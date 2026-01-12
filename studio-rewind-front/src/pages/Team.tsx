@@ -5,6 +5,21 @@ import './Team.css'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'
 
+// Helper pour construire les URLs de médias (gère les URLs Supabase, locales et statiques)
+function getMediaUrl(url: string | null | undefined): string {
+  if (!url) return '/images/default-avatar.jpg'
+  // URLs complètes (Supabase, etc.) → retourner telles quelles
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+  // URLs statiques du frontend → retourner telles quelles
+  if (url.startsWith('/images')) {
+    return url
+  }
+  // URLs relatives du backend → préfixer avec BACKEND_URL
+  return BACKEND_URL + url
+}
+
 interface TeamMember {
   id: string | number
   name: string
@@ -46,9 +61,7 @@ function Team() {
       id: p.id,
       name: p.name,
       role: p.team_role || 'Podcasteur',
-      image: p.photo_url
-        ? (p.photo_url.startsWith('/images') ? p.photo_url : BACKEND_URL + p.photo_url)
-        : '/images/default-avatar.jpg',
+      image: getMediaUrl(p.photo_url),
       description: p.description,
       isFromApi: true
     }))
@@ -59,9 +72,7 @@ function Team() {
       id: p.id,
       name: p.name,
       role: p.team_role || 'Podcasteur',
-      image: p.photo_url
-        ? (p.photo_url.startsWith('/images') ? p.photo_url : BACKEND_URL + p.photo_url)
-        : '/images/default-avatar.jpg',
+      image: getMediaUrl(p.photo_url),
       description: p.description,
       isFromApi: true
     }))
