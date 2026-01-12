@@ -1080,6 +1080,11 @@ function MemberDashboardPage() {
                             {formatDateTime(r.start_date)} →{' '}
                             {formatDateTime(r.end_date)}
                           </p>
+                          {r.Podcaster && (
+                            <p className="member-reservation-podcaster">
+                              Avec {r.Podcaster.name}
+                            </p>
+                          )}
                           <p className="member-reservation-extra">
                             {r.total_hours} h – {r.price_ttc.toFixed(2)} € TTC
                           </p>
@@ -1120,6 +1125,11 @@ function MemberDashboardPage() {
                         {formatDateTime(r.start_date)} →{' '}
                         {formatDateTime(r.end_date)}
                       </p>
+                      {r.Podcaster && (
+                        <p className="member-reservation-podcaster">
+                          Avec {r.Podcaster.name}
+                        </p>
+                      )}
                       <p className="member-reservation-extra">
                         {r.total_hours} h – {r.price_ttc.toFixed(2)} € TTC
                       </p>

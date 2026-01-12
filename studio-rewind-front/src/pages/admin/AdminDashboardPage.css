@@ -409,6 +409,14 @@
   text-overflow: ellipsis;
 }
 
+.timeline-item-podcaster {
+  font-size: 0.85rem;
+  color: var(--color-primary, #e67e22);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .timeline-item-formula {
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.6);

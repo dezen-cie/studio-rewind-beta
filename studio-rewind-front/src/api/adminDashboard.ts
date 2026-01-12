@@ -14,6 +14,11 @@ export interface DashboardReservationUser {
   company_name?: string | null;
 }
 
+export interface DashboardReservationPodcaster {
+  id: string;
+  name: string;
+}
+
 export interface DashboardReservation {
   id: string;
   user_id: string;
@@ -26,6 +31,7 @@ export interface DashboardReservation {
   price_ttc: number;
   status: 'pending' | 'confirmed' | 'cancelled';
   User?: DashboardReservationUser;
+  Podcaster?: DashboardReservationPodcaster;
 }
 
 export interface OccupancyData {

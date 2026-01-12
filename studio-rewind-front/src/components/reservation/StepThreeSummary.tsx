@@ -63,7 +63,6 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
   const [companyName, setCompanyName] = useState('');
   const [vatNumber, setVatNumber] = useState('');
   const [phone, setPhone] = useState('');
-  const [extraRequest, setExtraRequest] = useState('');
 
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptMarketing, setAcceptMarketing] = useState(false);
@@ -71,7 +70,6 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
   // LOGIN
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [loginExtraRequest, setLoginExtraRequest] = useState('');
 
   // États généraux
   const [loading, setLoading] = useState(false);
@@ -597,19 +595,6 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
                     />
                   </div>
 
-                  <div className="form-row">
-                    <label htmlFor="extraRequest">
-                      Demande supplémentaire
-                    </label>
-                    <textarea
-                      id="extraRequest"
-                      value={extraRequest}
-                      onChange={(e) =>
-                        setExtraRequest(e.target.value)
-                      }
-                    />
-                  </div>
-
                   <div className="form-row checkbox-row">
                     <label>
                       <input
@@ -707,19 +692,6 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
                         setLoginPassword(e.target.value)
                       }
                       required
-                    />
-                  </div>
-
-                  <div className="form-row">
-                    <label htmlFor="loginExtraRequest">
-                      Demande supplémentaire
-                    </label>
-                    <textarea
-                      id="loginExtraRequest"
-                      value={loginExtraRequest}
-                      onChange={(e) =>
-                        setLoginExtraRequest(e.target.value)
-                      }
                     />
                   </div>
 

@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { Reservation, Subscription, User } from '../models/index.js';
+import { Reservation, Subscription, User, Podcaster } from '../models/index.js';
 import { calculateReservationPricing } from '../utils/pricing.js';
 import { isSlotBlocked, getBlockedSlotsForDate } from './blockedSlot.service.js';
 
@@ -310,6 +310,12 @@ export async function getUserReservations(userId) {
     where: {
       user_id: userId
     },
+    include: [
+      {
+        model: Podcaster,
+        attributes: ['id', 'name']
+      }
+    ],
     order: [['start_date', 'DESC']]
   });
 

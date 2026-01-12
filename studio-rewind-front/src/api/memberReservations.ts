@@ -15,6 +15,11 @@ export interface MemberReservation {
   price_tva: number;
   price_ttc: number;
   status: MemberReservationStatus;
+  podcaster_id?: string;
+  Podcaster?: {
+    id: string;
+    name: string;
+  };
 }
 
 export async function getMemberReservations(): Promise<MemberReservation[]> {

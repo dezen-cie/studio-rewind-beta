@@ -1,6 +1,6 @@
 // src/services/admin.dashboard.service.js
 import { Op } from 'sequelize';
-import { Reservation, Subscription, User, BlockedSlot } from '../models/index.js';
+import { Reservation, Subscription, User, BlockedSlot, Podcaster } from '../models/index.js';
 
 function getDayRange(date = new Date()) {
   const d = new Date(date);
@@ -143,6 +143,10 @@ export async function getDayReservations(selectedDate = null) {
       {
         model: User,
         attributes: ['id', 'email', 'firstname', 'lastname', 'company_name']
+      },
+      {
+        model: Podcaster,
+        attributes: ['id', 'name']
       }
     ],
     order: [['start_date', 'ASC']]
@@ -172,6 +176,10 @@ export async function getUpcomingReservations(selectedDate = null) {
       {
         model: User,
         attributes: ['id', 'email', 'firstname', 'lastname', 'company_name']
+      },
+      {
+        model: Podcaster,
+        attributes: ['id', 'name']
       }
     ],
     order: [['start_date', 'ASC']],

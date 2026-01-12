@@ -606,6 +606,9 @@ function AdminDashboardPage() {
                             {formatTime(r.start_date)} - {formatTime(r.end_date)}
                           </div>
                           <div className="timeline-item-client">{getClientName(r)}</div>
+                          <div className="timeline-item-podcaster">
+                            {r.Podcaster?.name || '—'}
+                          </div>
                           <div className="timeline-item-formula">
                             {getFormulaLabel(r.formula)}
                           </div>
