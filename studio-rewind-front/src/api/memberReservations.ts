@@ -16,7 +16,7 @@ export interface MemberReservation {
   price_ttc: number;
   status: MemberReservationStatus;
   podcaster_id?: string;
-  Podcaster?: {
+  podcaster?: {
     id: string;
     name: string;
   };

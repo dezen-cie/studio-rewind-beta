@@ -607,7 +607,7 @@ function AdminDashboardPage() {
                           </div>
                           <div className="timeline-item-client">{getClientName(r)}</div>
                           <div className="timeline-item-podcaster">
-                            {r.Podcaster?.name || '—'}
+                            {r.podcaster?.name || '—'}
                           </div>
                           <div className="timeline-item-formula">
                             {getFormulaLabel(r.formula)}

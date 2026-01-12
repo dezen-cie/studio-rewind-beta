@@ -31,7 +31,7 @@ export interface DashboardReservation {
   price_ttc: number;
   status: 'pending' | 'confirmed' | 'cancelled';
   User?: DashboardReservationUser;
-  Podcaster?: DashboardReservationPodcaster;
+  podcaster?: DashboardReservationPodcaster;
 }
 
 export interface OccupancyData {

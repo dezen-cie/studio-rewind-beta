@@ -146,6 +146,7 @@ export async function getDayReservations(selectedDate = null) {
       },
       {
         model: Podcaster,
+        as: 'podcaster',
         attributes: ['id', 'name']
       }
     ],
@@ -179,6 +180,7 @@ export async function getUpcomingReservations(selectedDate = null) {
       },
       {
         model: Podcaster,
+        as: 'podcaster',
         attributes: ['id', 'name']
       }
     ],

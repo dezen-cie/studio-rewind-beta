@@ -313,6 +313,7 @@ export async function getUserReservations(userId) {
     include: [
       {
         model: Podcaster,
+        as: 'podcaster',
         attributes: ['id', 'name']
       }
     ],
