@@ -30,16 +30,20 @@
         width: 200px;
         height: 90px;
         background-image: url('/images/suissjobs.png');
+        background-image: image-set(
+            url('/images/suissjobs.webp') type('image/webp'),
+            url('/images/suissjobs.png') type('image/png')
+        );
         background-position: center center;
         background-repeat: no-repeat;
         background-size: contain;
         z-index: 100;
         bottom: 0;
         right: 20px;
-        
+
         &:hover{
             color: rgba(255, 255, 255, 1);
-        } 
+        }
     }
 }
 

@@ -25,17 +25,37 @@ interface TeamMember {
   name: string
   role: string
   image: string
+  imageWebp?: string
   description?: string
   isFromApi?: boolean
 }
 
 // Membres statiques (non gérés via la BDD)
 const staticTeamMembers: TeamMember[] = [
-  { id: 'static-3', name: 'Clément', role: 'Vidéaste', image: '/images/John.jpg' },
+  { id: 'static-3', name: 'Clément', role: 'Vidéaste', image: '/images/Clement.jpeg', imageWebp: '/images/Clement.webp' },
 ]
 
 const teamDescriptions: Record<string, string> = {
-  'static-3': `Description de Clément à compléter`,
+  'static-3': `Réalisateur indépendant formé à l'Université Lumière Lyon 2, j'ai développé un style profondément humain et narratif, nourri par mes expériences sur le terrain et une solide culture cinéma.
+
+En 2012, j'ai co-fondé Young Rags sous forme associative, avec un objectif : créer des contenus visuels accessibles, sincères, ancrés dans le réel. En 2015, la structure est devenue une société de production à part entière, que je pilote depuis Évian-les-Bains.
+
+De Genève à Paris, j'ai affiné ma patte au fil des expériences : à L'Équipe, à MIGOO TV, ou comme coach vidéo dans l'éducation. Toujours fidèle à mes valeurs : partage, exigence, territoire.
+
+Aujourd'hui, je conjugue cinéma du réel et storytelling de marque, au service de projets engagés, portés par des collectifs ou des entrepreneurs qui ont quelque chose à dire.`,
+}
+
+// Helper pour rendre les images avec support webp
+function TeamImage({ src, srcWebp, alt, loading }: { src: string; srcWebp?: string; alt: string; loading?: 'lazy' | 'eager' }) {
+  if (srcWebp) {
+    return (
+      <picture>
+        <source srcSet={srcWebp} type="image/webp" />
+        <img src={src} alt={alt} loading={loading} />
+      </picture>
+    )
+  }
+  return <img src={src} alt={alt} loading={loading} />
 }
 
 function Team() {
@@ -124,7 +144,7 @@ function Team() {
                   <h3>{member.role}</h3>
                   <p>{member.name}</p>
                 </div>
-                <img src={member.image} alt={member.role} loading="lazy" />
+                <TeamImage src={member.image} srcWebp={member.imageWebp} alt={member.role} loading="lazy" />
               </div>
             ))}
           </div>
@@ -132,7 +152,7 @@ function Team() {
           <div className="team-detail-view">
             <div className="team-detail-content">
               <div className="team-detail-selected">
-                <img src={selected?.image} alt={selected?.role} loading="lazy" />
+                <TeamImage src={selected?.image || ''} srcWebp={selected?.imageWebp} alt={selected?.role || ''} loading="lazy" />
                 <h3>{selected?.name}</h3>
                 <p>{selected?.role}</p>
               </div>
@@ -149,7 +169,7 @@ function Team() {
                     className="commercial-member-small"
                     onClick={() => handleMemberClick(member.id)}
                   >
-                    <img src={member.image} alt={member.role} loading="lazy" />
+                    <TeamImage src={member.image} srcWebp={member.imageWebp} alt={member.role} loading="lazy" />
                     <span>{member.name}</span>
                   </div>
                 ))}

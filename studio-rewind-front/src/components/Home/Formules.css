@@ -1,5 +1,9 @@
 .formules {
   background-image: url('/images/background-offres.png');
+  background-image: image-set(
+    url('/images/background-offres.webp') type('image/webp'),
+    url('/images/background-offres.png') type('image/png')
+  );
   background-position: center center;
   background-size: cover;
   padding-top: 3rem;

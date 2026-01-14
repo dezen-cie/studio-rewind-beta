@@ -41,11 +41,14 @@ function Header({ children }: HeaderProps) {
       <div className="header-content">
         <nav className="nav">
           <Link className="header-logo_link" to="/">
-            <img
-              src="/images/logo-header.png"
-              alt="Logo Studio Rewind"
-              className="logo-header"
-            />
+            <picture>
+              <source srcSet="/images/logo-header.webp" type="image/webp" />
+              <img
+                src="/images/logo-header.png"
+                alt="Logo Studio Rewind"
+                className="logo-header"
+              />
+            </picture>
           </Link>
 
           <Menus />

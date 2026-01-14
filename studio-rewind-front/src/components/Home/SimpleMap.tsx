@@ -87,7 +87,10 @@ function SimpleMap() {
 
                 <a href="tel:+33667296965">0667296965</a>
                 <a href="mailto:virmaud.gregory@gmail.com?subject=Demande%20info&body=Bonjour">contact@studio-rewind.fr</a>
-                <img src="/images/deventure.png" alt="" loading="lazy" />
+                <picture>
+                  <source srcSet="/images/deventure.webp" type="image/webp" />
+                  <img src="/images/deventure.png" alt="" loading="lazy" />
+                </picture>
             </div>
             <div className="contact c">
                 <p className="access-title">Une question? Ecrivez-nous</p>

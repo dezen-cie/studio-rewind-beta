@@ -4,6 +4,7 @@ import "./Timeline.css";
 const items = [
   {
     img: "/images/micro.png",
+    imgWebp: "/images/micro.webp",
     title: "Audio",
     icon: "🎙️",
     features: [
@@ -14,6 +15,7 @@ const items = [
   },
   {
     img: "/images/camera.png",
+    imgWebp: "/images/camera.webp",
     title: "Vidéo - captation cinéma",
     icon: "🎥",
     features: [
@@ -24,6 +26,7 @@ const items = [
   },
   {
     img: "/images/objectif.png",
+    imgWebp: "/images/objectif.webp",
     title: "Parc d'objectifs Sony",
     icon: "📷",
     features: [
@@ -34,16 +37,18 @@ const items = [
   },
   {
     img: "/images/light.png",
+    imgWebp: "/images/light.webp",
     title: "Éclairage et monitoring",
     icon: "💡",
     features: [
       "2 panneaux LED professionnels Godox",
-      "Éclairage d’ambiance Neewer LED RGB",
+      "Éclairage d'ambiance Neewer LED RGB",
       "Écrans de retour plateau Godox"
     ]
   },
   {
     img: "/images/regie.png",
+    imgWebp: "/images/regie.webp",
     title: "Régie & accessoires",
     icon: "🖥️",
     features: [
@@ -53,6 +58,7 @@ const items = [
   },
   {
     img: "/images/studio.png",
+    imgWebp: "/images/studio.webp",
     title: "Décor & ambiance",
     icon: "🛋️",
     features: [
@@ -151,7 +157,10 @@ function Timeline() {
         <div className="materiel-slider" ref={sliderRef}>
           {[...items, ...items, ...items, ...items].map((item, index) => (
             <div className="materiel-item" key={index}>
-              <img src={item.img} alt={item.title} loading="lazy" />
+              <picture>
+                <source srcSet={item.imgWebp} type="image/webp" />
+                <img src={item.img} alt={item.title} loading="lazy" />
+              </picture>
               <div className="materiel-dot"></div>
               <h3><span className="materiel-icon">{item.icon}</span> {item.title}</h3>
               <ul>

@@ -4,7 +4,10 @@ function CGV() {
   return (
     <div className="legal-page">
       <div className="legal-header">
-        <img src="/images/logo.png" alt="Studio Rewind" className="legal-logo" />
+        <picture>
+          <source srcSet="/images/logo.webp" type="image/webp" />
+          <img src="/images/logo.png" alt="Studio Rewind" className="legal-logo" />
+        </picture>
         <h1>Conditions Générales de Vente</h1>
         <p className="legal-update">Dernière mise à jour : Janvier 2025</p>
       </div>

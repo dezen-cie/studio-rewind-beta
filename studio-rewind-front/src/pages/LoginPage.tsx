@@ -46,11 +46,14 @@ function LoginPage() {
     <>
     <header className="login-page-header">
       <Link to="/">
-            <img
-              src="/images/logo-header.png"
-              alt="Logo Studio Rewind"
-              className="logo-header"
-            />
+            <picture>
+              <source srcSet="/images/logo-header.webp" type="image/webp" />
+              <img
+                src="/images/logo-header.png"
+                alt="Logo Studio Rewind"
+                className="logo-header"
+              />
+            </picture>
       </Link>
 
         <div className="menu">

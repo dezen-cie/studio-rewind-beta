@@ -16,7 +16,10 @@ function NotFound() {
       </div>
 
       <div className="notfound-content">
-        <img src="/images/logo.png" alt="Studio Rewind" className="notfound-logo" />
+        <picture>
+          <source srcSet="/images/logo.webp" type="image/webp" />
+          <img src="/images/logo.png" alt="Studio Rewind" className="notfound-logo" />
+        </picture>
 
         {/* Clap de cinéma animé */}
         <div className="notfound-clap">
