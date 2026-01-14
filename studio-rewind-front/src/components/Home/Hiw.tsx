@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+// import { Link } from 'react-router-dom' // TEMPORAIREMENT MASQUÉ
 import { useEffect, useRef } from 'react'
 import './Hiw.css'
 

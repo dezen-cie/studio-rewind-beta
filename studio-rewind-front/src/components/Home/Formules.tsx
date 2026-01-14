@@ -1,6 +1,6 @@
 // src/components/Home/Formules.tsx
 import { useEffect, useRef, useState, type JSX } from 'react';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom'; // TEMPORAIREMENT MASQUÉ
 import {
   FilePlay,
   User,

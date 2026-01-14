@@ -33,7 +33,7 @@ function formatPriceTtc(price: number): string {
   return `${price.toFixed(2).replace('.', ',')}€ TTC`;
 }
 
-function StepOneFormulas({ onSelectFormula }: StepOneFormulasProps) {
+function StepOneFormulas(_props: StepOneFormulasProps) {
   const [formulas, setFormulas] = useState<PublicFormula[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +96,7 @@ function StepOneFormulas({ onSelectFormula }: StepOneFormulasProps) {
               ? `${formatPriceTtc(f.price_ttc)} / mois`
               : `${formatPriceTtc(f.price_ttc)} / heure`;
 
-          const buttonLabel = 'Sélectionner'
+          // const buttonLabel = 'Sélectionner' // TEMPORAIREMENT MASQUÉ
 
           return (
             <article 

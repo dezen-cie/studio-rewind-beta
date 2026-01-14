@@ -1,17 +1,15 @@
 // src/layouts/PublicLayout.tsx
-import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import type { ReactNode } from 'react'
-import { MoveRight } from 'lucide-react'
+// import { MoveRight } from 'lucide-react' // TEMPORAIREMENT MASQUÉ
 import Header from '../components/Header/Header'
 import Footer from '../components/Footer/Footer'
 
 function PublicLayout() {
   const location = useLocation()
-  const navigate = useNavigate()
-
-  function goToReservation() {
-    navigate('/reservation?step=1');
-  }
+  // TEMPORAIREMENT MASQUÉ
+  // const navigate = useNavigate()
+  // function goToReservation() { navigate('/reservation?step=1'); }
   
   let headerContent: ReactNode;
 

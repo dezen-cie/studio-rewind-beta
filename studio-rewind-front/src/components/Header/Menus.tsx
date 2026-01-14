@@ -1,7 +1,7 @@
 // Menus.tsx
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MoveRight, Menu, X, LogOut, UserRound } from 'lucide-react'
+import { Menu, X, LogOut, UserRound } from 'lucide-react'
 import './Menus.css'
 
 import { isAuthenticated, logout } from '../../utils/auth';
