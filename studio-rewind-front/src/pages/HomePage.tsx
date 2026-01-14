@@ -2,8 +2,8 @@ import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import Hiw from '../components/Home/Hiw';
 import Studio from '../components/Home/Studio';
-// import Formules from '../components/Home/Formules'; // TEMPORAIREMENT MASQUÉ
-// import Podcasteurs from '../components/Home/Podcasteurs'; // TEMPORAIREMENT MASQUÉ
+import Formules from '../components/Home/Formules';
+import Podcasteurs from '../components/Home/Podcasteurs';
 import SimpleMap from '../components/Home/SimpleMap';
 
 function HomePage() {
@@ -33,12 +33,8 @@ function HomePage() {
     <div className="sr-home">
       <Studio />
       <Hiw />
-      {/* TEMPORAIREMENT MASQUÉ - Section Formules
       <Formules />
-      */}
-      {/* TEMPORAIREMENT MASQUÉ - Section Podcasteurs
       <Podcasteurs />
-      */}
       <SimpleMap />
     </div>
   );

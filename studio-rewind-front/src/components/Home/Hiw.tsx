@@ -1,4 +1,4 @@
-// import { Link } from 'react-router-dom' // TEMPORAIREMENT MASQUÉ
+import { Link } from 'react-router-dom'
 import { useEffect, useRef } from 'react'
 import './Hiw.css'
 
@@ -67,11 +67,9 @@ function Hiw() {
                 </article>
             </div>
 
-            {/* TEMPORAIREMENT MASQUÉ - CTA Réservation
             <Link className="btn btn-primary" to="/" state={{ scrollTo: "formules" }}>
                 Voir les formules & les tarifs
             </Link>
-            */}
         </section>
     )
 }

@@ -40,13 +40,11 @@ function FooterInner(){
               className="logo-footer"
               loading="lazy"
             />
-            {/* TEMPORAIREMENT MASQUÉ - CTA Réservation
             {!isPodcasterPage && (
               <Link className="footer-nav_link" to="/reservation">
                 <button className="btn btn-primary">Réserver un créneau</button>
               </Link>
             )}
-            */}
           </div>
 
           <div className="footer-separator" />

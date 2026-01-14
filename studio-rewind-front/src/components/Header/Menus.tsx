@@ -1,7 +1,7 @@
 // Menus.tsx
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Menu, X, LogOut, UserRound } from 'lucide-react'
+import { Menu, X, LogOut, UserRound, MoveRight } from 'lucide-react'
 import './Menus.css'
 
 import { isAuthenticated, logout } from '../../utils/auth';
@@ -28,7 +28,6 @@ function Menus() {
         >
           Studio
         </Link>
-        {/* TEMPORAIREMENT MASQUÉ - Lien Formules
         <Link
           className="header-logo_link"
           to="/"
@@ -37,19 +36,16 @@ function Menus() {
         >
           Formules
         </Link>
-        */}
         <Link className="header-logo_link" to="/equipe" onClick={() => setIsOpen(false)}>
           Equipe
         </Link>
         <Link className="header-logo_link" to="/devenez-podcasteur" onClick={() => setIsOpen(false)}>
           Devenir podcasteur
         </Link>
-        {/* TEMPORAIREMENT MASQUÉ - CTA Réservation
         <Link className="header-logo_link btn_link" to="/reservation" onClick={() => setIsOpen(false)}>
           Réserver
           <MoveRight />
         </Link>
-        */}
         {authed && (
             <>
               <button

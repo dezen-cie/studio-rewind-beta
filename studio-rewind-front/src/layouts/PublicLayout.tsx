@@ -1,15 +1,14 @@
 // src/layouts/PublicLayout.tsx
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom'
 import type { ReactNode } from 'react'
-// import { MoveRight } from 'lucide-react' // TEMPORAIREMENT MASQUÉ
+import { MoveRight } from 'lucide-react'
 import Header from '../components/Header/Header'
 import Footer from '../components/Footer/Footer'
 
 function PublicLayout() {
   const location = useLocation()
-  // TEMPORAIREMENT MASQUÉ
-  // const navigate = useNavigate()
-  // function goToReservation() { navigate('/reservation?step=1'); }
+  const navigate = useNavigate()
+  function goToReservation() { navigate('/reservation?step=1'); }
   
   let headerContent: ReactNode;
 
@@ -24,7 +23,6 @@ function PublicLayout() {
 
           <div className="header-call_to_action">
             <p>Créez. Enregistrez. Rayonnez.</p>
-            {/* TEMPORAIREMENT MASQUÉ - CTA Réservation
             <button
               type="button"
               className="btn btn-primary"
@@ -33,7 +31,6 @@ function PublicLayout() {
               Réserver un créneau
               <MoveRight />
             </button>
-            */}
           </div>
         </>
       );
@@ -46,7 +43,6 @@ function PublicLayout() {
           <div className="header-call_to_action">
             <p className="p-header">
             </p>
-            {/* TEMPORAIREMENT MASQUÉ - CTA Réservation
             <Link className="" to="/reservation">
               <button
                 type="button"
@@ -55,7 +51,6 @@ function PublicLayout() {
                 <MoveRight />
               </button>
             </Link>
-            */}
           </div>
         </>
       );
