@@ -33,8 +33,12 @@ function HomePage() {
     <div className="sr-home">
       <Studio />
       <Hiw />
+      {/* TEMPORAIREMENT MASQUÉ - Section Formules
       <Formules />
+      */}
+      {/* TEMPORAIREMENT MASQUÉ - Section Podcasteurs
       <Podcasteurs />
+      */}
       <SimpleMap />
     </div>
   );

@@ -21,7 +21,6 @@ function MentionsLegales() {
             <p>74200 Thonon-les-Bains</p>
             <p>France</p>
             <br />
-            <p><strong>Téléphone :</strong> 06 67 29 69 65</p>
             <p><strong>Email :</strong> contact@studio-rewind.fr</p>
           </div>
         </section>
@@ -52,7 +51,6 @@ function MentionsLegales() {
             <p>400A rue de la Gorge</p>
             <p>74890 Lully</p>
             <br />
-            <p><strong>Téléphone :</strong> 06 67 29 69 65</p>
             <p><strong>Email :</strong> dezem-cie@gmail.com</p>
           </div>
         </section>
@@ -180,7 +178,6 @@ function MentionsLegales() {
           </p>
           <div className="legal-info-box">
             <p><strong>Par email :</strong> contact@studio-rewind.fr</p>
-            <p><strong>Par téléphone :</strong> 06 67 29 69 65</p>
             <p><strong>Par courrier :</strong></p>
             <p>Studio Rewind</p>
             <p>7 avenue de la Libération</p>
@@ -191,7 +188,7 @@ function MentionsLegales() {
 
       <div className="legal-footer">
         <p>Studio Rewind - 7 avenue de la Libération, 74200 Thonon-les-Bains</p>
-        <p>contact@studio-rewind.fr | 06 67 29 69 65</p>
+        <p>contact@studio-rewind.fr</p>
       </div>
     </div>
   )

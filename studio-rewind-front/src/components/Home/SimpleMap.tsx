@@ -84,8 +84,6 @@ function SimpleMap() {
                     7 avenue de la libération<br/>
                     74200 Thonon-les-bains
                 </address>
-
-                <a href="tel:+33667296965">0667296965</a>
                 <a href="mailto:virmaud.gregory@gmail.com?subject=Demande%20info&body=Bonjour">contact@studio-rewind.fr</a>
                 <picture>
                   <source srcSet="/images/deventure.webp" type="image/webp" />

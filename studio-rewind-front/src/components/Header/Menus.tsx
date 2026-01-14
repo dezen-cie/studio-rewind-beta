@@ -28,24 +28,28 @@ function Menus() {
         >
           Studio
         </Link>
+        {/* TEMPORAIREMENT MASQUÉ - Lien Formules
         <Link
           className="header-logo_link"
           to="/"
-          state={{ scrollTo: 'formules' }}
+          state={{ scrollTo: "formules" }}
           onClick={() => setIsOpen(false)}
         >
           Formules
         </Link>
+        */}
         <Link className="header-logo_link" to="/equipe" onClick={() => setIsOpen(false)}>
           Equipe
         </Link>
         <Link className="header-logo_link" to="/devenez-podcasteur" onClick={() => setIsOpen(false)}>
           Devenir podcasteur
         </Link>
+        {/* TEMPORAIREMENT MASQUÉ - CTA Réservation
         <Link className="header-logo_link btn_link" to="/reservation" onClick={() => setIsOpen(false)}>
           Réserver
           <MoveRight />
         </Link>
+        */}
         {authed && (
             <>
               <button

@@ -26,6 +26,7 @@ function PublicLayout() {
 
           <div className="header-call_to_action">
             <p>Créez. Enregistrez. Rayonnez.</p>
+            {/* TEMPORAIREMENT MASQUÉ - CTA Réservation
             <button
               type="button"
               className="btn btn-primary"
@@ -34,6 +35,7 @@ function PublicLayout() {
               Réserver un créneau
               <MoveRight />
             </button>
+            */}
           </div>
         </>
       );
@@ -46,14 +48,16 @@ function PublicLayout() {
           <div className="header-call_to_action">
             <p className="p-header">
             </p>
+            {/* TEMPORAIREMENT MASQUÉ - CTA Réservation
             <Link className="" to="/reservation">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn btn-primary">
-                Réserver un créneau  
+                Réserver un créneau
                 <MoveRight />
               </button>
             </Link>
+            */}
           </div>
         </>
       );

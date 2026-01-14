@@ -35,7 +35,6 @@ function PolitiqueConfidentialite() {
             <p>France</p>
             <br />
             <p><strong>Email :</strong> contact@studio-rewind.fr</p>
-            <p><strong>Téléphone :</strong> 06 67 29 69 65</p>
           </div>
         </section>
 
@@ -285,14 +284,13 @@ function PolitiqueConfidentialite() {
             <p>74200 Thonon-les-Bains</p>
             <br />
             <p><strong>Email :</strong> contact@studio-rewind.fr</p>
-            <p><strong>Téléphone :</strong> 06 67 29 69 65</p>
           </div>
         </section>
       </div>
 
       <div className="legal-footer">
         <p>Studio Rewind - 7 avenue de la Libération, 74200 Thonon-les-Bains</p>
-        <p>contact@studio-rewind.fr | 06 67 29 69 65</p>
+        <p>contact@studio-rewind.fr</p>
       </div>
     </div>
   )

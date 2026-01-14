@@ -124,12 +124,14 @@ function StepOneFormulas({ onSelectFormula }: StepOneFormulasProps) {
                 </div>
               </div>
 
+              {/* TEMPORAIREMENT MASQUÉ - CTA Réservation
               <button
                 className="select"
                 onClick={() => onSelectFormula(f.key)}
               >
                 {buttonLabel}
               </button>
+              */}
             </article>
           );
         })}

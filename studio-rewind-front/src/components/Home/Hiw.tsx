@@ -67,9 +67,11 @@ function Hiw() {
                 </article>
             </div>
 
-            <Link className="btn btn-primary" to="/" state={{ scrollTo: 'formules' }}>
+            {/* TEMPORAIREMENT MASQUÉ - CTA Réservation
+            <Link className="btn btn-primary" to="/" state={{ scrollTo: "formules" }}>
                 Voir les formules & les tarifs
             </Link>
+            */}
         </section>
     )
 }

@@ -157,9 +157,11 @@ function Formules() {
         <h2 className="section-title subtitle">
           “Enregistre, monte et publie des podcasts de qualité professionnelle”
         </h2>
+        {/* TEMPORAIREMENT MASQUÉ - CTA Réservation
         <Link className="btn btn-primary" to="/reservation">
           Réserver une session
         </Link>
+        */}
         <p className="handwritten">
           Découvre nos offres flexibles adaptées à tous les créateurs.
         </p>
@@ -193,11 +195,13 @@ function Formules() {
                     {f.price_ttc}€ <span>{cfg.priceSuffix}</span>
                   </p>
 
+                  {/* TEMPORAIREMENT MASQUÉ - CTA Réservation
                   <Link to={cfg.reservationLink}>
                     <button className="btn btn-primary">
                       Choisir cette formule
                     </button>
                   </Link>
+                  */}
 
                   <div className="formule-options">{cfg.options}</div>
                 </div>

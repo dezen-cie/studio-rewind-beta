@@ -28,7 +28,6 @@ function CGV() {
             <p><strong>Studio Rewind</strong></p>
             <p>7 avenue de la Libération</p>
             <p>74200 Thonon-les-Bains</p>
-            <p>Téléphone : 06 67 29 69 65</p>
             <p>Email : contact@studio-rewind.fr</p>
           </div>
         </section>
@@ -147,7 +146,7 @@ function CGV() {
 
       <div className="legal-footer">
         <p>Studio Rewind - 7 avenue de la Libération, 74200 Thonon-les-Bains</p>
-        <p>contact@studio-rewind.fr | 06 67 29 69 65</p>
+        <p>contact@studio-rewind.fr</p>
       </div>
     </div>
   )
