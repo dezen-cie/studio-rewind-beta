@@ -28,8 +28,10 @@ import adminRevenueRoutes from './routes/admin.revenue.routes.js';
 
 const app = express();
 
-const FRONT_ORIGIN =
-  process.env.FRONT_ORIGIN || 'http://localhost:5173';
+// Supporte plusieurs origines séparées par des virgules
+const ALLOWED_ORIGINS = (process.env.FRONT_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map(origin => origin.trim());
 
 // ===================
 // SECURITY MIDDLEWARES
@@ -60,7 +62,14 @@ const authLimiter = rateLimit({
 // CORS + cookies (pour JWT en httpOnly)
 app.use(
   cors({
-    origin: FRONT_ORIGIN,
+    origin: function (origin, callback) {
+      // Permettre les requêtes sans origin (ex: mobile apps, Postman)
+      if (!origin) return callback(null, true);
+      if (ALLOWED_ORIGINS.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   })
 );
