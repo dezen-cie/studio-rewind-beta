@@ -33,7 +33,7 @@ function formatPriceTtc(price: number): string {
   return `${price.toFixed(2).replace('.', ',')}€ TTC`;
 }
 
-function StepOneFormulas(_props: StepOneFormulasProps) {
+function StepOneFormulas({ onSelectFormula }: StepOneFormulasProps) {
   const [formulas, setFormulas] = useState<PublicFormula[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +96,7 @@ function StepOneFormulas(_props: StepOneFormulasProps) {
               ? `${formatPriceTtc(f.price_ttc)} / mois`
               : `${formatPriceTtc(f.price_ttc)} / heure`;
 
-          // const buttonLabel = 'Sélectionner' // TEMPORAIREMENT MASQUÉ
+          const buttonLabel = 'Sélectionner'
 
           return (
             <article 
@@ -124,14 +124,12 @@ function StepOneFormulas(_props: StepOneFormulasProps) {
                 </div>
               </div>
 
-              {/* TEMPORAIREMENT MASQUÉ - CTA Réservation
               <button
                 className="select"
                 onClick={() => onSelectFormula(f.key)}
               >
                 {buttonLabel}
               </button>
-              */}
             </article>
           );
         })}

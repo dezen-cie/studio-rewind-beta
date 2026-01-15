@@ -19,7 +19,7 @@ function TikTokIcon() {
 
 function FooterInner(){
   const location = useLocation();
-  const isPodcasterPage = location.pathname === '/devenez-podcasteur';
+  const isPodcasterPage = location.pathname === '/devenir-podcasteur';
 
   const handleScroll = () => {
     const header = document.querySelector('header');
@@ -69,7 +69,7 @@ function FooterInner(){
             </nav>
 
             <div className="footer-social">
-              <a href="https://www.instagram.com/studio_rewind_official/" className="icon-insta" target="_blank" rel="noreferrer">
+              <a href="https://www.instagram.com/stories/studio__rewind/" className="icon-insta" target="_blank" rel="noreferrer">
                 <Instagram />
               </a>
               <a href="https://www.tiktok.com/@studio_rewind" className="icon-tiktok" target="_blank" rel="noreferrer">

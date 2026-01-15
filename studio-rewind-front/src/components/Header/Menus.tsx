@@ -39,7 +39,7 @@ function Menus() {
         <Link className="header-logo_link" to="/equipe" onClick={() => setIsOpen(false)}>
           Equipe
         </Link>
-        <Link className="header-logo_link" to="/devenez-podcasteur" onClick={() => setIsOpen(false)}>
+        <Link className="header-logo_link" to="/devenir-podcasteur" onClick={() => setIsOpen(false)}>
           Devenir podcasteur
         </Link>
         <Link className="header-logo_link btn_link" to="/reservation" onClick={() => setIsOpen(false)}>

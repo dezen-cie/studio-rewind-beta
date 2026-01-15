@@ -28,7 +28,7 @@ function CGV() {
             <p><strong>Studio Rewind</strong></p>
             <p>7 avenue de la Libération</p>
             <p>74200 Thonon-les-Bains</p>
-            <p>Email : contact@studio-rewind.fr</p>
+            <p>Email : contact@studiorewind.fr</p>
           </div>
         </section>
 
@@ -146,7 +146,7 @@ function CGV() {
 
       <div className="legal-footer">
         <p>Studio Rewind - 7 avenue de la Libération, 74200 Thonon-les-Bains</p>
-        <p>contact@studio-rewind.fr</p>
+        <p>contact@studiorewind.fr</p>
       </div>
     </div>
   )

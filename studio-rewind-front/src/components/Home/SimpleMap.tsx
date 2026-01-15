@@ -84,7 +84,7 @@ function SimpleMap() {
                     7 avenue de la libération<br/>
                     74200 Thonon-les-bains
                 </address>
-                <a href="mailto:virmaud.gregory@gmail.com?subject=Demande%20info&body=Bonjour">contact@studio-rewind.fr</a>
+                <a href="mailto:virmaud.gregory@gmail.com?subject=Demande%20info&body=Bonjour">contact@studiorewind.fr</a>
                 <picture>
                   <source srcSet="/images/deventure.webp" type="image/webp" />
                   <img src="/images/deventure.png" alt="" loading="lazy" />

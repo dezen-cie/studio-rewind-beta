@@ -19,7 +19,7 @@ function PolitiqueConfidentialite() {
             Studio Rewind accorde une grande importance à la protection de vos données personnelles.
             La présente Politique de Confidentialité a pour objectif de vous informer sur la manière
             dont nous collectons, utilisons et protégeons vos informations lorsque vous utilisez
-            notre site web studio-rewind.fr et nos services.
+            notre site web studiorewind.fr et nos services.
           </p>
           <p>
             En utilisant notre site, vous acceptez les pratiques décrites dans cette politique.
@@ -34,7 +34,7 @@ function PolitiqueConfidentialite() {
             <p>74200 Thonon-les-Bains</p>
             <p>France</p>
             <br />
-            <p><strong>Email :</strong> contact@studio-rewind.fr</p>
+            <p><strong>Email :</strong> contact@studiorewind.fr</p>
           </div>
         </section>
 
@@ -232,7 +232,7 @@ function PolitiqueConfidentialite() {
             Pour exercer ces droits, vous pouvez nous contacter :
           </p>
           <div className="legal-info-box">
-            <p><strong>Par email :</strong> contact@studio-rewind.fr</p>
+            <p><strong>Par email :</strong> contact@studiorewind.fr</p>
             <p><strong>Par courrier :</strong></p>
             <p>Studio Rewind - Protection des données</p>
             <p>7 avenue de la Libération</p>
@@ -283,14 +283,14 @@ function PolitiqueConfidentialite() {
             <p>7 avenue de la Libération</p>
             <p>74200 Thonon-les-Bains</p>
             <br />
-            <p><strong>Email :</strong> contact@studio-rewind.fr</p>
+            <p><strong>Email :</strong> contact@studiorewind.fr</p>
           </div>
         </section>
       </div>
 
       <div className="legal-footer">
         <p>Studio Rewind - 7 avenue de la Libération, 74200 Thonon-les-Bains</p>
-        <p>contact@studio-rewind.fr</p>
+        <p>contact@studiorewind.fr</p>
       </div>
     </div>
   )
