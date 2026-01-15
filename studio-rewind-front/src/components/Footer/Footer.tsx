@@ -5,7 +5,7 @@ import FooterInner from './FooterInner'
 
 function Footer(){
   const location = useLocation();
-  const hideFaq = location.pathname === '/devenez-podcasteur';
+  const hideFaq = location.pathname === '/devenir-podcasteur';
 
   return (
     <>

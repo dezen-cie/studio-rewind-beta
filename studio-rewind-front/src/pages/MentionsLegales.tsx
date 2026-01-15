@@ -21,14 +21,14 @@ function MentionsLegales() {
             <p>74200 Thonon-les-Bains</p>
             <p>France</p>
             <br />
-            <p><strong>Email :</strong> contact@studio-rewind.fr</p>
+            <p><strong>Email :</strong> contact@studiorewind.fr</p>
           </div>
         </section>
 
         <section className="legal-section">
           <h2>2. Directeur de la publication</h2>
           <p>
-            Le directeur de la publication du site studio-rewind.fr est le représentant légal
+            Le directeur de la publication du site studiorewind.fr est le représentant légal
             de la société Studio Rewind.
           </p>
         </section>
@@ -37,9 +37,10 @@ function MentionsLegales() {
           <h2>3. Hébergement</h2>
           <div className="legal-info-box">
             <p><strong>Hébergeur du site :</strong></p>
-            <p>[Nom de l'hébergeur]</p>
-            <p>[Adresse de l'hébergeur]</p>
-            <p>[Contact de l'hébergeur]</p>
+            <p>IONOS SARL</p>
+            <p>7 place de la Gare</p>
+            <p>57200 Sarreguemines, France</p>
+            <p><strong>Site web :</strong> www.ionos.fr</p>
           </div>
         </section>
 
@@ -48,17 +49,14 @@ function MentionsLegales() {
           <div className="legal-info-box">
             <p><strong>Dezem Compagnie</strong></p>
             <p>Grégory Virmaud</p>
-            <p>400A rue de la Gorge</p>
-            <p>74890 Lully</p>
-            <br />
-            <p><strong>Email :</strong> dezem-cie@gmail.com</p>
+            <p><strong>Email :</strong> dezem.cie@gmail.com</p>
           </div>
         </section>
 
         <section className="legal-section">
           <h2>5. Propriété intellectuelle</h2>
           <p>
-            L'ensemble du contenu présent sur le site studio-rewind.fr (textes, images, vidéos,
+            L'ensemble du contenu présent sur le site studiorewind.fr (textes, images, vidéos,
             logos, graphismes, icônes, sons, logiciels, etc.) est la propriété exclusive de
             Studio Rewind ou de ses partenaires et est protégé par les lois françaises et
             internationales relatives à la propriété intellectuelle.
@@ -124,14 +122,14 @@ function MentionsLegales() {
             <li>Droit d'opposition</li>
           </ul>
           <p>
-            Pour exercer ces droits, contactez-nous à : <strong>contact@studio-rewind.fr</strong>
+            Pour exercer ces droits, contactez-nous à : <strong>contact@studiorewind.fr</strong>
           </p>
         </section>
 
         <section className="legal-section">
           <h2>7. Cookies</h2>
           <p>
-            Le site studio-rewind.fr peut utiliser des cookies pour améliorer l'expérience
+            Le site studiorewind.fr peut utiliser des cookies pour améliorer l'expérience
             utilisateur et réaliser des statistiques de visites.
           </p>
           <p>
@@ -177,7 +175,7 @@ function MentionsLegales() {
             pouvez nous contacter :
           </p>
           <div className="legal-info-box">
-            <p><strong>Par email :</strong> contact@studio-rewind.fr</p>
+            <p><strong>Par email :</strong> contact@studiorewind.fr</p>
             <p><strong>Par courrier :</strong></p>
             <p>Studio Rewind</p>
             <p>7 avenue de la Libération</p>
@@ -188,7 +186,7 @@ function MentionsLegales() {
 
       <div className="legal-footer">
         <p>Studio Rewind - 7 avenue de la Libération, 74200 Thonon-les-Bains</p>
-        <p>contact@studio-rewind.fr</p>
+        <p>contact@studiorewind.fr</p>
       </div>
     </div>
   )

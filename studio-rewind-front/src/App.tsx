@@ -101,7 +101,7 @@ function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/equipe" element={<Team />} />
-        <Route path="/devenez-podcasteur" element={<BecomePodcaster />} />
+        <Route path="/devenir-podcasteur" element={<BecomePodcaster />} />
         <Route path="/cgv" element={<CGV />} />
         <Route path="/mentions-legales" element={<MentionsLegales />} />
         <Route path="/politique-de-confidentialite" element={<PolitiqueConfidentialite />} />
