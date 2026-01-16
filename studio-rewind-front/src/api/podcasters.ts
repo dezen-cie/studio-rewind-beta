@@ -7,6 +7,7 @@ export interface Podcaster {
   video_url: string | null;
   audio_url: string | null;
   display_order: number;
+  team_display_order?: number | null; // Ordre d'affichage sur la page équipe (null = à la fin)
   is_active: boolean;
   email?: string;
   user_id?: string;
@@ -16,7 +17,7 @@ export interface Podcaster {
   profile_online?: boolean;
   team_role?: string; // Rôle affiché sur la page équipe (ex: "CEO & Podcasteur", "CSO")
   role?: 'podcaster' | 'admin' | 'super_admin'; // Rôle de l'utilisateur associé
-  is_core_team?: boolean; // Membres principaux affichés avant Clément
+  is_core_team?: boolean; // Membres principaux
 }
 
 export interface CreatePodcasterData {
@@ -33,6 +34,8 @@ export interface UpdatePodcasterData {
   video?: File;
   audio?: File;
   display_order?: number;
+  team_display_order?: number | null;
+  team_role?: string;
   is_active?: boolean;
 }
 
@@ -91,6 +94,12 @@ export async function updateAdminPodcaster(
   if (data.display_order !== undefined) {
     formData.append('display_order', String(data.display_order));
   }
+  if (data.team_display_order !== undefined) {
+    formData.append('team_display_order', data.team_display_order === null ? 'null' : String(data.team_display_order));
+  }
+  if (data.team_role !== undefined) {
+    formData.append('team_role', data.team_role);
+  }
   if (data.is_active !== undefined) {
     formData.append('is_active', String(data.is_active));
   }
@@ -114,6 +123,13 @@ export async function togglePodcasterAdmin(id: string, makeAdmin: boolean): Prom
 // Toggle le statut core team d'un podcaster (super admin uniquement)
 export async function togglePodcasterCoreTeam(id: string, is_core_team: boolean): Promise<Podcaster> {
   const res = await api.patch<Podcaster>(`/admin/podcasters/${id}/toggle-core-team`, { is_core_team });
+  return res.data;
+}
+
+// Modifier l'ordre d'affichage sur la page équipe (super admin uniquement)
+// team_display_order: 1, 2, 3... pour définir l'ordre, null pour mettre à la fin
+export async function updatePodcasterTeamOrder(id: string, team_display_order: number | null): Promise<Podcaster> {
+  const res = await api.patch<Podcaster>(`/admin/podcasters/${id}/team-order`, { team_display_order });
   return res.data;
 }
 

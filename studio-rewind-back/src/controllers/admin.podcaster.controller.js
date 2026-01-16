@@ -5,7 +5,8 @@ import {
   updatePodcaster,
   deletePodcaster,
   togglePodcasterAdmin,
-  updatePodcasterCoreTeam
+  updatePodcasterCoreTeam,
+  updateTeamDisplayOrder
 } from '../services/podcaster.service.js';
 import { deleteFile, processAndUploadFile } from '../config/upload.js';
 
@@ -69,7 +70,7 @@ export async function updatePodcasterController(req, res) {
 
   try {
     const { id } = req.params;
-    const { name, display_order, is_active } = req.body;
+    const { name, display_order, team_display_order, team_role, is_active } = req.body;
 
     // Recuperer les nouveaux fichiers si uploades
     const videoFile = req.files?.video?.[0];
@@ -79,6 +80,13 @@ export async function updatePodcasterController(req, res) {
 
     if (name !== undefined) updateData.name = name;
     if (display_order !== undefined) updateData.display_order = parseInt(display_order, 10);
+    if (team_display_order !== undefined) {
+      // Peut être null (pour mettre à la fin) ou un nombre
+      updateData.team_display_order = team_display_order === '' || team_display_order === 'null'
+        ? null
+        : parseInt(team_display_order, 10);
+    }
+    if (team_role !== undefined) updateData.team_role = team_role || null;
     if (is_active !== undefined) updateData.is_active = is_active === 'true' || is_active === true;
 
     // Si nouveau fichier video, uploader et mettre a jour l'URL
@@ -148,6 +156,24 @@ export async function toggleCoreTeamController(req, res) {
     return res.json(podcaster);
   } catch (error) {
     console.error('Erreur toggleCoreTeam:', error);
+    return res.status(error.status || 500).json({ message: error.message });
+  }
+}
+
+export async function updateTeamOrderController(req, res) {
+  try {
+    const { id } = req.params;
+    const { team_display_order } = req.body;
+
+    // null = pas d'ordre (à la fin), sinon un entier
+    if (team_display_order !== null && typeof team_display_order !== 'number') {
+      return res.status(400).json({ message: 'Le paramètre team_display_order doit être un nombre ou null.' });
+    }
+
+    const podcaster = await updateTeamDisplayOrder(id, team_display_order);
+    return res.json(podcaster);
+  } catch (error) {
+    console.error('Erreur updateTeamOrder:', error);
     return res.status(error.status || 500).json({ message: error.message });
   }
 }

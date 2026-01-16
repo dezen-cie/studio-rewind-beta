@@ -6,7 +6,8 @@ import {
   updatePodcasterController,
   deletePodcasterController,
   togglePodcasterAdminController,
-  toggleCoreTeamController
+  toggleCoreTeamController,
+  updateTeamOrderController
 } from '../controllers/admin.podcaster.controller.js';
 import { authenticate, requireAdmin, requireSuperAdmin } from '../middlewares/auth.middleware.js';
 import { uploadPodcasterFiles } from '../config/upload.js';
@@ -25,5 +26,8 @@ router.patch('/:id/toggle-admin', requireSuperAdmin, togglePodcasterAdminControl
 
 // Toggle core team status - super admin uniquement
 router.patch('/:id/toggle-core-team', requireSuperAdmin, toggleCoreTeamController);
+
+// Modifier l'ordre d'affichage sur la page équipe - super admin uniquement
+router.patch('/:id/team-order', requireSuperAdmin, updateTeamOrderController);
 
 export default router;

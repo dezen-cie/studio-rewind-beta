@@ -15,11 +15,30 @@ export async function getActivePodcasters() {
 }
 
 // Récupérer les podcasters avec profil en ligne (pour la page équipe)
+// Triés par team_display_order (ceux avec ordre défini en premier, puis les autres)
 export async function getOnlinePodcasters() {
   const podcasters = await Podcaster.findAll({
-    where: { profile_online: true },
-    order: [['display_order', 'ASC']]
+    where: { profile_online: true }
   });
+
+  // Trier : ceux avec team_display_order défini en premier (par ordre croissant),
+  // puis ceux sans ordre défini à la fin
+  podcasters.sort((a, b) => {
+    const orderA = a.team_display_order;
+    const orderB = b.team_display_order;
+
+    // Les deux ont un ordre défini -> trier par ordre croissant
+    if (orderA !== null && orderB !== null) {
+      return orderA - orderB;
+    }
+    // Seulement A a un ordre -> A vient avant
+    if (orderA !== null) return -1;
+    // Seulement B a un ordre -> B vient avant
+    if (orderB !== null) return 1;
+    // Aucun n'a d'ordre -> garder l'ordre de création
+    return 0;
+  });
+
   return podcasters;
 }
 
@@ -128,7 +147,7 @@ export async function createPodcaster({ name, video_url, audio_url, display_orde
 }
 
 // Mettre à jour un podcaster
-export async function updatePodcaster(id, { name, video_url, audio_url, display_order, is_active, oldVideoUrl, oldAudioUrl }, requestingUser = null) {
+export async function updatePodcaster(id, { name, video_url, audio_url, display_order, team_display_order, team_role, is_active, oldVideoUrl, oldAudioUrl }, requestingUser = null) {
   const podcaster = await Podcaster.findByPk(id);
 
   if (!podcaster) {
@@ -181,6 +200,14 @@ export async function updatePodcaster(id, { name, video_url, audio_url, display_
     podcaster.display_order = display_order;
   }
 
+  if (team_display_order !== undefined) {
+    podcaster.team_display_order = team_display_order;
+  }
+
+  if (team_role !== undefined) {
+    podcaster.team_role = team_role;
+  }
+
   if (is_active !== undefined) {
     podcaster.is_active = is_active;
   }
@@ -200,6 +227,22 @@ export async function updatePodcasterCoreTeam(id, is_core_team) {
   }
 
   podcaster.is_core_team = is_core_team;
+  await podcaster.save();
+  return podcaster;
+}
+
+// Mettre à jour l'ordre d'affichage sur la page équipe (super admin uniquement)
+export async function updateTeamDisplayOrder(id, team_display_order) {
+  const podcaster = await Podcaster.findByPk(id);
+
+  if (!podcaster) {
+    const error = new Error('Podcasteur introuvable.');
+    error.status = 404;
+    throw error;
+  }
+
+  // null = pas d'ordre spécifié (apparaît à la fin)
+  podcaster.team_display_order = team_display_order;
   await podcaster.save();
   return podcaster;
 }
