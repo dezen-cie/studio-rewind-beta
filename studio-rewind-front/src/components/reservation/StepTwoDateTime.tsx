@@ -13,7 +13,7 @@ import {
   type DefaultBlockedRange
 } from '../../api/blockedSlots';
 import { getPublicPodcasters, getPodcasterBlockedSlotsForDate, getPodcasterFullDayBlocks, type Podcaster, type PodcasterBlockedSlotPublic } from '../../api/podcasters';
-import { getPublicFormulas, type PublicFormula } from '../../api/formulas';
+import { getPublicFormulas } from '../../api/formulas';
 
 import type { FormulaKey, PricingBreakdown, SelectedPodcaster } from '../../pages/ReservationPage';
 

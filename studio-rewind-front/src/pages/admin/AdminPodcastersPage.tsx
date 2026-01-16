@@ -45,6 +45,8 @@ function AdminPodcastersPage() {
   const [editVideo, setEditVideo] = useState<File | null>(null);
   const [editAudio, setEditAudio] = useState<File | null>(null);
   const [editOrder, setEditOrder] = useState('');
+  const [editTeamOrder, setEditTeamOrder] = useState('');
+  const [editTeamRole, setEditTeamRole] = useState('');
   const [editIsActive, setEditIsActive] = useState(true);
   const editVideoRef = useRef<HTMLInputElement>(null);
   const editAudioRef = useRef<HTMLInputElement>(null);
@@ -89,6 +91,8 @@ function AdminPodcastersPage() {
     setEditVideo(null);
     setEditAudio(null);
     setEditOrder('');
+    setEditTeamOrder('');
+    setEditTeamRole('');
     setEditIsActive(true);
     if (editVideoRef.current) editVideoRef.current.value = '';
     if (editAudioRef.current) editAudioRef.current.value = '';
@@ -107,6 +111,8 @@ function AdminPodcastersPage() {
     setEditVideo(null);
     setEditAudio(null);
     setEditOrder(String(p.display_order));
+    setEditTeamOrder(p.team_display_order !== null && p.team_display_order !== undefined ? String(p.team_display_order) : '');
+    setEditTeamRole(p.team_role || '');
     setEditIsActive(p.is_active);
   }
 
@@ -197,6 +203,8 @@ function AdminPodcastersPage() {
         video: editVideo || undefined,
         audio: editAudio || undefined,
         display_order: editOrder ? parseInt(editOrder, 10) : undefined,
+        team_display_order: editTeamOrder === '' ? null : parseInt(editTeamOrder, 10),
+        team_role: editTeamRole.trim(),
         is_active: editIsActive
       });
       setPodcasters((prev) =>
@@ -489,28 +497,67 @@ function AdminPodcastersPage() {
                       // Edit form
                       <>
                         <div className="columns">
-                          <div className="column is-4">
-                            <div className="field">
-                              <label className="label">Nom</label>
-                              <input
-                                type="text"
-                                className="input"
-                                value={editName}
-                                onChange={(e) => setEditName(e.target.value)}
-                                disabled={saving}
-                              />
+                          <div className="column is-6">
+                            <div className="columns">
+                              <div className="column is-6">
+                                <div className="field">
+                                  <label className="label">Nom (affiche partout)</label>
+                                  <input
+                                    type="text"
+                                    className="input"
+                                    value={editName}
+                                    onChange={(e) => setEditName(e.target.value)}
+                                    disabled={saving}
+                                    placeholder="Ex: Gregory"
+                                  />
+                                </div>
+                              </div>
+                              <div className="column is-6">
+                                <div className="field">
+                                  <label className="label">Role (page equipe)</label>
+                                  <input
+                                    type="text"
+                                    className="input"
+                                    value={editTeamRole}
+                                    onChange={(e) => setEditTeamRole(e.target.value)}
+                                    disabled={saving}
+                                    placeholder="Ex: CEO & Podcasteur"
+                                  />
+                                  <p className="help">Affiche au-dessus du nom sur la page equipe</p>
+                                </div>
+                              </div>
                             </div>
-                            <div className="field">
-                              <label className="label">Ordre</label>
-                              <input
-                                type="number"
-                                className="input"
-                                value={editOrder}
-                                onChange={(e) => setEditOrder(e.target.value)}
-                                disabled={saving}
-                                min="0"
-                                style={{ width: '80px' }}
-                              />
+                            <div className="columns">
+                              <div className="column is-6">
+                                <div className="field">
+                                  <label className="label">Ordre page d'accueil</label>
+                                  <input
+                                    type="number"
+                                    className="input"
+                                    value={editOrder}
+                                    onChange={(e) => setEditOrder(e.target.value)}
+                                    disabled={saving}
+                                    min="0"
+                                    style={{ width: '100px' }}
+                                  />
+                                </div>
+                              </div>
+                              <div className="column is-6">
+                                <div className="field">
+                                  <label className="label">Ordre page equipe</label>
+                                  <input
+                                    type="number"
+                                    className="input"
+                                    value={editTeamOrder}
+                                    onChange={(e) => setEditTeamOrder(e.target.value)}
+                                    disabled={saving}
+                                    min="1"
+                                    style={{ width: '100px' }}
+                                    placeholder="vide = fin"
+                                  />
+                                  <p className="help">Vide = apparait a la fin</p>
+                                </div>
+                              </div>
                             </div>
                             <div className="field">
                               <label className="checkbox">
@@ -520,13 +567,13 @@ function AdminPodcastersPage() {
                                   onChange={(e) => setEditIsActive(e.target.checked)}
                                   disabled={saving}
                                 />{' '}
-                                Actif
+                                Actif (visible sur la page d'accueil)
                               </label>
                             </div>
                           </div>
-                          <div className="column is-4">
+                          <div className="column is-3">
                             <div className="field">
-                              <label className="label">Nouvelle video (optionnel)</label>
+                              <label className="label">Nouvelle video</label>
                               <div className="file has-name is-fullwidth is-small">
                                 <label className="file-label">
                                   <input
@@ -545,12 +592,11 @@ function AdminPodcastersPage() {
                                   </span>
                                 </label>
                               </div>
-                              <p className="help">Video actuelle: {p.video_url ? p.video_url.split('/').pop() : 'Aucune'}</p>
                             </div>
                           </div>
-                          <div className="column is-4">
+                          <div className="column is-3">
                             <div className="field">
-                              <label className="label">Nouvel audio (optionnel)</label>
+                              <label className="label">Nouvel audio</label>
                               <div className="file has-name is-fullwidth is-small">
                                 <label className="file-label">
                                   <input
@@ -569,7 +615,6 @@ function AdminPodcastersPage() {
                                   </span>
                                 </label>
                               </div>
-                              <p className="help">Audio actuel: {p.audio_url ? p.audio_url.split('/').pop() : 'Aucun'}</p>
                             </div>
                           </div>
                         </div>

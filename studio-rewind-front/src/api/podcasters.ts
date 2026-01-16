@@ -7,6 +7,7 @@ export interface Podcaster {
   video_url: string | null;
   audio_url: string | null;
   display_order: number;
+  team_display_order?: number | null; // Ordre d'affichage sur la page équipe (null = à la fin)
   is_active: boolean;
   email?: string;
   user_id?: string;
@@ -16,7 +17,7 @@ export interface Podcaster {
   profile_online?: boolean;
   team_role?: string; // Rôle affiché sur la page équipe (ex: "CEO & Podcasteur", "CSO")
   role?: 'podcaster' | 'admin' | 'super_admin'; // Rôle de l'utilisateur associé
-  is_core_team?: boolean; // Membres principaux affichés avant Clément
+  is_core_team?: boolean; // Membres principaux
 }
 
 export interface CreatePodcasterData {
@@ -33,6 +34,8 @@ export interface UpdatePodcasterData {
   video?: File;
   audio?: File;
   display_order?: number;
+  team_display_order?: number | null;
+  team_role?: string;
   is_active?: boolean;
 }
 
@@ -90,6 +93,12 @@ export async function updateAdminPodcaster(
   }
   if (data.display_order !== undefined) {
     formData.append('display_order', String(data.display_order));
+  }
+  if (data.team_display_order !== undefined) {
+    formData.append('team_display_order', data.team_display_order === null ? 'null' : String(data.team_display_order));
+  }
+  if (data.team_role !== undefined) {
+    formData.append('team_role', data.team_role);
   }
   if (data.is_active !== undefined) {
     formData.append('is_active', String(data.is_active));

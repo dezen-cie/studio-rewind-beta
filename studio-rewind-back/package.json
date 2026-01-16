@@ -9,7 +9,10 @@
     "dev": "nodemon src/server.js",
     "seed:superadmin": "node src/seeders/createSuperAdmin.js",
     "seed:formulas": "node src/seeders/createFormulas.js",
-    "db:reset": "node src/scripts/dbReset.js && npm run seed:superadmin && npm run seed:formulas"
+    "migrate:formula-enum": "node src/seeders/migrateFormulaEnum.js",
+    "migrate:team-order": "node src/seeders/addTeamDisplayOrder.js",
+    "db:reset": "node src/scripts/dbReset.js && npm run seed:superadmin && npm run seed:formulas",
+    "db:migrate": "npm run migrate:formula-enum && npm run migrate:team-order"
   },
   "keywords": [],
   "author": "",

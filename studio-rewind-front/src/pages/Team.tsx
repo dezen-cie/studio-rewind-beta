@@ -25,36 +25,11 @@ interface TeamMember {
   name: string
   role: string
   image: string
-  imageWebp?: string
   description?: string
-  isFromApi?: boolean
 }
 
-// Membres statiques (non gérés via la BDD)
-const staticTeamMembers: TeamMember[] = [
-  { id: 'static-3', name: 'Clément', role: 'Vidéaste', image: '/images/Clement.jpeg', imageWebp: '/images/Clement.webp' },
-]
-
-const teamDescriptions: Record<string, string> = {
-  'static-3': `Réalisateur indépendant formé à l'Université Lumière Lyon 2, j'ai développé un style profondément humain et narratif, nourri par mes expériences sur le terrain et une solide culture cinéma.
-
-En 2012, j'ai co-fondé Young Rags sous forme associative, avec un objectif : créer des contenus visuels accessibles, sincères, ancrés dans le réel. En 2015, la structure est devenue une société de production à part entière, que je pilote depuis Évian-les-Bains.
-
-De Genève à Paris, j'ai affiné ma patte au fil des expériences : à L'Équipe, à MIGOO TV, ou comme coach vidéo dans l'éducation. Toujours fidèle à mes valeurs : partage, exigence, territoire.
-
-Aujourd'hui, je conjugue cinéma du réel et storytelling de marque, au service de projets engagés, portés par des collectifs ou des entrepreneurs qui ont quelque chose à dire.`,
-}
-
-// Helper pour rendre les images avec support webp
-function TeamImage({ src, srcWebp, alt, loading }: { src: string; srcWebp?: string; alt: string; loading?: 'lazy' | 'eager' }) {
-  if (srcWebp) {
-    return (
-      <picture>
-        <source srcSet={srcWebp} type="image/webp" />
-        <img src={src} alt={alt} loading={loading} />
-      </picture>
-    )
-  }
+// Helper pour rendre les images
+function TeamImage({ src, alt, loading }: { src: string; alt: string; loading?: 'lazy' | 'eager' }) {
   return <img src={src} alt={alt} loading={loading} />
 }
 
@@ -74,35 +49,14 @@ function Team() {
     loadPodcasters()
   }, [])
 
-  // Séparer les membres principaux (Karim, Gregory) des autres podcasteurs
-  const coreTeamMembers = podcasters
-    .filter(p => p.is_core_team)
-    .map(p => ({
-      id: p.id,
-      name: p.name,
-      role: p.team_role || 'Podcasteur',
-      image: getMediaUrl(p.photo_url),
-      description: p.description,
-      isFromApi: true
-    }))
-
-  const regularPodcasters = podcasters
-    .filter(p => !p.is_core_team)
-    .map(p => ({
-      id: p.id,
-      name: p.name,
-      role: p.team_role || 'Podcasteur',
-      image: getMediaUrl(p.photo_url),
-      description: p.description,
-      isFromApi: true
-    }))
-
-  // Ordre final : Karim, Gregory (core team) -> Clément (static) -> Autres podcasteurs
-  const allMembers: TeamMember[] = [
-    ...coreTeamMembers,
-    ...staticTeamMembers,
-    ...regularPodcasters
-  ]
+  // Les membres sont déjà triés par team_display_order côté backend
+  const allMembers: TeamMember[] = podcasters.map(p => ({
+    id: p.id,
+    name: p.name,
+    role: p.team_role || 'Podcasteur',
+    image: getMediaUrl(p.photo_url),
+    description: p.description
+  }))
 
   const handleMemberClick = (id: string | number) => {
     setSelectedMember(id)
@@ -144,7 +98,7 @@ function Team() {
                   <h3>{member.role}</h3>
                   <p>{member.name}</p>
                 </div>
-                <TeamImage src={member.image} srcWebp={member.imageWebp} alt={member.role} loading="lazy" />
+                <TeamImage src={member.image} alt={member.role} loading="lazy" />
               </div>
             ))}
           </div>
@@ -152,12 +106,12 @@ function Team() {
           <div className="team-detail-view">
             <div className="team-detail-content">
               <div className="team-detail-selected">
-                <TeamImage src={selected?.image || ''} srcWebp={selected?.imageWebp} alt={selected?.role || ''} loading="lazy" />
+                <TeamImage src={selected?.image || ''} alt={selected?.role || ''} loading="lazy" />
                 <h3>{selected?.name}</h3>
                 <p>{selected?.role}</p>
               </div>
               <div className="team-detail-text">
-                <p>{selected?.isFromApi ? selected?.description : teamDescriptions[selectedMember as string]}</p>
+                <p>{selected?.description}</p>
                 <button className="back-to-team" onClick={handleBackToAll}>
                   Voir toute l'équipe
                 </button>
@@ -169,7 +123,7 @@ function Team() {
                     className="commercial-member-small"
                     onClick={() => handleMemberClick(member.id)}
                   >
-                    <TeamImage src={member.image} srcWebp={member.imageWebp} alt={member.role} loading="lazy" />
+                    <TeamImage src={member.image} alt={member.role} loading="lazy" />
                     <span>{member.name}</span>
                   </div>
                 ))}

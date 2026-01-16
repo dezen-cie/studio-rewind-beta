@@ -26,10 +26,16 @@ Podcaster.init(
       allowNull: true
     },
     display_order: {
-      // Ordre d'affichage (1, 2, 3...)
+      // Ordre d'affichage sur la page d'accueil (1, 2, 3...)
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 0
+    },
+    team_display_order: {
+      // Ordre d'affichage sur la page équipe (peut être différent de display_order)
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: null
     },
     is_active: {
       // Permet de masquer un podcasteur sans le supprimer
