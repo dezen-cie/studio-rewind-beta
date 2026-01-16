@@ -28,6 +28,10 @@ import adminRevenueRoutes from './routes/admin.revenue.routes.js';
 
 const app = express();
 
+// Trust proxy - nécessaire pour Render et autres reverse proxies
+// Permet à express-rate-limit de récupérer la vraie IP du client
+app.set('trust proxy', 1);
+
 // Supporte plusieurs origines séparées par des virgules
 const ALLOWED_ORIGINS = (process.env.FRONT_ORIGIN || 'http://localhost:5173')
   .split(',')
