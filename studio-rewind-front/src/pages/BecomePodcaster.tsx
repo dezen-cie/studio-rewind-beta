@@ -36,8 +36,9 @@ function BecomePodcaster() {
     firstname: '',
     email: '',
     phone: '',
-    podcastIdea: '',
-    availability: ''
+    companyName: '',
+    status: '',
+    message: ''
   })
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
@@ -47,7 +48,7 @@ function BecomePodcaster() {
     setOpenIndex((prev) => (prev === index ? null : index))
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
   }
@@ -57,9 +58,9 @@ function BecomePodcaster() {
     setError(null)
     setSuccess(null)
 
-    const { lastname, firstname, email, phone, podcastIdea, availability } = formData
+    const { lastname, firstname, email, phone, companyName, status, message } = formData
 
-    if (!lastname.trim() || !firstname.trim() || !email.trim() || !phone.trim() || !podcastIdea.trim()) {
+    if (!lastname.trim() || !firstname.trim() || !email.trim() || !phone.trim() || !companyName.trim() || !status || !message.trim()) {
       setError('Veuillez remplir tous les champs obligatoires.')
       return
     }
@@ -71,12 +72,11 @@ function BecomePodcaster() {
       `Prénom : ${firstname}`,
       `Email : ${email}`,
       `Téléphone : ${phone}`,
+      `Nom de la société : ${companyName}`,
+      `Statut : ${status}`,
       '',
-      'Idée de podcast :',
-      podcastIdea,
-      '',
-      'Disponibilités :',
-      availability || 'Non précisées'
+      'Message :',
+      message
     ].join('\n')
 
     try {
@@ -93,8 +93,9 @@ function BecomePodcaster() {
         firstname: '',
         email: '',
         phone: '',
-        podcastIdea: '',
-        availability: ''
+        companyName: '',
+        status: '',
+        message: ''
       })
     } catch (err: any) {
       console.error('Erreur envoi formulaire podcasteur :', err)
@@ -300,28 +301,47 @@ function BecomePodcaster() {
             </div>
           </div>
 
-          <div className="bp-form-group bp-form-group--full">
-            <label htmlFor="podcastIdea">Ton idée de podcast *</label>
-            <textarea
-              id="podcastIdea"
-              name="podcastIdea"
-              rows={4}
-              value={formData.podcastIdea}
-              onChange={handleChange}
-              placeholder="Décris ton projet de podcast : thématique, format envisagé, public cible..."
-              required
-            />
+          <div className="bp-form-row">
+            <div className="bp-form-group">
+              <label htmlFor="companyName">Nom de la société *</label>
+              <input
+                id="companyName"
+                name="companyName"
+                type="text"
+                value={formData.companyName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="bp-form-group">
+              <label htmlFor="status">Statut *</label>
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Sélectionner...</option>
+                <option value="SAS">SAS</option>
+                <option value="Micro-entreprise">Micro-entreprise</option>
+                <option value="EURL">EURL</option>
+                <option value="Autre">Autre</option>
+              </select>
+            </div>
           </div>
 
           <div className="bp-form-group bp-form-group--full">
-            <label htmlFor="availability">Tes disponibilités</label>
-            <input
-              id="availability"
-              name="availability"
-              type="text"
-              value={formData.availability}
+            <label htmlFor="message">Message *</label>
+            <textarea
+              id="message"
+              name="message"
+              rows={4}
+              value={formData.message}
               onChange={handleChange}
-              placeholder="Ex: En semaine après 18h, le week-end..."
+              placeholder="Décris ton projet, tes motivations, tes questions..."
+              required
             />
           </div>
 
