@@ -13,6 +13,7 @@ import {
   type DefaultBlockedRange
 } from '../../api/blockedSlots';
 import { getPublicPodcasters, getPodcasterBlockedSlotsForDate, getPodcasterFullDayBlocks, type Podcaster, type PodcasterBlockedSlotPublic } from '../../api/podcasters';
+import { getPublicFormulas, type PublicFormula } from '../../api/formulas';
 
 import type { FormulaKey, PricingBreakdown, SelectedPodcaster } from '../../pages/ReservationPage';
 
@@ -31,7 +32,7 @@ for (let h = 0; h <= 23; h++) {
 }
 
 type StepTwoDateTimeProps = {
-  formula: FormulaKey; // "autonome" | "amelioree" | "reseaux"
+  formula: FormulaKey; // "solo" | "duo" | "pro"
   selectedDate: Date | null;
   setSelectedDate: (date: Date | null) => void;
   startTime: string;
@@ -69,20 +70,30 @@ const StepTwoDateTime = ({
   const [podcasters, setPodcasters] = useState<Podcaster[]>([]);
   const [loadingPodcasters, setLoadingPodcasters] = useState(true);
 
+  // Info sur la formule (pour savoir si elle nécessite un podcasteur)
+  const [requiresPodcaster, setRequiresPodcaster] = useState<boolean>(true);
+
   // Dates avec jour entier bloque pour le podcasteur selectionne (pour griser le calendrier)
   const [fullDayBlockedDates, setFullDayBlockedDates] = useState<string[]>([]);
 
-  // Charger les podcasteurs et les heures bloquées par défaut au montage
+  // Charger les podcasteurs, les heures bloquées par défaut et l'info de la formule au montage
   useEffect(() => {
     async function loadInitialData() {
       try {
         setLoadingPodcasters(true);
-        const [podcastersData, defaultHours] = await Promise.all([
+        const [podcastersData, defaultHours, formulas] = await Promise.all([
           getPublicPodcasters(),
-          getDefaultBlockedHours()
+          getDefaultBlockedHours(),
+          getPublicFormulas()
         ]);
         setPodcasters(podcastersData);
         setDefaultBlockedRanges(defaultHours);
+
+        // Trouver la formule actuelle et vérifier si elle nécessite un podcasteur
+        const currentFormula = formulas.find((f) => f.key === formula);
+        if (currentFormula) {
+          setRequiresPodcaster(currentFormula.requires_podcaster ?? true);
+        }
       } catch (err) {
         console.error('Erreur chargement données initiales:', err);
       } finally {
@@ -90,12 +101,13 @@ const StepTwoDateTime = ({
       }
     }
     loadInitialData();
-  }, []);
+  }, [formula]);
 
-  // Charger les dates bloquees jour entier quand on selectionne un podcasteur
+  // Charger les dates bloquees jour entier quand on selectionne un podcasteur (si requis)
   useEffect(() => {
     async function loadFullDayBlocks() {
-      if (!selectedPodcaster) {
+      // Si podcasteur non requis ou non sélectionné, pas de dates bloquées spécifiques
+      if (!requiresPodcaster || !selectedPodcaster) {
         setFullDayBlockedDates([]);
         return;
       }
@@ -108,16 +120,16 @@ const StepTwoDateTime = ({
       }
     }
     loadFullDayBlocks();
-  }, [selectedPodcaster]);
+  }, [selectedPodcaster, requiresPodcaster]);
 
-  // Formule Réseaux = durée fixe de 2h
-  const isReseaux = formula === 'reseaux';
-  const RESEAUX_DURATION = 2; // heures
+  // Durée fixe de 1h pour toutes les formules
+  const FIXED_DURATION = 1; // heure
 
   // ====== CHARGER LES RÉSA ET BLOCAGES DU JOUR POUR LE PODCASTEUR SÉLECTIONNÉ ======
   useEffect(() => {
     async function loadDayData() {
-      if (!selectedDate || !selectedPodcaster) {
+      // Si podcasteur requis mais non sélectionné, ou si pas de date : pas de chargement
+      if (!selectedDate || (requiresPodcaster && !selectedPodcaster)) {
         setDayReservations([]);
         setBlockedSlots([]);
         setPodcasterBlockedSlots([]);
@@ -138,17 +150,23 @@ const StepTwoDateTime = ({
       const dateKey = getLocalDateKey(selectedDate);
 
       try {
-        // Charger les réservations, blocages admin, blocages podcasteur ET déblocages en parallèle
-        const [reservationsRes, blockedRes, podcasterBlockedRes, unblocksRes] = await Promise.all([
+        // Charger les réservations, blocages admin, blocages podcasteur (si requis) ET déblocages en parallèle
+        const promises: Promise<any>[] = [
           api.get<DayReservation[]>(`/reservations/day/${dateKey}`),
           getBlockedSlotsForDate(dateKey),
-          getPodcasterBlockedSlotsForDate(selectedPodcaster.id, dateKey),
           getUnblocksForDate(dateKey)
-        ]);
-        setDayReservations(reservationsRes.data);
-        setBlockedSlots(blockedRes);
-        setPodcasterBlockedSlots(podcasterBlockedRes);
-        setUnblocks(unblocksRes);
+        ];
+
+        // Ajouter le chargement des blocages podcasteur seulement si requis et sélectionné
+        if (requiresPodcaster && selectedPodcaster) {
+          promises.push(getPodcasterBlockedSlotsForDate(selectedPodcaster.id, dateKey));
+        }
+
+        const results = await Promise.all(promises);
+        setDayReservations(results[0].data);
+        setBlockedSlots(results[1]);
+        setUnblocks(results[2]);
+        setPodcasterBlockedSlots(requiresPodcaster && selectedPodcaster ? results[3] : []);
       } catch (err: any) {
         console.warn('Erreur chargement créneaux du jour:', err);
         setDayReservations([]);
@@ -164,7 +182,7 @@ const StepTwoDateTime = ({
     }
 
     loadDayData();
-  }, [selectedDate, selectedPodcaster]);
+  }, [selectedDate, selectedPodcaster, requiresPodcaster]);
 
   // ====== UTILS POUR LES HEURES ======
   function getHourFloat(dateStr: string): number | null {
@@ -285,16 +303,6 @@ const StepTwoDateTime = ({
     return false;
   }
 
-  function isHourInsideReservations(hour: number): boolean {
-    // On regarde si un bloc [hour, hour+1) chevauche une réservation existante
-    return dayReservations.some((r) => {
-      const s = getHourFloat(r.start_date);
-      const e = getHourFloat(r.end_date);
-      if (s === null || e === null) return false;
-      return hour >= s && hour < e;
-    });
-  }
-
   function doesIntervalOverlap(startHour: number, endHour: number): boolean {
     // intervalle [startHour, endHour) vs toutes les résas de la journée ET les blocages
     const reservationConflict = dayReservations.some((r) => {
@@ -363,28 +371,21 @@ const StepTwoDateTime = ({
       continue;
     }
 
-    // Pour la formule Réseaux : vérifier que le créneau de 2h est disponible
-    if (isReseaux) {
-      // Vérifier que h+2 ne dépasse pas 24h
-      if (h + RESEAUX_DURATION > 24) {
-        disabled.push(hourStr);
-        continue;
-      }
-      // Vérifier que le créneau [h, h+2) est libre (résas + blocages)
-      if (doesIntervalOverlap(h, h + RESEAUX_DURATION)) {
-        disabled.push(hourStr);
-        continue;
-      }
-    } else {
-      // Créneaux déjà réservés (formules classiques)
-      if (isHourInsideReservations(h)) {
-        disabled.push(hourStr);
-      }
+    // Vérifier que le créneau de 1h est disponible
+    // Vérifier que h+1 ne dépasse pas 24h
+    if (h + FIXED_DURATION > 24) {
+      disabled.push(hourStr);
+      continue;
+    }
+    // Vérifier que le créneau [h, h+1) est libre (résas + blocages)
+    if (doesIntervalOverlap(h, h + FIXED_DURATION)) {
+      disabled.push(hourStr);
+      continue;
     }
   }
 
   return disabled;
-}, [selectedDate, dayReservations, blockedSlots, podcasterBlockedSlots, defaultBlockedRanges, unblocks, isReseaux]);
+}, [selectedDate, dayReservations, blockedSlots, podcasterBlockedSlots, defaultBlockedRanges, unblocks]);
 
 
   const disabledEndTimes = useMemo(() => {
@@ -433,28 +434,21 @@ const StepTwoDateTime = ({
       .map(h => `${h.toString().padStart(2, '0')}:00`);
   }, [unblocks]);
 
-  // ====== CALCUL AUTOMATIQUE HEURE DE FIN POUR RÉSEAUX ======
-  // Quand on sélectionne une heure de début pour 'reseaux', on calcule automatiquement +2h
+  // ====== CALCUL AUTOMATIQUE HEURE DE FIN (TOUJOURS +1h) ======
   useEffect(() => {
-    if (isReseaux && startTime) {
+    if (startTime) {
       const [sh] = startTime.split(':').map(Number);
-      const calculatedEnd = `${(sh + RESEAUX_DURATION).toString().padStart(2, '0')}:00`;
+      const calculatedEnd = `${(sh + FIXED_DURATION).toString().padStart(2, '0')}:00`;
       if (endTime !== calculatedEnd) {
         setEndTime(calculatedEnd);
       }
     }
-  }, [isReseaux, startTime, endTime, setEndTime]);
+  }, [startTime, endTime, setEndTime]);
 
-  // ====== CALCUL HEURES ======
+  // ====== CALCUL HEURES (toujours 1h) ======
   let bookedHours: number | null = null;
-  if (isReseaux && startTime) {
-    // Pour Réseaux, c'est toujours 2h
-    bookedHours = RESEAUX_DURATION;
-  } else if (startTime && endTime) {
-    const [sh] = startTime.split(':').map(Number);
-    const [eh] = endTime.split(':').map(Number);
-    const diff = eh - sh;
-    bookedHours = diff > 0 ? diff : 0;
+  if (startTime) {
+    bookedHours = FIXED_DURATION;
   }
 
   // ====== TARIFS HT ======
@@ -463,29 +457,21 @@ const StepTwoDateTime = ({
   let tvaAmount: number = 0;
   let totalTTC: number = 0;
 
-  if (isReseaux) {
-    // Formule Réseaux : prix fixe 1200€ TTC
-    totalTTC = 1200;
-    totalHT = totalTTC / 1.2;
-    tvaAmount = totalTTC - totalHT;
-  } else {
-    // Formules à l'heure
-    let hourlyRateHt: number = 0;
-    if (formula === 'autonome') hourlyRateHt = 83.33; // 100 TTC ≈ 83.33 HT
-    if (formula === 'amelioree') hourlyRateHt = 250; // 300 TTC = 250 HT
+  // Prix HT par formule (durée fixe 1h)
+  let priceHT: number = 0;
+  if (formula === 'solo') priceHT = 99;
+  if (formula === 'duo') priceHT = 490;
+  if (formula === 'pro') priceHT = 990;
 
-    const safeBookedHours = bookedHours ?? 0;
-    totalHT = hourlyRateHt * safeBookedHours;
-    tvaAmount = totalHT * TVA_RATE;
-    totalTTC = totalHT + tvaAmount;
-  }
+  totalHT = priceHT;
+  tvaAmount = totalHT * TVA_RATE;
+  totalTTC = totalHT + tvaAmount;
 
   const safeBookedHours = bookedHours ?? 0;
 
   // ====== VALIDATION BOUTON ======
-  const canConfirm = isReseaux
-    ? selectedPodcaster !== null && selectedDate !== null && startTime !== '' && bookedHours !== null && bookedHours > 0
-    : selectedPodcaster !== null && selectedDate !== null && startTime !== '' && endTime !== '' && bookedHours !== null && bookedHours > 0;
+  const podcasterValid = !requiresPodcaster || selectedPodcaster !== null;
+  const canConfirm = podcasterValid && selectedDate !== null && startTime !== '' && bookedHours !== null && bookedHours > 0;
 
   const handleConfirm = () => {
     if (!canConfirm) return;
@@ -520,33 +506,37 @@ const StepTwoDateTime = ({
 
   return (
     <main className="booked-main">
-      <h2>Choisir votre podcasteur et votre date</h2>
+      <h2 style={{ marginBottom: '2rem' }}>
+        {requiresPodcaster ? 'Choisir votre podcasteur et votre date' : 'Choisir votre date'}
+      </h2>
 
-      {/* Sélection du podcasteur */}
-      <div className="podcaster-selection">
-        <label className="podcaster-label">
-          <User size={18} />
-          <span>Choisissez votre podcasteur :</span>
-        </label>
-        {loadingPodcasters ? (
-          <p className="podcaster-loading">Chargement des podcasteurs...</p>
-        ) : podcasters.length === 0 ? (
-          <p className="podcaster-error">Aucun podcasteur disponible pour le moment.</p>
-        ) : (
-          <div className="podcaster-buttons">
-            {podcasters.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                className={`podcaster-btn ${selectedPodcaster?.id === p.id ? 'selected' : ''}`}
-                onClick={() => handlePodcasterChange(p.id)}
-              >
-                {p.name}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Sélection du podcasteur (si requis par la formule) */}
+      {requiresPodcaster && (
+        <div className="podcaster-selection">
+          <label className="podcaster-label">
+            <User size={18} />
+            <span>Choisissez votre podcasteur :</span>
+          </label>
+          {loadingPodcasters ? (
+            <p className="podcaster-loading">Chargement des podcasteurs...</p>
+          ) : podcasters.length === 0 ? (
+            <p className="podcaster-error">Aucun podcasteur disponible pour le moment.</p>
+          ) : (
+            <div className="podcaster-buttons">
+              {podcasters.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={`podcaster-btn ${selectedPodcaster?.id === p.id ? 'selected' : ''}`}
+                  onClick={() => handlePodcasterChange(p.id)}
+                >
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="booked-step2">
         <BookingCalendar value={selectedDate} onChange={handleDateChange} disabledDates={fullDayBlockedDates} />
@@ -585,18 +575,10 @@ const StepTwoDateTime = ({
           {/* DÉTAIL PRIX */}
           <>
             <div className="recap-infos padding">
-              {isReseaux ? (
-                <p className="flex-align flex-split">
-                  Formule Réseaux (2h + montage){' '}
-                  <span>€ {totalHT.toFixed(2)}</span>
-                </p>
-              ) : (
-                <p className="flex-align flex-split">
-                  Tournage ({safeBookedHours} heure
-                  {safeBookedHours > 1 ? 's' : ''}){' '}
-                  <span>€ {totalHT.toFixed(2)}</span>
-                </p>
-              )}
+              <p className="flex-align flex-split">
+                Formule {formula?.toUpperCase()} (1h){' '}
+                <span>€ {totalHT.toFixed(2)} HT</span>
+              </p>
               <p className="flex-align flex-split small">
                 TVA (20%) <span>€ {tvaAmount.toFixed(2)}</span>
               </p>
@@ -646,8 +628,8 @@ const StepTwoDateTime = ({
           onChangeEnd={setEndTime}
           disabledStartTimes={disabledStartTimes}
           disabledEndTimes={disabledEndTimes}
-          hideEndTime={isReseaux}
-          fixedDurationLabel="Créneau (2h)"
+          hideEndTime={true}
+          fixedDurationLabel="Créneau (1h)"
           availableHours={availableHours}
         />
       </div>

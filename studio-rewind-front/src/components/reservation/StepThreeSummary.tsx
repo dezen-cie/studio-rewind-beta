@@ -1,8 +1,9 @@
 // src/components/reservation/StepThree.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { FormulaKey, PricingBreakdown, SelectedPodcaster } from '../../pages/ReservationPage';
 import api, { setStoredToken } from '../../api/client';
+import { getPublicFormulas } from '../../api/formulas';
 import './StepThreeSummary.css';
 
 // Stripe
@@ -48,8 +49,7 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
   onBack
 }) => {
   const navigate = useNavigate();
-  const isSubscription = formula === 'abonnement';
-  const isReseaux = formula === 'reseaux';
+  // Plus de formules spéciales - toutes sont des réservations 1h
 
   const [mode, setMode] = useState<Mode>('register');
   const [accountType, setAccountType] = useState<AccountType>('particulier');
@@ -85,16 +85,34 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
   const [reservationId, setReservationId] = useState<string | null>(null);
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
 
+  // Info sur la formule (pour savoir si elle nécessite un podcasteur)
+  const [requiresPodcaster, setRequiresPodcaster] = useState<boolean>(true);
+
+  // Charger l'info de la formule au montage
+  useEffect(() => {
+    async function loadFormulaInfo() {
+      try {
+        const formulas = await getPublicFormulas();
+        const currentFormula = formulas.find((f) => f.key === formula);
+        if (currentFormula) {
+          setRequiresPodcaster(currentFormula.requires_podcaster ?? true);
+        }
+      } catch (err) {
+        console.error('Erreur chargement info formule:', err);
+      }
+    }
+    loadFormulaInfo();
+  }, [formula]);
+
   function formatDate() {
     if (!selectedDate) return '';
     return selectedDate.toLocaleDateString('fr-FR');
   }
 
   function getFormulaLabel() {
-    if (formula === 'autonome') return 'Formule autonome';
-    if (formula === 'amelioree') return 'Formule améliorée';
-    if (formula === 'abonnement') return "Pack d'heures (abonnement)";
-    if (formula === 'reseaux') return 'Formule Réseaux';
+    if (formula === 'solo') return 'Formule SOLO';
+    if (formula === 'duo') return 'Formule DUO';
+    if (formula === 'pro') return 'Formule PRO';
     return formula;
   }
 
@@ -103,59 +121,15 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
   // ============================
 
   async function startStripeReservationFlow() {
-    // 🔴 CAS ABONNEMENT = achat d'un pack d'heures
-    // On ne demande PAS de date/heure au client ici.
-    if (isSubscription) {
-      try {
-        const now = new Date();
-        const startIso = now.toISOString();
-        const endIso = new Date(now.getTime() + 5 * 60 * 60 * 1000).toISOString(); // bloc fictif 5h
-
-        const res = await api.post('/payments/reservation-intent', {
-          formula,
-          start_date: startIso,
-          end_date: endIso
-        });
-
-        const data = res.data || {};
-        const clientSecret = data.clientSecret;
-        const resId = data.reservationId;
-        const piId = data.paymentIntentId;
-
-        if (!clientSecret || !resId || !piId) {
-          throw new Error(
-            'Réponse Stripe / pack heures invalide : clientSecret ou ids manquants.'
-          );
-        }
-
-        setStripeClientSecret(clientSecret);
-        setReservationId(resId);
-        setPaymentIntentId(piId);
-        setPaymentStep('stripe');
-        setError(null);
-        setSuccess(null);
-        return;
-      } catch (err: any) {
-        console.error('Erreur startStripeReservationFlow (pack heures):', err);
-        const msg =
-          err?.response?.data?.message ||
-          err?.response?.data?.error ||
-          err?.message ||
-          'Erreur lors de la préparation du paiement du pack heures.';
-        setError(msg);
-        throw err;
-      }
-    }
-
-    // 🔵 CAS RÉSERVATION (autonome / améliorée)
+    // Toutes les formules sont des réservations 1h
     if (!selectedDate || !startTime || !endTime) {
       throw new Error(
         'Date et créneau horaire obligatoires pour cette formule.'
       );
     }
 
-    if (!selectedPodcaster) {
-      throw new Error('Le choix du podcasteur est obligatoire.');
+    if (requiresPodcaster && !selectedPodcaster) {
+      throw new Error('Le choix du podcasteur est obligatoire pour cette formule.');
     }
 
     const startIso = buildDateTime(selectedDate, startTime);
@@ -165,7 +139,7 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
       formula,
       start_date: startIso,
       end_date: endIso,
-      podcaster_id: selectedPodcaster.id
+      podcaster_id: selectedPodcaster?.id || null
     });
 
     const data = res.data || {};
@@ -194,12 +168,7 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
    *  => on redirige vers /member avec flash
    */
   function handleStripeSuccess() {
-    let flash = 'Votre paiement a été accepté et votre réservation est confirmée.';
-    if (isSubscription) {
-      flash = "Votre pack d'heures est actif. Vous pouvez maintenant réserver vos créneaux depuis l'espace membre.";
-    } else if (isReseaux) {
-      flash = "Votre Formule Réseaux est confirmée. Rendez-vous au studio à la date et heure convenues !";
-    }
+    const flash = 'Votre paiement a été accepté et votre réservation est confirmée. Rendez-vous au studio à la date et heure convenues !';
     navigate('/member', { state: { flash } });
   }
 
@@ -251,14 +220,35 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
         payload.vat_number = vatNumber;
       }
 
-      const res = await api.post('/auth/register', payload);
+      let authRes;
+      try {
+        // Essayer l'inscription
+        authRes = await api.post('/auth/register', payload);
+      } catch (registerErr: any) {
+        // Si l'utilisateur existe déjà (409), essayer de le connecter
+        if (registerErr?.response?.status === 409) {
+          try {
+            authRes = await api.post('/auth/login', {
+              email: regEmail,
+              password: regPassword
+            });
+          } catch (loginErr: any) {
+            // Si la connexion échoue (mauvais mot de passe), afficher un message clair
+            throw new Error(
+              'Un compte existe déjà avec cet email. Veuillez vous connecter avec votre mot de passe ou utiliser un autre email.'
+            );
+          }
+        } else {
+          throw registerErr;
+        }
+      }
 
-      if (res.data?.user) {
-        localStorage.setItem('sr_user', JSON.stringify(res.data.user));
+      if (authRes.data?.user) {
+        localStorage.setItem('sr_user', JSON.stringify(authRes.data.user));
       }
       // Stocke le token pour Safari iOS (fallback si cookies bloqués)
-      if (res.data?.token) {
-        setStoredToken(res.data.token);
+      if (authRes.data?.token) {
+        setStoredToken(authRes.data.token);
       }
 
       // On enchaîne avec la création du PaymentIntent
@@ -266,6 +256,7 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
     } catch (err: any) {
       console.error('Erreur inscription + réservation/pack:', err);
       const msg =
+        err?.message ||
         err?.response?.data?.message ||
         err?.response?.data?.error ||
         "Erreur lors de l'inscription ou de la préparation du paiement.";
@@ -314,11 +305,6 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
     }
   }
 
-  // ==== PRIX ABONNEMENT (statique pour l'instant – affichage) ====
-  const abonnementPriceTtc = 800;
-  const abonnementPriceHt = abonnementPriceTtc / 1.2;
-  const aboTva = abonnementPriceHt * 0.2;
-  const aboTtc = abonnementPriceHt + aboTva;
 
   return (
     <main className="booked-main booked-main-step3">
@@ -353,38 +339,35 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
                 Formule : <strong>{getFormulaLabel()}</strong>
               </p>
 
-              {!isSubscription && selectedPodcaster && (
+              {selectedPodcaster && (
                 <p>
                   Podcasteur : <strong>{selectedPodcaster.name}</strong>
                 </p>
               )}
 
-              {!isSubscription && selectedDate && (
+              {selectedDate && (
                 <p>
                   Date : <strong>{formatDate()}</strong>
                 </p>
               )}
             </div>
 
-            {!isSubscription && (
-              <div>
-                {startTime && endTime && (
-                  <p>
-                    Créneau :{' '}
-                    <strong>
-                      {startTime} - {endTime}
-                    </strong>
-                  </p>
-                )}
+            <div>
+              {startTime && endTime && (
+                <p>
+                  Créneau :{' '}
+                  <strong>
+                    {startTime} - {endTime}
+                  </strong>
+                </p>
+              )}
 
-                {pricing && (
-                  <p>
-                    Nombre d&apos;heures :{' '}
-                    <strong>{pricing.hours}</strong>
-                  </p>
-                )}
-              </div>
-            )}
+              {pricing && (
+                <p>
+                  Durée : <strong>1h</strong>
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="cart-summary-actions">
@@ -395,10 +378,10 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
         </div>
 
         <div className="recap-prices">
-          {!isSubscription && pricing && (
+          {pricing && (
             <>
               <p>
-                Prix total HT :{' '}
+                Prix HT :{' '}
                 <strong>{pricing.price_ht.toFixed(2)} €</strong>
               </p>
               <p>
@@ -406,32 +389,8 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
                 <strong>{pricing.price_tva.toFixed(2)} €</strong>
               </p>
               <p>
-                Prix total TTC :{' '}
+                Prix TTC :{' '}
                 <strong>{pricing.price_ttc.toFixed(2)} €</strong>
-              </p>
-              {isReseaux && (
-                <p className="small-info">
-                  Enregistrement de 2h + montage de 2 podcasts et 5 vidéos verticales pour les réseaux.
-                </p>
-              )}
-            </>
-          )}
-
-          {isSubscription && (
-            <>
-              <p>
-                Prix pack HT :{' '}
-                <strong>{abonnementPriceHt.toFixed(2)} €</strong>
-              </p>
-              <p>
-                TVA (20%) : <strong>{aboTva.toFixed(2)} €</strong>
-              </p>
-              <p>
-                Prix pack TTC :{' '}
-                <strong>{aboTtc.toFixed(2)} €</strong>
-              </p>
-              <p className="small-info">
-                Ce pack donne droit à 5h de réservation, gérées depuis votre espace membre.
               </p>
             </>
           )}

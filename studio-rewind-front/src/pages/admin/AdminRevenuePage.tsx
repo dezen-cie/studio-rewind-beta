@@ -126,9 +126,9 @@ function AdminRevenuePage() {
                 </div>
                 <div className="revenue-card-content">
                   <span className="revenue-card-value">
-                    {formatCurrency(revenue?.totals.total_revenue ?? 0)}
+                    {formatCurrency(revenue?.totals.total_revenue_ht ?? 0)}
                   </span>
-                  <span className="revenue-card-label">CA Total</span>
+                  <span className="revenue-card-label">CA Total HT</span>
                 </div>
               </div>
               <div className="revenue-card revenue-card--commission">
@@ -179,18 +179,18 @@ function AdminRevenuePage() {
                         <th>Podcasteur</th>
                         <th className="text-right">Réservations</th>
                         <th className="text-right">Heures</th>
-                        <th className="text-right">CA</th>
+                        <th className="text-right">CA HT</th>
                         <th className="text-right">Commission 20%</th>
                       </tr>
                     </thead>
                     <tbody>
                       {revenue.podcasters.map((p) => (
-                        <tr key={p.podcaster_id} className={p.total_revenue > 0 ? '' : 'revenue-row-empty'}>
+                        <tr key={p.podcaster_id} className={p.total_revenue_ht > 0 ? '' : 'revenue-row-empty'}>
                           <td className="revenue-podcaster-name">{p.podcaster_name}</td>
                           <td className="text-right">{p.total_reservations}</td>
                           <td className="text-right">{p.total_hours}h</td>
                           <td className="text-right revenue-amount">
-                            {formatCurrency(p.total_revenue)}
+                            {formatCurrency(p.total_revenue_ht)}
                           </td>
                           <td className="text-right revenue-commission">
                             {formatCurrency(p.commission_20)}
@@ -204,7 +204,7 @@ function AdminRevenuePage() {
                         <td className="text-right"><strong>{revenue.totals.total_reservations}</strong></td>
                         <td className="text-right"><strong>{revenue.totals.total_hours}h</strong></td>
                         <td className="text-right revenue-amount">
-                          <strong>{formatCurrency(revenue.totals.total_revenue)}</strong>
+                          <strong>{formatCurrency(revenue.totals.total_revenue_ht)}</strong>
                         </td>
                         <td className="text-right revenue-commission">
                           <strong>{formatCurrency(revenue.totals.total_commission)}</strong>

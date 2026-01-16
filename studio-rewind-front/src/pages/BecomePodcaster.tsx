@@ -32,12 +32,16 @@ function BecomePodcaster() {
 
   // Form state
   const [formData, setFormData] = useState({
-    lastname: '',
     firstname: '',
+    lastname: '',
     email: '',
+    city: '',
     phone: '',
-    podcastIdea: '',
-    availability: ''
+    siret: '',
+    companyName: '',
+    status: '',
+    message: '',
+    rgpdAccepted: false
   })
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
@@ -47,9 +51,14 @@ function BecomePodcaster() {
     setOpenIndex((prev) => (prev === index ? null : index))
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked
+      setFormData(prev => ({ ...prev, [name]: checked }))
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }))
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -57,44 +66,75 @@ function BecomePodcaster() {
     setError(null)
     setSuccess(null)
 
-    const { lastname, firstname, email, phone, podcastIdea, availability } = formData
+    const { firstname, lastname, email, city, phone, siret, companyName, status, message, rgpdAccepted } = formData
 
-    if (!lastname.trim() || !firstname.trim() || !email.trim() || !phone.trim() || !podcastIdea.trim()) {
-      setError('Veuillez remplir tous les champs obligatoires.')
+    // Validation des champs obligatoires
+    if (!firstname.trim() || !lastname.trim()) {
+      setError('Veuillez renseigner votre prénom et nom.')
+      return
+    }
+    if (!email.trim()) {
+      setError('Veuillez renseigner votre email.')
+      return
+    }
+    if (!siret.trim()) {
+      setError('Veuillez renseigner votre numéro SIRET (ou "en cours" si pas encore obtenu).')
+      return
+    }
+    if (!companyName.trim()) {
+      setError('Veuillez renseigner le nom de votre société.')
+      return
+    }
+    if (!status) {
+      setError('Veuillez sélectionner votre statut juridique.')
+      return
+    }
+    if (!message.trim()) {
+      setError('Veuillez renseigner votre message.')
+      return
+    }
+    if (!rgpdAccepted) {
+      setError('Veuillez accepter la politique de confidentialité.')
       return
     }
 
     const content = [
       'Nouvelle demande pour devenir podcasteur',
       '',
-      `Nom : ${lastname}`,
       `Prénom : ${firstname}`,
+      `Nom : ${lastname}`,
       `Email : ${email}`,
-      `Téléphone : ${phone}`,
+      `Ville : ${city || 'Non précisée'}`,
+      `Téléphone : ${phone || 'Non précisé'}`,
       '',
-      'Idée de podcast :',
-      podcastIdea,
+      `Nom de la société : ${companyName}`,
+      `SIRET : ${siret}`,
+      `Statut : ${status}`,
       '',
-      'Disponibilités :',
-      availability || 'Non précisées'
+      'Message :',
+      message
     ].join('\n')
 
     try {
       setSubmitting(true)
       await api.post('/messages/contact', {
         email,
-        subject: `Devenir podcasteur - ${firstname} ${lastname}`,
+        subject: `Devenir podcasteur - ${firstname} ${lastname} (${companyName})`,
         content
       })
 
       setSuccess('Merci ! Ta demande a bien été envoyée. On te recontacte sous 48h.')
       setFormData({
-        lastname: '',
         firstname: '',
+        lastname: '',
         email: '',
+        city: '',
         phone: '',
-        podcastIdea: '',
-        availability: ''
+        siret: '',
+        companyName: '',
+        status: '',
+        message: '',
+        rgpdAccepted: false
       })
     } catch (err: any) {
       console.error('Erreur envoi formulaire podcasteur :', err)
@@ -250,24 +290,24 @@ function BecomePodcaster() {
         <form className="bp-form" onSubmit={handleSubmit}>
           <div className="bp-form-row">
             <div className="bp-form-group">
-              <label htmlFor="lastname">Nom *</label>
-              <input
-                id="lastname"
-                name="lastname"
-                type="text"
-                value={formData.lastname}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="bp-form-group">
               <label htmlFor="firstname">Prénom *</label>
               <input
                 id="firstname"
                 name="firstname"
                 type="text"
                 value={formData.firstname}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="bp-form-group">
+              <label htmlFor="lastname">Nom *</label>
+              <input
+                id="lastname"
+                name="lastname"
+                type="text"
+                value={formData.lastname}
                 onChange={handleChange}
                 required
               />
@@ -288,41 +328,99 @@ function BecomePodcaster() {
             </div>
 
             <div className="bp-form-group">
-              <label htmlFor="phone">Téléphone *</label>
+              <label htmlFor="city">Ville</label>
+              <input
+                id="city"
+                name="city"
+                type="text"
+                value={formData.city}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          <div className="bp-form-row">
+            <div className="bp-form-group">
+              <label htmlFor="phone">Téléphone</label>
               <input
                 id="phone"
                 name="phone"
                 type="tel"
                 value={formData.phone}
                 onChange={handleChange}
+              />
+            </div>
+
+            <div className="bp-form-group">
+              <label htmlFor="companyName">Nom de la société *</label>
+              <input
+                id="companyName"
+                name="companyName"
+                type="text"
+                value={formData.companyName}
+                onChange={handleChange}
                 required
               />
             </div>
           </div>
 
+          <div className="bp-form-row">
+            <div className="bp-form-group">
+              <label htmlFor="siret">SIRET *</label>
+              <input
+                id="siret"
+                name="siret"
+                type="text"
+                value={formData.siret}
+                onChange={handleChange}
+                placeholder="Ou 'en cours' si pas encore obtenu"
+                required
+              />
+            </div>
+
+            <div className="bp-form-group">
+              <label htmlFor="status">Statut juridique *</label>
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Sélectionner...</option>
+                <option value="Auto-entrepreneur">Auto-entrepreneur</option>
+                <option value="Micro-entreprise">Micro-entreprise</option>
+                <option value="SARL">SARL</option>
+                <option value="SAS">SAS</option>
+                <option value="Autre">Autre</option>
+              </select>
+            </div>
+          </div>
+
           <div className="bp-form-group bp-form-group--full">
-            <label htmlFor="podcastIdea">Ton idée de podcast *</label>
+            <label htmlFor="message">Message *</label>
             <textarea
-              id="podcastIdea"
-              name="podcastIdea"
+              id="message"
+              name="message"
               rows={4}
-              value={formData.podcastIdea}
+              value={formData.message}
               onChange={handleChange}
-              placeholder="Décris ton projet de podcast : thématique, format envisagé, public cible..."
+              placeholder="Décris ton projet, tes motivations, tes questions..."
               required
             />
           </div>
 
-          <div className="bp-form-group bp-form-group--full">
-            <label htmlFor="availability">Tes disponibilités</label>
-            <input
-              id="availability"
-              name="availability"
-              type="text"
-              value={formData.availability}
-              onChange={handleChange}
-              placeholder="Ex: En semaine après 18h, le week-end..."
-            />
+          <div className="bp-form-group bp-form-group--full bp-form-checkbox">
+            <label>
+              <input
+                type="checkbox"
+                name="rgpdAccepted"
+                checked={formData.rgpdAccepted}
+                onChange={handleChange}
+                required
+              />
+              <span>J'accepte que mes données soient utilisées pour traiter ma demande conformément à la <a href="/politique-de-confidentialite" target="_blank" rel="noopener noreferrer">politique de confidentialité</a>. *</span>
+            </label>
           </div>
 
           {error && <p className="bp-form-message bp-form-message--error">{error}</p>}

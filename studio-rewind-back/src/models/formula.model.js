@@ -12,13 +12,13 @@ Formula.init(
       primaryKey: true
     },
     key: {
-      // identifiant technique : "autonome", "amelioree", "abonnement"
+      // identifiant technique : "solo", "duo", "pro"
       type: DataTypes.STRING,
       allowNull: false,
       unique: true
     },
     name: {
-      // nom affiché dans le front : "Formule autonome", etc.
+      // nom affiché dans le front : "Formule Solo", etc.
       type: DataTypes.STRING,
       allowNull: false
     },
@@ -31,6 +31,12 @@ Formula.init(
       // prix TTC / heure (pour hourly) ou / mois (pour subscription)
       type: DataTypes.FLOAT,
       allowNull: false
+    },
+    requires_podcaster: {
+      // si true, la formule nécessite de choisir un podcasteur lors de la résa
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
     }
   },
   {

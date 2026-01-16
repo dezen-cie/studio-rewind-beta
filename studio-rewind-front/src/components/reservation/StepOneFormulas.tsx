@@ -11,26 +11,24 @@ interface StepOneFormulasProps {
 }
 
 // On borne les clés qu'on considère dans le tunnel de résa
-const ALLOWED_KEYS: FormulaKey[] = ['autonome', 'amelioree', 'abonnement', 'reseaux'];
+const ALLOWED_KEYS: FormulaKey[] = ['solo', 'duo', 'pro'];
 
 function getFormulaDescription(key: FormulaKey): string {
   switch (key) {
-    case 'autonome':
-      return "Tu gères ton tournage en totale autonomie, avec accès au studio et au matériel de base.";
-    case 'amelioree':
-      return "Tu profites d'un accompagnement renforcé et d'options supplémentaires pour ton tournage.";
-    case 'abonnement':
-      return "Pack d'heures prépayées pour plus de flexibilité, à utiliser depuis ton espace membre.";
-    case 'reseaux':
-      return "Enregistre 2h et reçois le montage de 2 podcasts et 5 vidéos verticales pour les réseaux.";
+    case 'solo':
+      return "Formule idéale pour débuter, accès au studio avec accompagnement de base.";
+    case 'duo':
+      return "Accompagnement complet avec un podcasteur expérimenté pour optimiser ton contenu.";
+    case 'pro':
+      return "Formule premium avec accompagnement VIP et services de post-production inclus.";
     default:
       return '';
   }
 }
 
-function formatPriceTtc(price: number): string {
-  // 100 -> "100,00€ TTC"
-  return `${price.toFixed(2).replace('.', ',')}€ TTC`;
+function formatPriceHt(price: number): string {
+  // 99 -> "99,00€ HT"
+  return `${price.toFixed(2).replace('.', ',')}€ HT`;
 }
 
 function StepOneFormulas({ onSelectFormula }: StepOneFormulasProps) {
@@ -86,27 +84,22 @@ function StepOneFormulas({ onSelectFormula }: StepOneFormulasProps) {
 
       <div className="booked-formules">
         {orderedFormulas.map((f) => {
-          const isSubscription =
-            f.billing_type === 'subscription' || f.key === 'abonnement';
-          const isReseaux = f.key === 'reseaux';
-
-          const priceLabel = isReseaux
-            ? formatPriceTtc(f.price_ttc)
-            : isSubscription
-              ? `${formatPriceTtc(f.price_ttc)} / mois`
-              : `${formatPriceTtc(f.price_ttc)} / heure`;
+          // Prix affiché en HT (durée fixe 1h)
+          const priceLabel = formatPriceHt(f.price_ttc);
 
           const buttonLabel = 'Sélectionner'
 
           return (
-            <article 
+            <article
               key={f.id}
               className="booked-formule"
+              onClick={() => onSelectFormula(f.key)}
+              style={{ cursor: 'pointer' }}
             >
               <picture>
                 <source
-                  srcSet={`/images/formule-${f.key}.${f.key === 'abonnement' ? 'avif' : 'webp'}`}
-                  type={f.key === 'abonnement' ? 'image/avif' : 'image/webp'}
+                  srcSet={`/images/formule-${f.key}.webp`}
+                  type="image/webp"
                 />
                 <img src={`/images/formule-${f.key}.jpg`} alt={f.name} loading="lazy" />
               </picture>

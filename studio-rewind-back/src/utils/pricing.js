@@ -13,8 +13,9 @@ async function getFormulaByKey(formulaKey) {
 }
 
 // Retourne { total_hours, price_ht, price_tva, price_ttc }
+// Toutes les formules sont maintenant à prix fixe pour 1h (prix stocké en HT)
 export async function calculateReservationPricing(formulaKey, startDate, endDate) {
-  if (!['autonome', 'amelioree', 'abonnement', 'reseaux'].includes(formulaKey)) {
+  if (!['solo', 'duo', 'pro'].includes(formulaKey)) {
     const error = new Error('Formule invalide.');
     error.status = 400;
     throw error;
@@ -35,67 +36,25 @@ export async function calculateReservationPricing(formulaKey, startDate, endDate
     throw error;
   }
 
-  const diffMs = end.getTime() - start.getTime();
-  const hours = diffMs / (1000 * 60 * 60);
-  const total_hours_raw = Number(hours.toFixed(2)); // 2 décimales
-
   const formula = await getFormulaByKey(formulaKey);
 
-  // 🔴 CAS PARTICULIER : "abonnement" = achat d'un pack d'heures
-  // On considère que cette formule représente un pack (ex: 5h) vendu à un prix fixe.
-  if (formulaKey === 'abonnement') {
-    const HOURS_PER_PACK = 5;
-
-    // Tu peux configurer le prix TTC en BDD dans Formula.price_ttc,
-    // sinon on fallback sur 800€ TTC.
-    const packPriceTtc = formula.price_ttc || 800;
-
-    const price_ht = Number((packPriceTtc / 1.2).toFixed(2)); // TVA 20%
-    const price_tva = Number((packPriceTtc - price_ht).toFixed(2));
-
-    return {
-      total_hours: HOURS_PER_PACK,
-      price_ht,
-      price_tva,
-      price_ttc: packPriceTtc
-    };
-  }
-
-  // 🟠 CAS PARTICULIER : "reseaux" = forfait avec 2h d'enregistrement + montage
-  if (formulaKey === 'reseaux') {
-    const HOURS_INCLUDED = 2;
-
-    // Prix TTC en BDD dans Formula.price_ttc, sinon fallback sur 1200€ TTC.
-    const forfaitPriceTtc = formula.price_ttc || 1200;
-
-    const price_ht = Number((forfaitPriceTtc / 1.2).toFixed(2)); // TVA 20%
-    const price_tva = Number((forfaitPriceTtc - price_ht).toFixed(2));
-
-    return {
-      total_hours: HOURS_INCLUDED,
-      price_ht,
-      price_tva,
-      price_ttc: forfaitPriceTtc
-    };
-  }
-
-  // 🔵 Autres formules : calcul classique à l'heure
-  const rateTtc = formula.price_ttc; // prix TTC / heure
-  if (!rateTtc || rateTtc <= 0) {
+  // Prix HT stocké dans price_ttc (le champ garde son nom mais contient le HT)
+  const price_ht = formula.price_ttc;
+  if (!price_ht || price_ht <= 0) {
     const error = new Error(
-      `Tarif TTC invalide pour la formule "${formulaKey}". Vérifie ta configuration en base.`
+      `Tarif HT invalide pour la formule "${formulaKey}". Vérifie ta configuration en base.`
     );
     error.status = 500;
     throw error;
   }
 
-  const price_ttc = Number((rateTtc * total_hours_raw).toFixed(2));
-  const price_ht = Number((price_ttc / 1.2).toFixed(2)); // TVA 20%
-  const price_tva = Number((price_ttc - price_ht).toFixed(2));
+  // Calcul TVA 20%
+  const price_tva = Number((price_ht * 0.2).toFixed(2));
+  const price_ttc = Number((price_ht + price_tva).toFixed(2));
 
   return {
-    total_hours: total_hours_raw,
-    price_ht,
+    total_hours: 1, // Durée fixe 1h
+    price_ht: Number(price_ht.toFixed(2)),
     price_tva,
     price_ttc
   };

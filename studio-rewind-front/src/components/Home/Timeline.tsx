@@ -123,22 +123,21 @@ function Timeline() {
 
   useEffect(() => {
     function updateLinePosition() {
-      if (!sectionRef.current || !lineRef.current) return;
+      if (!sectionRef.current || !sliderRef.current || !lineRef.current) return;
 
-      const dot = sectionRef.current.querySelector('.materiel-dot');
+      const dot = sliderRef.current.querySelector('.materiel-dot');
       if (!dot) return;
 
       const sectionRect = sectionRef.current.getBoundingClientRect();
       const dotRect = dot.getBoundingClientRect();
       const dotCenter = dotRect.top + dotRect.height / 2;
 
-      // Positionner par rapport au bas (plus stable car le contenu sous le dot est fixe)
-      const distanceFromBottom = sectionRect.bottom - dotCenter;
-      lineRef.current.style.top = 'auto';
-      lineRef.current.style.bottom = `${distanceFromBottom}px`;
+      // Positionner par rapport à la section (parent de la ligne)
+      const topPosition = dotCenter - sectionRect.top;
+      lineRef.current.style.top = `${topPosition}px`;
     }
 
-    // Calcul immédiat (la distance du bas est stable même sans images)
+    // Calcul après le rendu
     requestAnimationFrame(updateLinePosition);
 
     window.addEventListener('resize', updateLinePosition);
@@ -157,10 +156,12 @@ function Timeline() {
         <div className="materiel-slider" ref={sliderRef}>
           {[...items, ...items, ...items, ...items].map((item, index) => (
             <div className="materiel-item" key={index}>
-              <picture>
-                <source srcSet={item.imgWebp} type="image/webp" />
-                <img src={item.img} alt={item.title} loading="lazy" />
-              </picture>
+              <div className="materiel-item-img">
+                <picture>
+                  <source srcSet={item.imgWebp} type="image/webp" />
+                  <img src={item.img} alt={item.title} loading="lazy" />
+                </picture>
+              </div>
               <div className="materiel-dot"></div>
               <h3><span className="materiel-icon">{item.icon}</span> {item.title}</h3>
               <ul>

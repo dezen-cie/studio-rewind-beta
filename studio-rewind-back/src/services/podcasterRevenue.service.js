@@ -3,18 +3,18 @@ import { Op } from 'sequelize';
 import { Reservation, Podcaster, Subscription } from '../models/index.js';
 
 /**
- * Calcule le CA effectif d'une réservation (pour commission)
- * Pour les réservations via pack, on calcule : (prix_pack / nb_heures_pack) × heures_réservées
+ * Calcule le CA effectif HT d'une réservation (pour commission)
+ * Pour les réservations via pack, on calcule : (prix_pack_ht / nb_heures_pack) × heures_réservées
  * @param {Object} reservation - La réservation
- * @returns {Promise<number>} Le CA effectif
+ * @returns {Promise<number>} Le CA effectif HT
  */
-async function getEffectiveRevenue(reservation) {
-  // Réservation classique : on prend le prix_ttc directement
+async function getEffectiveRevenueHT(reservation) {
+  // Réservation classique : on prend le prix_ht directement
   if (!reservation.is_subscription) {
-    return reservation.price_ttc || 0;
+    return reservation.price_ht || 0;
   }
 
-  // Réservation via pack : calculer le taux horaire du pack
+  // Réservation via pack : calculer le taux horaire du pack (en HT)
   // Trouver le pack de l'utilisateur (le plus récent actif ou le dernier créé)
   const subscription = await Subscription.findOne({
     where: { user_id: reservation.user_id },
@@ -22,16 +22,17 @@ async function getEffectiveRevenue(reservation) {
   });
 
   if (!subscription) {
-    // Fallback : utiliser les valeurs par défaut (800€ pour 5h)
-    const hourlyRate = 800 / 5; // = 160€/h
-    return hourlyRate * (reservation.total_hours || 0);
+    // Fallback : utiliser les valeurs par défaut (666.67€ HT pour 5h, soit 800€ TTC)
+    const hourlyRateHT = (800 / 1.2) / 5; // = 133.33€/h HT
+    return hourlyRateHT * (reservation.total_hours || 0);
   }
 
-  const packPrice = subscription.price_ttc || 800;
+  // Utiliser price_ht si disponible, sinon calculer depuis price_ttc
+  const packPriceHT = subscription.price_ht || (subscription.price_ttc / 1.2) || (800 / 1.2);
   const packHours = subscription.monthly_hours_quota || 5;
-  const hourlyRate = packPrice / packHours; // ex: 800 / 5 = 160€/h
+  const hourlyRateHT = packPriceHT / packHours;
 
-  return hourlyRate * (reservation.total_hours || 0);
+  return hourlyRateHT * (reservation.total_hours || 0);
 }
 
 /**
@@ -66,23 +67,23 @@ export async function getPodcastersRevenueByMonth(year, month) {
         }
       });
 
-      // Calculer le CA total (en prenant en compte les packs)
-      let totalRevenue = 0;
+      // Calculer le CA total HT (en prenant en compte les packs)
+      let totalRevenueHT = 0;
       for (const r of reservations) {
-        const effectiveRevenue = await getEffectiveRevenue(r);
-        totalRevenue += effectiveRevenue;
+        const effectiveRevenueHT = await getEffectiveRevenueHT(r);
+        totalRevenueHT += effectiveRevenueHT;
       }
 
       const totalReservations = reservations.length;
       const totalHours = reservations.reduce((sum, r) => sum + (r.total_hours || 0), 0);
 
-      // Calculer les 20%
-      const commission = totalRevenue * 0.20;
+      // Calculer les 20% sur le HT
+      const commission = totalRevenueHT * 0.20;
 
       return {
         podcaster_id: podcaster.id,
         podcaster_name: podcaster.name,
-        total_revenue: Math.round(totalRevenue * 100) / 100,
+        total_revenue_ht: Math.round(totalRevenueHT * 100) / 100,
         commission_20: Math.round(commission * 100) / 100,
         total_reservations: totalReservations,
         total_hours: Math.round(totalHours * 100) / 100
@@ -91,7 +92,7 @@ export async function getPodcastersRevenueByMonth(year, month) {
   );
 
   // Calculer les totaux globaux
-  const globalTotal = results.reduce((sum, r) => sum + r.total_revenue, 0);
+  const globalTotalHT = results.reduce((sum, r) => sum + r.total_revenue_ht, 0);
   const globalCommission = results.reduce((sum, r) => sum + r.commission_20, 0);
   const globalReservations = results.reduce((sum, r) => sum + r.total_reservations, 0);
   const globalHours = results.reduce((sum, r) => sum + r.total_hours, 0);
@@ -101,7 +102,7 @@ export async function getPodcastersRevenueByMonth(year, month) {
     month,
     podcasters: results,
     totals: {
-      total_revenue: Math.round(globalTotal * 100) / 100,
+      total_revenue_ht: Math.round(globalTotalHT * 100) / 100,
       total_commission: Math.round(globalCommission * 100) / 100,
       total_reservations: globalReservations,
       total_hours: Math.round(globalHours * 100) / 100

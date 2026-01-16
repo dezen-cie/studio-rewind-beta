@@ -303,15 +303,30 @@
 }
 
 .bp-form-group input,
-.bp-form-group textarea {
+.bp-form-group textarea,
+.bp-form-group select {
   padding: 0.8rem 1rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   background-color: rgba(255, 255, 255, 0.05);
   color: white;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif;
   font-size: 1rem;
   transition: var(--transition);
+}
+
+.bp-form-group select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+.bp-form-group select option {
+  background-color: #1a1a1a;
+  color: white;
 }
 
 .bp-form-group input::placeholder,
@@ -320,10 +335,38 @@
 }
 
 .bp-form-group input:focus,
-.bp-form-group textarea:focus {
+.bp-form-group textarea:focus,
+.bp-form-group select:focus {
   outline: none;
   border-color: var(--color-primary);
   background-color: rgba(255, 255, 255, 0.08);
+}
+
+.bp-form-checkbox label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  cursor: pointer;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.bp-form-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
+.bp-form-checkbox a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.bp-form-checkbox a:hover {
+  opacity: 0.8;
 }
 
 .bp-form-group textarea {

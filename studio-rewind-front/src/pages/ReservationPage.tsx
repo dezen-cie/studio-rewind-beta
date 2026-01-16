@@ -8,7 +8,7 @@ import './Reservation.css'
 import Menus from '../components/Header/Menus';
 
 
-export type FormulaKey = 'autonome' | 'amelioree' | 'abonnement' | 'reseaux';
+export type FormulaKey = 'solo' | 'duo' | 'pro';
 
 export interface PricingBreakdown {
   hours: number;
@@ -59,13 +59,8 @@ function ReservationPage() {
     setPricing(null);
     setSelectedPodcaster(null);
 
-    if (f === 'abonnement') {
-      setStep(3);
-      updateUrl(3, f);
-    } else {
-      setStep(2);
-      updateUrl(2, f);
-    }
+    setStep(2);
+    updateUrl(2, f);
   }
 
   function goToStep1() {
@@ -80,7 +75,7 @@ function ReservationPage() {
   }
 
   function goToStep2() {
-    if (!formula || formula === 'abonnement') {
+    if (!formula) {
       goToStep1();
       return;
     }
@@ -117,7 +112,7 @@ function ReservationPage() {
           <StepOneFormulas onSelectFormula={handleSelectFormula} />
         )}
 
-        {step === 2 && formula && formula !== 'abonnement' && (
+        {step === 2 && formula && (
           <StepTwoDateTime
             formula={formula}
             selectedDate={selectedDate}
@@ -141,7 +136,7 @@ function ReservationPage() {
             endTime={endTime}
             pricing={pricing}
             selectedPodcaster={selectedPodcaster}
-            onBack={formula === 'abonnement' ? goToStep1 : goToStep2}
+            onBack={goToStep2}
           />
         )}
       </main>

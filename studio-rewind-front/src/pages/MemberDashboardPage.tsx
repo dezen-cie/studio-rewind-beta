@@ -117,17 +117,17 @@ function buildCalendarMatrix(
 }
 
 function getFormulaLabel(r: MemberReservationWithSub) {
-  if (r.formula === 'amelioree' && r.is_subscription) {
-    return 'Formule améliorée (pack heures)';
+  if (r.is_subscription) {
+    return `Formule ${r.formula.charAt(0).toUpperCase() + r.formula.slice(1)} (pack heures)`;
   }
 
   switch (r.formula as MemberReservationFormula) {
-    case 'autonome':
-      return 'Formule autonome';
-    case 'amelioree':
-      return 'Formule améliorée';
-    case 'abonnement':
-      return 'Formule pack';
+    case 'solo':
+      return 'Formule Solo';
+    case 'duo':
+      return 'Formule Duo';
+    case 'pro':
+      return 'Formule Pro';
     default:
       return r.formula;
   }
@@ -709,7 +709,7 @@ function MemberDashboardPage() {
       const end_date = buildDateTime(selectedDateObject, subEndTime);
 
       await api.post('/reservations', {
-        formula: 'amelioree',
+        formula: 'duo',
         start_date,
         end_date,
         is_subscription: true,

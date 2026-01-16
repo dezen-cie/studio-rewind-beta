@@ -62,7 +62,7 @@ function AdminLayout() {
           </div>
 
           <nav className="sr-admin-nav">
-            <p className="sr-admin-nav-section">Vue d’ensemble</p>
+            <p className="sr-admin-nav-section">Vue d'ensemble</p>
             <ul>
               <li>
                 <NavLink
@@ -76,9 +76,64 @@ function AdminLayout() {
                   <span>Dashboard</span>
                 </NavLink>
               </li>
+              <li>
+                <NavLink
+                  to="/admin/users"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">👥</span>
+                  <span>Utilisateurs</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/admin/formulas"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">💰</span>
+                  <span>Formules</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/admin/blocked-slots"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">🕐</span>
+                  <span>Horaires du studio</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/admin/podcasters"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">🎙️</span>
+                  <span>Podcasteurs</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/admin/messages"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">✉️</span>
+                  <span>Messages</span>
+                </NavLink>
+              </li>
             </ul>
 
-            <p className="sr-admin-nav-section">Gestion</p>
+            <p className="sr-admin-nav-section">Réservations</p>
             <ul>
               <li>
                 <NavLink
@@ -100,61 +155,6 @@ function AdminLayout() {
                 >
                   <span className="sr-admin-navlink-icon">📁</span>
                   <span>Archives</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/admin/users"
-                  className={({ isActive }) =>
-                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
-                  }
-                >
-                  <span className="sr-admin-navlink-icon">👥</span>
-                  <span>Utilisateurs</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/admin/messages"
-                  className={({ isActive }) =>
-                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
-                  }
-                >
-                  <span className="sr-admin-navlink-icon">✉️</span>
-                  <span>Messages</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/admin/formulas"
-                  className={({ isActive }) =>
-                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
-                  }
-                >
-                  <span className="sr-admin-navlink-icon">💰</span>
-                  <span>Formules</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/admin/blocked-slots"
-                  className={({ isActive }) =>
-                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
-                  }
-                >
-                  <span className="sr-admin-navlink-icon">🚫</span>
-                  <span>Créneaux bloqués</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/admin/podcasters"
-                  className={({ isActive }) =>
-                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
-                  }
-                >
-                  <span className="sr-admin-navlink-icon">🎙️</span>
-                  <span>Podcasteurs</span>
                 </NavLink>
               </li>
               <li>

@@ -2,7 +2,7 @@
 import api from './client';
 
 export type MemberReservationStatus = 'pending' | 'confirmed' | 'cancelled';
-export type MemberReservationFormula = 'autonome' | 'amelioree' | 'abonnement';
+export type MemberReservationFormula = 'solo' | 'duo' | 'pro';
 
 export interface MemberReservation {
   id: string;

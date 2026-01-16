@@ -7,7 +7,7 @@ import {
 /**
  * POST /api/payments/reservation-intent
  * Crée un PaymentIntent Stripe + une réservation "pending"
- * (paiement à l'acte pour une formule autonome / améliorée / "abonnement pack")
+ * Formules : solo, duo, pro
  */
 export async function createReservationIntent(req, res) {
   try {
@@ -34,7 +34,6 @@ export async function createReservationIntent(req, res) {
  * POST /api/payments/confirm-reservation
  * Confirmé après succès Stripe (PaymentIntent status = succeeded)
  * -> passe la réservation en "confirmed"
- * -> si formula === "abonnement", crée un pack d'heures (Subscription)
  */
 export async function confirmReservation(req, res) {
   try {

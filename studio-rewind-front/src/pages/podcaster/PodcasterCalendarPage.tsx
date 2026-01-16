@@ -73,9 +73,9 @@ function getClientName(user: PodcasterReservation['User']): string {
 
 function getFormulaLabel(formula: string): string {
   switch (formula) {
-    case 'autonome': return 'Formule Autonome';
-    case 'amelioree': return 'Formule Amelioree';
-    case 'reseaux': return 'Formule Reseaux';
+    case 'solo': return 'Formule Solo';
+    case 'duo': return 'Formule Duo';
+    case 'pro': return 'Formule Pro';
     default: return formula;
   }
 }

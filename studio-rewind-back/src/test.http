@@ -28,7 +28,7 @@ Authorization: Bearer {{token}}
 Content-Type: application/json 
 
 {
-  "formula": "autonome",
+  "formula": "solo",
   "start_date": "2025-12-10T10:00:00.000Z",
   "end_date": "2025-12-10T12:00:00.000Z"
 }
@@ -36,10 +36,10 @@ Content-Type: application/json
 ###
 POST http://localhost:4000/api/reservations
 Authorization: Bearer {{token}}
-Content-Type: application/json 
+Content-Type: application/json
 
 {
-  "formula": "autonome",
+  "formula": "solo",
   "start_date": "2025-12-10T10:00:00.000Z",
   "end_date": "2025-12-10T12:00:00.000Z"
 }
@@ -75,13 +75,13 @@ Content-Type: application/json
   "content": "Je ne comprends pas mon quota d'abonnement."
 }
 
-### Créer un PaymentIntent + réservation (formule autonome)
+### Créer un PaymentIntent + réservation (formule solo)
 POST http://localhost:4000/api/payments/reservation-intent
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "formula": "autonome",
+  "formula": "solo",
   "start_date": "2025-12-10T17:00:00.000Z",
   "end_date": "2025-12-10T18:00:00.000Z"
 }

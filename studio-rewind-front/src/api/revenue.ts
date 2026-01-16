@@ -4,7 +4,7 @@ import api from './client';
 export interface PodcasterRevenue {
   podcaster_id: string;
   podcaster_name: string;
-  total_revenue: number;
+  total_revenue_ht: number;
   commission_20: number;
   total_reservations: number;
   total_hours: number;
@@ -15,7 +15,7 @@ export interface MonthlyRevenue {
   month: number;
   podcasters: PodcasterRevenue[];
   totals: {
-    total_revenue: number;
+    total_revenue_ht: number;
     total_commission: number;
     total_reservations: number;
     total_hours: number;

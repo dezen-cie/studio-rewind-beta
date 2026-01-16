@@ -1,6 +1,6 @@
 // src/services/payment.service.js
 import stripe from '../config/stripe.js';
-import { Reservation, User, Subscription } from '../models/index.js';
+import { Reservation, User, Formula } from '../models/index.js';
 import { calculateReservationPricing } from '../utils/pricing.js';
 import { checkAvailability } from './reservation.service.js';
 
@@ -28,9 +28,12 @@ export async function createReservationPaymentIntent(
     throw err;
   }
 
-  // Pour les formules classiques (pas abonnement), le podcasteur est obligatoire
-  if (formula !== 'abonnement' && !podcaster_id) {
-    const err = new Error('Le podcasteur est obligatoire.');
+  // Vérifier si la formule nécessite un podcasteur
+  const formulaData = await Formula.findOne({ where: { key: formula } });
+  const requiresPodcaster = formulaData?.requires_podcaster ?? true;
+
+  if (requiresPodcaster && !podcaster_id) {
+    const err = new Error('Le choix du podcasteur est obligatoire pour cette formule.');
     err.status = 400;
     throw err;
   }
@@ -68,16 +71,10 @@ export async function createReservationPaymentIntent(
     throw err;
   }
 
-  // ❗ IMPORTANT :
-  // Pour les formules classiques (autonome / améliorée / reseaux), on vérifie que le créneau n'est pas déjà pris.
-  // Pour "abonnement" (achat de pack d'heures), on NE bloque PAS le studio.
-  if (formula !== 'abonnement') {
-    await checkAvailability(startDate, endDate, podcaster_id);
-  }
+  // Vérifier que le créneau n'est pas déjà pris
+  await checkAvailability(startDate, endDate, podcaster_id);
 
-  // On crée une "réservation" en pending, qui sert soit :
-  // - de vraie réservation de créneau (autonome / améliorée)
-  // - de trace d'achat de pack (abonnement)
+  // Créer la réservation en pending
   const reservation = await Reservation.create({
     user_id: userId,
     podcaster_id: podcaster_id || null,
@@ -188,23 +185,6 @@ export async function confirmReservationPayment(
   // Paiement OK -> on confirme la réservation
   reservation.status = 'confirmed';
   await reservation.save();
-
-  // Si la formule est "abonnement", on crée un pack d'heures prépayées
-  if (reservation.formula === 'abonnement') {
-    const HOURS_PER_PACK = 5; // pack de 5h comme défini dans ta logique
-
-    await Subscription.create({
-      user_id: reservation.user_id,
-      monthly_hours_quota: HOURS_PER_PACK, // utilisé comme "nombre d'heures du pack"
-      hours_used: 0,
-      active: true,
-      price_ht: reservation.price_ht,
-      price_tva: reservation.price_tva,
-      price_ttc: reservation.price_ttc,
-      paid_at: new Date(),
-      stripe_subscription_id: null // on ne gère pas de subscription Stripe ici
-    });
-  }
 
   return reservation;
 }

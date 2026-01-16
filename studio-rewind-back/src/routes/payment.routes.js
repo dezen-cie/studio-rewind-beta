@@ -8,7 +8,7 @@ import { authenticate } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
-// Créer un PaymentIntent + reservation (formule autonome/amelioree)
+// Créer un PaymentIntent + reservation (formule solo/duo/pro)
 router.post('/reservation-intent', authenticate, createReservationIntent);
 
 // Confirmer une réservation après succès du paiement Stripe

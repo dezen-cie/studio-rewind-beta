@@ -121,14 +121,12 @@ function AdminArchivesPage() {
 
   function getFormulaLabel(formula: string) {
     switch (formula) {
-      case 'autonome':
-        return 'Formule autonome';
-      case 'amelioree':
-        return 'Formule améliorée';
-      case 'abonnement':
-        return "Pack d'heures";
-      case 'reseaux':
-        return 'Formule réseaux';
+      case 'solo':
+        return 'Formule Solo';
+      case 'duo':
+        return 'Formule Duo';
+      case 'pro':
+        return 'Formule Pro';
       default:
         return formula;
     }

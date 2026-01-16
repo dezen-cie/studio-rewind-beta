@@ -13,10 +13,10 @@ function ensureAdmin(req, res, next) {
   next();
 }
 
-// Abonnement du membre connecté
+// Pack d'heures du membre connecté
 router.get('/me', authenticate, getMySubscription);
 
-// Création / assignation d’un abonnement à un user (admin)
+// Création / assignation d'un pack d'heures à un user (admin)
 router.post('/', authenticate, ensureAdmin, adminCreateSubscription);
 
 export default router;

@@ -11,10 +11,9 @@ import {
 } from '../../api/adminDashboard';
 import './AdminDashboardPage.css';
 
-// Heures d'ouverture du studio (9h - 18h)
-const STUDIO_START = 9;
-const STUDIO_END = 18;
-const STUDIO_HOURS = STUDIO_END - STUDIO_START;
+// Heures d'ouverture par défaut (utilisées si pas de données d'occupation)
+const DEFAULT_STUDIO_START = 9;
+const DEFAULT_STUDIO_END = 18;
 
 interface CalendarDay {
   date: Date | null;
@@ -244,14 +243,12 @@ function AdminDashboardPage() {
 
   function getFormulaLabel(formula: DashboardReservation['formula']) {
     switch (formula) {
-      case 'autonome':
-        return 'Autonome';
-      case 'amelioree':
-        return 'Améliorée';
-      case 'abonnement':
-        return "Pack d'heures";
-      case 'reseaux':
-        return 'Réseaux';
+      case 'solo':
+        return 'Solo';
+      case 'duo':
+        return 'Duo';
+      case 'pro':
+        return 'Pro';
       default:
         return formula;
     }
@@ -259,18 +256,21 @@ function AdminDashboardPage() {
 
   function getFormulaColor(formula: DashboardReservation['formula']) {
     switch (formula) {
-      case 'autonome':
-        return '#3b82f6';
-      case 'amelioree':
-        return '#8b5cf6';
-      case 'abonnement':
-        return '#10b981';
-      case 'reseaux':
-        return '#f97316';
+      case 'solo':
+        return '#3b82f6'; // Bleu
+      case 'duo':
+        return '#8b5cf6'; // Violet
+      case 'pro':
+        return '#f97316'; // Orange
       default:
         return '#6b7280';
     }
   }
+
+  // Heures effectives basées sur les données d'occupation (ou valeurs par défaut)
+  const effectiveStart = occupancy?.effective_start ?? DEFAULT_STUDIO_START;
+  const effectiveEnd = occupancy?.effective_end ?? DEFAULT_STUDIO_END;
+  const effectiveHours = effectiveEnd - effectiveStart;
 
   // Calcul de la position et largeur pour la timeline
   function getTimelinePosition(startDate: string, endDate: string) {
@@ -279,15 +279,15 @@ function AdminDashboardPage() {
     const startHour = start.getHours() + start.getMinutes() / 60;
     const endHour = end.getHours() + end.getMinutes() / 60;
 
-    const left = ((Math.max(startHour, STUDIO_START) - STUDIO_START) / STUDIO_HOURS) * 100;
-    const width = ((Math.min(endHour, STUDIO_END) - Math.max(startHour, STUDIO_START)) / STUDIO_HOURS) * 100;
+    const left = ((Math.max(startHour, effectiveStart) - effectiveStart) / effectiveHours) * 100;
+    const width = ((Math.min(endHour, effectiveEnd) - Math.max(startHour, effectiveStart)) / effectiveHours) * 100;
 
     return { left: `${left}%`, width: `${Math.max(width, 2)}%` };
   }
 
-  // Générer les marqueurs d'heures
+  // Générer les marqueurs d'heures dynamiquement
   const hourMarkers = [];
-  for (let h = STUDIO_START; h <= STUDIO_END; h++) {
+  for (let h = Math.floor(effectiveStart); h <= Math.ceil(effectiveEnd); h++) {
     hourMarkers.push(h);
   }
 
@@ -295,8 +295,8 @@ function AdminDashboardPage() {
   const now = new Date();
   const currentHour = now.getHours() + now.getMinutes() / 60;
   const currentTimePosition =
-    currentHour >= STUDIO_START && currentHour <= STUDIO_END
-      ? ((currentHour - STUDIO_START) / STUDIO_HOURS) * 100
+    currentHour >= effectiveStart && currentHour <= effectiveEnd
+      ? ((currentHour - effectiveStart) / effectiveHours) * 100
       : null;
 
   // Formater le nom du mois pour l'affichage
@@ -421,7 +421,14 @@ function AdminDashboardPage() {
                   <Clock size={20} />
                 </div>
                 <div className="sr-stats-content">
-                  <div className="sr-stats-label">Taux d'occupation</div>
+                  <div className="sr-stats-label">
+                    Taux d'occupation
+                    {occupancy && occupancy.total_available_hours > 9 && (
+                      <span style={{ fontSize: '0.7rem', marginLeft: '4px', opacity: 0.7 }}>
+                        ({occupancy.total_available_hours}h ouvertes)
+                      </span>
+                    )}
+                  </div>
                   <div className="sr-stats-value">{occupancy?.occupancy_rate || 0}%</div>
                   <div className="occupancy-bar">
                     <div

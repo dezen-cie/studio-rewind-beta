@@ -6,6 +6,7 @@ import User from './user.model.js';
 import Subscription from './subscription.model.js';
 import Reservation from './reservation.model.js';
 import Formula from './formula.model.js';
+import FormulaOption from './formulaOption.model.js';
 import BlockedSlot from './blockedSlot.model.js';
 import Podcaster from './podcaster.model.js';
 import PodcasterBlockedSlot from './podcasterBlockedSlot.model.js';
@@ -73,7 +74,9 @@ User.hasMany(Message, {
 });
 Message.belongsTo(User, { foreignKey: 'user_id' });
 
-// Pas de relation particulière pour Formula pour l'instant
+// ====== Relations Formula ======
+Formula.hasMany(FormulaOption, { foreignKey: 'formula_id', as: 'options' });
+FormulaOption.belongsTo(Formula, { foreignKey: 'formula_id' });
 
 // ====== Relations Podcaster ======
 // Un podcasteur a un compte utilisateur
@@ -95,6 +98,7 @@ export {
   Reservation,
   Message,
   Formula,
+  FormulaOption,
   BlockedSlot,
   Podcaster,
   PodcasterBlockedSlot

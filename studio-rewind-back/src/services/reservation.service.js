@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { Reservation, Subscription, User, Podcaster } from '../models/index.js';
+import { Reservation, Subscription, User, Podcaster, Formula } from '../models/index.js';
 import { calculateReservationPricing } from '../utils/pricing.js';
 import { isSlotBlocked, getBlockedSlotsForDate } from './blockedSlot.service.js';
 
@@ -77,7 +77,7 @@ export async function getUserSubscriptionUsage(userId) {
     };
   }
 
-  // Heures déjà utilisées = toutes les réservations faites via abonnement,
+  // Heures déjà utilisées = toutes les réservations faites via pack d'heures,
   // sans limite de temps (historique complet), hors réservations annulées
   const reservations = await Reservation.findAll({
     where: {
@@ -103,7 +103,7 @@ export async function getUserSubscriptionUsage(userId) {
   };
 }
 
-// Vérifie le quota global d'heures si on crée/modifie une réservation abonnement
+// Vérifie le quota global d'heures si on crée/modifie une réservation pack d'heures
 // hoursToAdd = nombre d'heures de la réservation qu'on souhaite ajouter
 export async function checkSubscriptionQuota(userId, hoursToAdd) {
   const { purchasedHours, usedHours, remainingHours } =
@@ -223,8 +223,12 @@ export async function previewReservation(
   // Validation des dates en entrée
   validateDateRange(start_date, end_date);
 
-  if (!podcaster_id) {
-    const error = new Error('Le podcasteur est obligatoire.');
+  // Vérifier si la formule nécessite un podcasteur
+  const formulaData = await Formula.findOne({ where: { key: formula } });
+  const requiresPodcaster = formulaData?.requires_podcaster ?? true;
+
+  if (requiresPodcaster && !podcaster_id) {
+    const error = new Error('Le choix du podcasteur est obligatoire pour cette formule.');
     error.status = 400;
     throw error;
   }
@@ -262,8 +266,12 @@ export async function createReservation(
   // Validation des dates en entrée
   validateDateRange(start_date, end_date);
 
-  if (!podcaster_id) {
-    const error = new Error('Le podcasteur est obligatoire.');
+  // Vérifier si la formule nécessite un podcasteur
+  const formulaData = await Formula.findOne({ where: { key: formula } });
+  const requiresPodcaster = formulaData?.requires_podcaster ?? true;
+
+  if (requiresPodcaster && !podcaster_id) {
+    const error = new Error('Le choix du podcasteur est obligatoire pour cette formule.');
     error.status = 400;
     throw error;
   }

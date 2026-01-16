@@ -18,7 +18,7 @@ Reservation.init(
     },
 
     formula: {
-      type: DataTypes.ENUM('autonome', 'amelioree', 'abonnement', 'reseaux'),
+      type: DataTypes.ENUM('solo', 'duo', 'pro'),
       allowNull: false
     },
 
@@ -70,7 +70,7 @@ Reservation.init(
 
     podcaster_id: {
       type: DataTypes.UUID,
-      allowNull: true, // Nullable pour les achats de pack d'heures (abonnement)
+      allowNull: true, // Nullable pour les achats de pack d'heures
       references: {
         model: 'podcasters',
         key: 'id'

@@ -22,7 +22,7 @@ export interface DashboardReservationPodcaster {
 export interface DashboardReservation {
   id: string;
   user_id: string;
-  formula: 'autonome' | 'amelioree' | 'abonnement' | 'reseaux';
+  formula: 'solo' | 'duo' | 'pro';
   start_date: string;
   end_date: string;
   total_hours: number;
@@ -35,11 +35,14 @@ export interface DashboardReservation {
 }
 
 export interface OccupancyData {
-  studio_hours: number;
+  effective_start: number;
+  effective_end: number;
+  total_available_hours: number;
   booked_hours: number;
   blocked_hours: number;
   available_hours: number;
   occupancy_rate: number;
+  is_full_day_blocked: boolean;
 }
 
 export async function getDashboardSummary(date?: string): Promise<DashboardSummary> {

@@ -12,7 +12,7 @@ export interface AdminReservationUser {
 export interface AdminReservation {
   id: string;
   user_id: string;
-  formula: 'autonome' | 'amelioree' | 'abonnement';
+  formula: 'solo' | 'duo' | 'pro';
   start_date: string;
   end_date: string;
   total_hours: number;
