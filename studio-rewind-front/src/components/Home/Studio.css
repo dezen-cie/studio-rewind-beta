@@ -1,6 +1,6 @@
 .studio {
   padding: 3rem 1.5rem 3rem 2rem;
-  background-color: var(--color-brownGrey);
+  background-color: #000000;
   color: var(--color-whitePink);
 }
 
@@ -76,6 +76,24 @@
   .studio_text {
     font-size: 0.95rem;
     text-align: justify;
+
+    .studio_img {
+      width: 100%;
+      display: flex !important;
+      justify-content: center !important;
+      margin: 0;
+
+      picture {
+        display: block;
+        width: 80%;
+      }
+
+      img {
+        margin: 0 auto !important;
+        display: block;
+        width: 100%;
+      }
+    }
   }
 }
 

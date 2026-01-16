@@ -86,8 +86,8 @@ function SimpleMap() {
                 </address>
                 <a href="mailto:virmaud.gregory@gmail.com?subject=Demande%20info&body=Bonjour">contact@studiorewind.fr</a>
                 <picture>
-                  <source srcSet="/images/deventure.webp" type="image/webp" />
-                  <img src="/images/deventure.png" alt="" loading="lazy" />
+                  <source srcSet="/images/logo-header.webp" type="image/webp" />
+                  <img src="/images/logo-header.png" alt="Logo Studio Rewind" loading="lazy" />
                 </picture>
             </div>
             <div className="contact c">
