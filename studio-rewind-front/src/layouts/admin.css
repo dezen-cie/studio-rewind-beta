@@ -131,6 +131,34 @@
   color: var(--sr-color-text-muted);
 }
 
+/* Lien vers le site */
+.sr-admin-site-link {
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--sr-color-border-subtle);
+}
+
+.sr-admin-site-link a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--sr-radius-pill);
+  background: var(--sr-color-accent-soft);
+  border: 1px solid var(--sr-color-accent);
+  color: var(--sr-color-accent);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.16s ease-out;
+}
+
+.sr-admin-site-link a:hover {
+  background: var(--sr-color-accent);
+  color: #fff;
+}
+
 /* NAV */
 
 .sr-admin-nav {

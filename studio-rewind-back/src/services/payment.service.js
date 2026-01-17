@@ -1,6 +1,6 @@
 // src/services/payment.service.js
 import stripe from '../config/stripe.js';
-import { Reservation, User, Formula } from '../models/index.js';
+import { Reservation, User, Formula, PromoCode } from '../models/index.js';
 import { calculateReservationPricing } from '../utils/pricing.js';
 import { checkAvailability } from './reservation.service.js';
 
@@ -11,7 +11,7 @@ import { checkAvailability } from './reservation.service.js';
 
 export async function createReservationPaymentIntent(
   userId,
-  { formula, start_date, end_date, podcaster_id }
+  { formula, start_date, end_date, podcaster_id, promo_code }
 ) {
   const user = await User.findByPk(userId);
   if (!user || !user.is_active) {
@@ -71,6 +71,57 @@ export async function createReservationPaymentIntent(
     throw err;
   }
 
+  // Gestion du code promo
+  let promoData = null;
+  let finalPricing = { ...pricing };
+
+  if (promo_code) {
+    const promoCodeRecord = await PromoCode.findOne({
+      where: { code: promo_code.toUpperCase() }
+    });
+
+    if (!promoCodeRecord) {
+      const err = new Error('Code promo invalide.');
+      err.status = 400;
+      throw err;
+    }
+
+    if (promoCodeRecord.used) {
+      const err = new Error('Ce code promo a deja ete utilise.');
+      err.status = 400;
+      throw err;
+    }
+
+    if (promoCodeRecord.expires_at < new Date()) {
+      const err = new Error('Ce code promo a expire.');
+      err.status = 400;
+      throw err;
+    }
+
+    // Appliquer la reduction
+    const discountPercent = promoCodeRecord.discount;
+    const discountMultiplier = 1 - (discountPercent / 100);
+
+    promoData = {
+      code: promoCodeRecord.code,
+      label: 'Promo lancement',
+      discount: discountPercent,
+      original_price_ht: pricing.price_ht,
+      original_price_ttc: pricing.price_ttc
+    };
+
+    // Recalculer les prix avec la reduction
+    finalPricing.price_ht = Math.round(pricing.price_ht * discountMultiplier * 100) / 100;
+    finalPricing.price_tva = Math.round(finalPricing.price_ht * 0.2 * 100) / 100;
+    finalPricing.price_ttc = Math.round((finalPricing.price_ht + finalPricing.price_tva) * 100) / 100;
+
+    // Marquer le code promo comme utilise
+    await promoCodeRecord.update({
+      used: true,
+      used_at: new Date()
+    });
+  }
+
   // Vérifier que le créneau n'est pas déjà pris
   await checkAvailability(startDate, endDate, podcaster_id);
 
@@ -81,15 +132,21 @@ export async function createReservationPaymentIntent(
     formula,
     start_date: startDate,
     end_date: endDate,
-    total_hours: pricing.total_hours,
-    price_ht: pricing.price_ht,
-    price_tva: pricing.price_tva,
-    price_ttc: pricing.price_ttc,
-    is_subscription: false, // ce n'est PAS encore une résa consommant un pack
-    status: 'pending'
+    total_hours: finalPricing.total_hours,
+    price_ht: finalPricing.price_ht,
+    price_tva: finalPricing.price_tva,
+    price_ttc: finalPricing.price_ttc,
+    is_subscription: false,
+    status: 'pending',
+    // Champs promo
+    promo_code: promoData?.code || null,
+    promo_label: promoData?.label || null,
+    promo_discount: promoData?.discount || null,
+    original_price_ht: promoData?.original_price_ht || null,
+    original_price_ttc: promoData?.original_price_ttc || null
   });
 
-  const amount = Math.round(pricing.price_ttc * 100); // en centimes
+  const amount = Math.round(finalPricing.price_ttc * 100); // en centimes
   const currency = process.env.STRIPE_CURRENCY || 'eur';
 
   // Création du PaymentIntent Stripe (uniquement paiement par carte bancaire)

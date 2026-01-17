@@ -30,6 +30,7 @@ function AdminPodcastersPage() {
   const [formVideo, setFormVideo] = useState<File | null>(null);
   const [formAudio, setFormAudio] = useState<File | null>(null);
   const [formOrder, setFormOrder] = useState('');
+  const [formTeamOrder, setFormTeamOrder] = useState('');
   const [formIsActive, setFormIsActive] = useState(true);
 
   // Pour afficher le mot de passe par défaut après création
@@ -42,6 +43,7 @@ function AdminPodcastersPage() {
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
   const [editVideo, setEditVideo] = useState<File | null>(null);
   const [editAudio, setEditAudio] = useState<File | null>(null);
   const [editOrder, setEditOrder] = useState('');
@@ -78,6 +80,7 @@ function AdminPodcastersPage() {
     setFormVideo(null);
     setFormAudio(null);
     setFormOrder('');
+    setFormTeamOrder('');
     setFormIsActive(true);
     setIsCreating(false);
     setCreatedPassword(null);
@@ -88,6 +91,7 @@ function AdminPodcastersPage() {
   function resetEditForm() {
     setEditingId(null);
     setEditName('');
+    setEditPhone('');
     setEditVideo(null);
     setEditAudio(null);
     setEditOrder('');
@@ -108,6 +112,7 @@ function AdminPodcastersPage() {
     resetForm();
     setEditingId(p.id);
     setEditName(p.name);
+    setEditPhone(p.phone || '');
     setEditVideo(null);
     setEditAudio(null);
     setEditOrder(String(p.display_order));
@@ -154,6 +159,7 @@ function AdminPodcastersPage() {
         video: formVideo,
         audio: formAudio,
         display_order: formOrder ? parseInt(formOrder, 10) : undefined,
+        team_display_order: formTeamOrder ? parseInt(formTeamOrder, 10) : undefined,
         is_active: formIsActive
       });
 
@@ -174,6 +180,7 @@ function AdminPodcastersPage() {
         setFormVideo(null);
         setFormAudio(null);
         setFormOrder('');
+        setFormTeamOrder('');
         setFormIsActive(true);
         if (videoInputRef.current) videoInputRef.current.value = '';
         if (audioInputRef.current) audioInputRef.current.value = '';
@@ -200,6 +207,7 @@ function AdminPodcastersPage() {
       setError(null);
       const updated = await updateAdminPodcaster(p.id, {
         name: editName.trim(),
+        phone: editPhone.trim() || null,
         video: editVideo || undefined,
         audio: editAudio || undefined,
         display_order: editOrder ? parseInt(editOrder, 10) : undefined,
@@ -437,18 +445,38 @@ function AdminPodcastersPage() {
                 </div>
                 <p className="help">Formats acceptes: MP3, WAV, OGG (max 100 MB)</p>
               </div>
-              <div className="field">
-                <label className="label">Ordre d'affichage</label>
-                <input
-                  type="number"
-                  className="input"
-                  placeholder="1, 2, 3..."
-                  value={formOrder}
-                  onChange={(e) => setFormOrder(e.target.value)}
-                  disabled={saving}
-                  min="0"
-                  style={{ width: '100px' }}
-                />
+              <div className="columns">
+                <div className="column is-6">
+                  <div className="field">
+                    <label className="label">Ordre page d'accueil</label>
+                    <input
+                      type="number"
+                      className="input"
+                      placeholder="1, 2, 3..."
+                      value={formOrder}
+                      onChange={(e) => setFormOrder(e.target.value)}
+                      disabled={saving}
+                      min="0"
+                      style={{ width: '100px' }}
+                    />
+                  </div>
+                </div>
+                <div className="column is-6">
+                  <div className="field">
+                    <label className="label">Ordre page equipe</label>
+                    <input
+                      type="number"
+                      className="input"
+                      placeholder="1, 2, 3..."
+                      value={formTeamOrder}
+                      onChange={(e) => setFormTeamOrder(e.target.value)}
+                      disabled={saving}
+                      min="1"
+                      style={{ width: '100px' }}
+                    />
+                    <p className="help">Vide = apparait a la fin</p>
+                  </div>
+                </div>
               </div>
               <div className="field">
                 <label className="checkbox">
@@ -499,9 +527,9 @@ function AdminPodcastersPage() {
                         <div className="columns">
                           <div className="column is-6">
                             <div className="columns">
-                              <div className="column is-6">
+                              <div className="column is-4">
                                 <div className="field">
-                                  <label className="label">Nom (affiche partout)</label>
+                                  <label className="label">Nom</label>
                                   <input
                                     type="text"
                                     className="input"
@@ -512,9 +540,22 @@ function AdminPodcastersPage() {
                                   />
                                 </div>
                               </div>
-                              <div className="column is-6">
+                              <div className="column is-4">
                                 <div className="field">
-                                  <label className="label">Role (page equipe)</label>
+                                  <label className="label">Telephone</label>
+                                  <input
+                                    type="tel"
+                                    className="input"
+                                    value={editPhone}
+                                    onChange={(e) => setEditPhone(e.target.value)}
+                                    disabled={saving}
+                                    placeholder="Ex: 0606060606"
+                                  />
+                                </div>
+                              </div>
+                              <div className="column is-4">
+                                <div className="field">
+                                  <label className="label">Role</label>
                                   <input
                                     type="text"
                                     className="input"
@@ -643,6 +684,11 @@ function AdminPodcastersPage() {
                         </div>
                         <div className="column is-2">
                           <strong>{p.name}</strong>
+                          {p.phone && (
+                            <div style={{ fontSize: '0.75rem', marginTop: '0.2rem' }}>
+                              <a href={`tel:${p.phone}`} style={{ color: '#6366f1' }}>{p.phone}</a>
+                            </div>
+                          )}
                         </div>
                         <div className="column is-2">
                           {p.video_url ? (

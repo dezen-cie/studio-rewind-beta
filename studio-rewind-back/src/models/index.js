@@ -10,6 +10,7 @@ import FormulaOption from './formulaOption.model.js';
 import BlockedSlot from './blockedSlot.model.js';
 import Podcaster from './podcaster.model.js';
 import PodcasterBlockedSlot from './podcasterBlockedSlot.model.js';
+import PromoCode from './promoCode.model.js';
 
 // ====== Modèle Message ======
 class Message extends Model {}
@@ -101,5 +102,6 @@ export {
   FormulaOption,
   BlockedSlot,
   Podcaster,
-  PodcasterBlockedSlot
+  PodcasterBlockedSlot,
+  PromoCode
 };

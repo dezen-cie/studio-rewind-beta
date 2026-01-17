@@ -4,11 +4,15 @@ import type { ReactNode } from 'react'
 import { MoveRight } from 'lucide-react'
 import Header from '../components/Header/Header'
 import Footer from '../components/Footer/Footer'
+import { isAuthenticated, getUserRole } from '../utils/auth'
 
 function PublicLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   function goToReservation() { navigate('/reservation?step=1'); }
+
+  // Vérifier si l'utilisateur est admin ou super_admin
+  const isAdmin = isAuthenticated() && ['admin', 'super_admin'].includes(getUserRole() || '');
   
   let headerContent: ReactNode;
 
@@ -102,7 +106,12 @@ function PublicLayout() {
 
   return (
     <>
-     
+      {isAdmin && (
+        <div className="sr-admin-topbar">
+          <Link to="/admin">Retour à l'administration</Link>
+        </div>
+      )}
+
       <Header>
         {headerContent}
       </Header>

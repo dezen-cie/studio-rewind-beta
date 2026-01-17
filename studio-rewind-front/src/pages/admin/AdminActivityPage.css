@@ -1,0 +1,245 @@
+/* AdminActivityPage.css */
+
+/* Cards resume */
+.activity-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .activity-summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .activity-summary-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.activity-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.activity-card-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.5rem;
+}
+
+.activity-card-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-color, #fff);
+}
+
+.activity-card-sub {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.25rem;
+}
+
+/* Filtres */
+.activity-filters {
+  margin-bottom: 1.5rem;
+}
+
+.activity-filters-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.activity-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.activity-filter-group label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.activity-filter-group input[type="date"] {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-color, #fff);
+  font-size: 0.9rem;
+}
+
+.activity-filter-group input[type="date"]:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+/* Tabs */
+.activity-tabs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.activity-tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.activity-tab {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.activity-tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-color, #fff);
+}
+
+.activity-tab.active {
+  background: rgba(100, 108, 255, 0.2);
+  color: #646cff;
+}
+
+/* Tableau */
+.activity-table-wrapper {
+  overflow-x: auto;
+}
+
+.activity-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.activity-table th,
+.activity-table td {
+  padding: 0.75rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+}
+
+.activity-table th {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.03);
+  position: sticky;
+  top: 0;
+}
+
+.activity-table td {
+  color: var(--text-color, #fff);
+}
+
+.activity-table .text-right {
+  text-align: right;
+}
+
+.activity-table .text-center {
+  text-align: center;
+}
+
+.activity-table .font-bold {
+  font-weight: 600;
+}
+
+.activity-table .client-name {
+  font-weight: 500;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Type badge */
+.type-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.type-badge.professionnel {
+  background: rgba(100, 108, 255, 0.2);
+  color: #646cff;
+}
+
+.type-badge.particulier {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Montants */
+.activity-table .discount {
+  color: #f87171;
+}
+
+.activity-table .commission {
+  color: #646cff;
+  font-weight: 600;
+}
+
+/* Totals row */
+.activity-table tfoot .totals-row {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.activity-table tfoot .totals-row td {
+  border-bottom: none;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+/* Empty state */
+.activity-table tbody tr td[colspan] {
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .activity-tabs-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .activity-filters-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .activity-filter-group {
+    width: 100%;
+  }
+
+  .activity-filter-group input[type="date"] {
+    width: 100%;
+  }
+}

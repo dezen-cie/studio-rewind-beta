@@ -1,8 +1,6 @@
 // src/config/mailer.js
 import nodemailer from 'nodemailer';
 
-const isProd = process.env.NODE_ENV === 'production';
-
 const hasSmtpConfig =
   process.env.SMTP_HOST &&
   process.env.SMTP_PORT &&
@@ -11,7 +9,8 @@ const hasSmtpConfig =
 
 let transporter;
 
-if (isProd && hasSmtpConfig) {
+// Utilise SMTP réel si configuré (dev ou prod)
+if (hasSmtpConfig) {
   transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT),
@@ -22,7 +21,7 @@ if (isProd && hasSmtpConfig) {
     }
   });
 
-  console.log('📧 Mailer configuré en mode SMTP réel (production).');
+  console.log('📧 Mailer configuré en mode SMTP réel (Brevo).');
 } else {
   // Mode développement / fallback : rien n’est envoyé, tout est loggé
   transporter = nodemailer.createTransport({
@@ -34,19 +33,31 @@ if (isProd && hasSmtpConfig) {
   );
 }
 
-export async function sendMail({ to, subject, text }) {
+export async function sendMail({ to, subject, text, html }) {
   const from =
     process.env.SMTP_FROM || 'no-reply@studio-rewind.local';
 
-  const info = await transporter.sendMail({
-    from,
-    to,
-    subject,
-    text
-  });
+  try {
+    const info = await transporter.sendMail({
+      from,
+      to,
+      subject,
+      text,
+      html
+    });
 
-  console.log('📨 Email envoyé / simulé :');
-  console.log(JSON.stringify(info, null, 2));
+    // Log simple en mode SMTP réel, détaillé uniquement en mode JSON (sans SMTP)
+    if (hasSmtpConfig) {
+      console.log(`📨 Email envoyé à ${to} (messageId: ${info.messageId})`);
+    } else {
+      console.log('📨 Email simulé (pas de SMTP configuré) :');
+      console.log(JSON.stringify(info, null, 2));
+    }
 
-  return info;
+    return info;
+  } catch (error) {
+    console.error('❌ Erreur envoi email:', error.message);
+    console.error('Détails:', error);
+    throw error;
+  }
 }

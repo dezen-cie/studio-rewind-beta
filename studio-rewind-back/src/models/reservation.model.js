@@ -75,6 +75,32 @@ Reservation.init(
         model: 'podcasters',
         key: 'id'
       }
+    },
+
+    // Champs pour le code promo
+    promo_code: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+
+    promo_label: {
+      type: DataTypes.STRING(50),
+      allowNull: true
+    },
+
+    promo_discount: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+
+    original_price_ht: {
+      type: DataTypes.FLOAT,
+      allowNull: true
+    },
+
+    original_price_ttc: {
+      type: DataTypes.FLOAT,
+      allowNull: true
     }
   },
   {

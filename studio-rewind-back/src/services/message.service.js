@@ -125,10 +125,51 @@ export async function replyToMessageAdmin(id, { subject, text }) {
     ? subject.trim()
     : `Re: ${message.subject}`;
 
+  // Template HTML pour la réponse
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: 'Poppins', Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .header { background-color: #0a0b0e; padding: 30px; text-align: center; }
+    .header h1 { color: #ffffff; margin: 0; font-size: 24px; }
+    .content { padding: 30px; color: #333333; line-height: 1.6; }
+    .original-message { background-color: #f9f9f9; border-left: 3px solid #ce1b1d; padding: 15px; margin-top: 20px; font-size: 14px; color: #666; }
+    .original-message p { margin: 5px 0; }
+    .footer { background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #888; }
+    .footer a { color: #ce1b1d; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Studio Rewind</h1>
+    </div>
+    <div class="content">
+      ${text.split('\n').map(line => `<p>${line || '&nbsp;'}</p>`).join('')}
+
+      <div class="original-message">
+        <p><strong>Votre message original :</strong></p>
+        <p><em>Sujet : ${message.subject}</em></p>
+        <p>${message.content.split('\n').join('<br>')}</p>
+      </div>
+    </div>
+    <div class="footer">
+      <p>Studio Rewind - Votre studio podcast</p>
+      <p><a href="https://studiorewind.fr">www.studiorewind.fr</a></p>
+    </div>
+  </div>
+</body>
+</html>`;
+
   await sendMail({
     to: message.email,
     subject: replySubject,
-    text
+    text,
+    html
   });
 
   // On peut marquer le message comme "read"

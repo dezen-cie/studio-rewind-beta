@@ -147,7 +147,7 @@ function AdminMessagesPage() {
       setError(null);
       await replyToAdminMessage(selected.id, replySubject, replyText);
       setReplyText('');
-      alert('Réponse envoyée (ou simulée si le SMTP n’est pas configuré).');
+      alert(`Réponse envoyée avec succès à ${selected.email}`);
     } catch (err: any) {
       console.error('Erreur replyToAdminMessage:', err);
       const message =

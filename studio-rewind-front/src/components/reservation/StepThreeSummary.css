@@ -279,3 +279,121 @@
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.4;
 }
+
+/* Section Code Promo */
+.promo-code-section {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.promo-code-section h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.promo-code-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.promo-code-form input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(12, 12, 16, 0.95);
+  color: #fff;
+  font-size: 0.85rem;
+  font-family: 'Poppins', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.promo-code-form input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.promo-code-form button {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.85rem;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.promo-code-form button:hover:not(:disabled) {
+  background: transparent;
+}
+
+.promo-code-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.promo-code-applied {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.promo-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.75rem;
+  background: rgba(46, 204, 113, 0.15);
+  border: 1px solid rgba(46, 204, 113, 0.4);
+  border-radius: 6px;
+  color: #2ecc71;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.promo-remove {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: 'Poppins', sans-serif;
+}
+
+.promo-remove:hover {
+  color: #f97373;
+}
+
+.promo-error {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: #f97373;
+}
+
+.promo-success {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: #2ecc71;
+}
+
+/* Prix barres et reduits */
+.price-original {
+  text-decoration: line-through;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85em;
+  margin-right: 0.5rem;
+}
+
+.price-discounted {
+  color: #2ecc71;
+}
+
+.price-total .price-discounted {
+  font-size: 1.1em;
+}

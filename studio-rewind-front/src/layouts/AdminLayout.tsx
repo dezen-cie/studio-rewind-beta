@@ -61,7 +61,13 @@ function AdminLayout() {
             </div>
           </div>
 
-          <nav className="sr-admin-nav">
+          <div className="sr-admin-site-link">
+              <a href="/" target="_blank" rel="noopener noreferrer">
+                Voir le site
+              </a>
+            </div>
+
+            <nav className="sr-admin-nav">
             <p className="sr-admin-nav-section">Vue d'ensemble</p>
             <ul>
               <li>
@@ -157,6 +163,10 @@ function AdminLayout() {
                   <span>Archives</span>
                 </NavLink>
               </li>
+            </ul>
+
+            <p className="sr-admin-nav-section">Gestion</p>
+            <ul>
               <li>
                 <NavLink
                   to="/admin/revenue"
@@ -166,6 +176,28 @@ function AdminLayout() {
                 >
                   <span className="sr-admin-navlink-icon">💵</span>
                   <span>Commissions</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/admin/activity"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">📈</span>
+                  <span>Suivi d'activité</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/admin/promo"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">🏷️</span>
+                  <span>Promo</span>
                 </NavLink>
               </li>
             </ul>

@@ -24,7 +24,7 @@ export async function createPodcasterController(req, res) {
   let audio_url = null;
 
   try {
-    const { name, display_order, is_active, email } = req.body;
+    const { name, display_order, team_display_order, is_active, email } = req.body;
 
     // Recuperer les fichiers uploades
     const videoFile = req.files?.video?.[0];
@@ -50,6 +50,7 @@ export async function createPodcasterController(req, res) {
       video_url,
       audio_url,
       display_order: display_order ? parseInt(display_order, 10) : undefined,
+      team_display_order: team_display_order && team_display_order !== 'null' ? parseInt(team_display_order, 10) : null,
       is_active: is_active === 'true' || is_active === true
     });
 
@@ -69,7 +70,7 @@ export async function updatePodcasterController(req, res) {
 
   try {
     const { id } = req.params;
-    const { name, display_order, team_display_order, team_role, is_active } = req.body;
+    const { name, display_order, team_display_order, team_role, is_active, phone } = req.body;
 
     // Recuperer les nouveaux fichiers si uploades
     const videoFile = req.files?.video?.[0];
@@ -87,6 +88,7 @@ export async function updatePodcasterController(req, res) {
     }
     if (team_role !== undefined) updateData.team_role = team_role || null;
     if (is_active !== undefined) updateData.is_active = is_active === 'true' || is_active === true;
+    if (phone !== undefined) updateData.phone = phone || null;
 
     // Si nouveau fichier video, uploader et mettre a jour l'URL
     if (videoFile) {

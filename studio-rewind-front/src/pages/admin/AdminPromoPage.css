@@ -1,0 +1,204 @@
+/* AdminPromoPage.css */
+
+/* Cards statistiques */
+.promo-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .promo-summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .promo-summary-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.promo-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.promo-card--active {
+  background: rgba(100, 108, 255, 0.15);
+  border-color: rgba(100, 108, 255, 0.3);
+}
+
+.promo-card--used {
+  background: rgba(74, 222, 128, 0.15);
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.promo-card--expired {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.promo-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #646cff;
+}
+
+.promo-card--active .promo-card-icon {
+  background: rgba(100, 108, 255, 0.3);
+  color: #fff;
+}
+
+.promo-card--used .promo-card-icon {
+  background: rgba(74, 222, 128, 0.3);
+  color: #fff;
+}
+
+.promo-card--expired .promo-card-icon {
+  background: rgba(239, 68, 68, 0.3);
+  color: #fff;
+}
+
+.promo-card-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.promo-card-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-color, #fff);
+}
+
+.promo-card-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Tableau */
+.promo-table-title {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color, #fff);
+}
+
+.promo-table-container {
+  overflow-x: auto;
+}
+
+.promo-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.promo-table th,
+.promo-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.promo-table th {
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.promo-table td {
+  color: var(--text-color, #fff);
+  font-size: 0.9rem;
+}
+
+.promo-table .text-center {
+  text-align: center;
+}
+
+.promo-code-cell {
+  font-family: monospace;
+  font-weight: 600;
+  color: #646cff;
+  letter-spacing: 0.5px;
+}
+
+.promo-email-cell {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Statuts */
+.promo-status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.promo-status--active {
+  background: rgba(100, 108, 255, 0.2);
+  color: #818cf8;
+}
+
+.promo-status--used {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.promo-status--expired {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+/* Bouton supprimer */
+.promo-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.promo-delete-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.promo-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Etats */
+.promo-loading,
+.promo-no-data {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.promo-no-data {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}

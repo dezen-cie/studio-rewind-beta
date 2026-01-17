@@ -21,6 +21,12 @@ export interface AdminReservation {
   price_ttc: number;
   status: 'pending' | 'confirmed' | 'cancelled';
   User?: AdminReservationUser;
+  // Champs promo
+  promo_code?: string | null;
+  promo_label?: string | null;
+  promo_discount?: number | null;
+  original_price_ht?: number | null;
+  original_price_ttc?: number | null;
 }
 
 export async function getAdminReservations(): Promise<AdminReservation[]> {

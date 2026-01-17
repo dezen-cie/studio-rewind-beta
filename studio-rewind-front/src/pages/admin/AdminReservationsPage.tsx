@@ -344,6 +344,16 @@ function AdminReservationsPage() {
                           <p className="is-size-7">
                             Formule : {getFormulaLabel(r.formula)}
                           </p>
+                          {r.promo_label && (
+                            <p className="is-size-7">
+                              <span
+                                className="tag is-info is-light"
+                                style={{ marginTop: '0.25rem' }}
+                              >
+                                {r.promo_label} (-{r.promo_discount}%)
+                              </span>
+                            </p>
+                          )}
                         </div>
 
                         <div className="column is-4">
@@ -400,10 +410,33 @@ function AdminReservationsPage() {
                         <div className="column is-2">
                           <p>
                             <strong>Total TTC :</strong>{' '}
-                            {r.price_ttc.toFixed(2)} €
+                            {r.original_price_ttc ? (
+                              <>
+                                <span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: '0.5rem' }}>
+                                  {r.original_price_ttc.toFixed(2)} €
+                                </span>
+                                <span style={{ color: '#2ecc71' }}>
+                                  {r.price_ttc.toFixed(2)} €
+                                </span>
+                              </>
+                            ) : (
+                              <>{r.price_ttc.toFixed(2)} €</>
+                            )}
                           </p>
                           <p>
-                            <strong>HT :</strong> {r.price_ht.toFixed(2)} €
+                            <strong>HT :</strong>{' '}
+                            {r.original_price_ht ? (
+                              <>
+                                <span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: '0.5rem' }}>
+                                  {r.original_price_ht.toFixed(2)} €
+                                </span>
+                                <span style={{ color: '#2ecc71' }}>
+                                  {r.price_ht.toFixed(2)} €
+                                </span>
+                              </>
+                            ) : (
+                              <>{r.price_ht.toFixed(2)} €</>
+                            )}
                           </p>
                           <p>
                             <strong>TVA :</strong> {r.price_tva.toFixed(2)} €

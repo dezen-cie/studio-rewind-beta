@@ -25,6 +25,9 @@ import adminPodcasterRoutes from './routes/admin.podcaster.routes.js';
 import podcasterRoutes from './routes/podcaster.routes.js';
 import podcasterDashboardRoutes from './routes/podcaster.dashboard.routes.js';
 import adminRevenueRoutes from './routes/admin.revenue.routes.js';
+import promoRoutes from './routes/promo.routes.js';
+import adminPromoRoutes from './routes/admin.promo.routes.js';
+import adminActivityRoutes from './routes/admin.activity.routes.js';
 
 const app = express();
 
@@ -114,6 +117,9 @@ app.use('/api/admin/podcasters', adminPodcasterRoutes);
 app.use('/api/podcasters', podcasterRoutes);
 app.use('/api/podcaster', podcasterDashboardRoutes);
 app.use('/api/admin/revenue', adminRevenueRoutes);
+app.use('/api/promo', promoRoutes);
+app.use('/api/admin/promo', adminPromoRoutes);
+app.use('/api/admin/activity', adminActivityRoutes);
 
 // Route de santé
 app.get('/health', (req, res) => {

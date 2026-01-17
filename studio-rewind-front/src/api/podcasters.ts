@@ -10,6 +10,7 @@ export interface Podcaster {
   team_display_order?: number | null; // Ordre d'affichage sur la page équipe (null = à la fin)
   is_active: boolean;
   email?: string;
+  phone?: string | null; // Téléphone de l'utilisateur associé
   user_id?: string;
   defaultPassword?: string; // Retourné uniquement à la création
   photo_url?: string;
@@ -26,6 +27,7 @@ export interface CreatePodcasterData {
   video: File;
   audio: File;
   display_order?: number;
+  team_display_order?: number | null;
   is_active?: boolean;
 }
 
@@ -36,6 +38,7 @@ export interface UpdatePodcasterData {
   display_order?: number;
   team_display_order?: number | null;
   team_role?: string;
+  phone?: string | null;
   is_active?: boolean;
 }
 
@@ -65,6 +68,9 @@ export async function createAdminPodcaster(data: CreatePodcasterData): Promise<P
   formData.append('audio', data.audio);
   if (data.display_order !== undefined) {
     formData.append('display_order', String(data.display_order));
+  }
+  if (data.team_display_order !== undefined) {
+    formData.append('team_display_order', data.team_display_order === null ? 'null' : String(data.team_display_order));
   }
   if (data.is_active !== undefined) {
     formData.append('is_active', String(data.is_active));
@@ -99,6 +105,9 @@ export async function updateAdminPodcaster(
   }
   if (data.team_role !== undefined) {
     formData.append('team_role', data.team_role);
+  }
+  if (data.phone !== undefined) {
+    formData.append('phone', data.phone || '');
   }
   if (data.is_active !== undefined) {
     formData.append('is_active', String(data.is_active));

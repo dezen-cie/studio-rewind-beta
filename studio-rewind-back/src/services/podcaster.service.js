@@ -58,22 +58,23 @@ export async function getAllPodcasters(requestingUser = null) {
     include: [{
       model: User,
       as: 'user',
-      attributes: ['role'],
+      attributes: ['role', 'phone'],
       required: false
     }]
   });
 
-  // Transformer pour inclure le rôle au premier niveau
+  // Transformer pour inclure le rôle et téléphone au premier niveau
   return podcasters.map(p => {
     const data = p.toJSON();
     data.role = data.user?.role || 'podcaster';
+    data.phone = data.user?.phone || null;
     delete data.user;
     return data;
   });
 }
 
 // Créer un nouveau podcaster avec son compte utilisateur
-export async function createPodcaster({ name, video_url, audio_url, display_order, is_active, email }) {
+export async function createPodcaster({ name, video_url, audio_url, display_order, team_display_order, is_active, email }) {
   if (!name || !name.trim()) {
     const error = new Error('Le nom est obligatoire.');
     error.status = 400;
@@ -135,6 +136,7 @@ export async function createPodcaster({ name, video_url, audio_url, display_orde
     video_url: video_url.trim(),
     audio_url: audio_url.trim(),
     display_order: order,
+    team_display_order: team_display_order || null,
     is_active: is_active !== false,
     user_id: user.id
   });
@@ -147,7 +149,7 @@ export async function createPodcaster({ name, video_url, audio_url, display_orde
 }
 
 // Mettre à jour un podcaster
-export async function updatePodcaster(id, { name, video_url, audio_url, display_order, team_display_order, team_role, is_active, oldVideoUrl, oldAudioUrl }, requestingUser = null) {
+export async function updatePodcaster(id, { name, video_url, audio_url, display_order, team_display_order, team_role, is_active, phone, oldVideoUrl, oldAudioUrl }, requestingUser = null) {
   const podcaster = await Podcaster.findByPk(id);
 
   if (!podcaster) {
@@ -212,8 +214,25 @@ export async function updatePodcaster(id, { name, video_url, audio_url, display_
     podcaster.is_active = is_active;
   }
 
+  // Mettre à jour le téléphone dans le User associé
+  if (phone !== undefined && podcaster.user_id) {
+    const user = await User.findByPk(podcaster.user_id);
+    if (user) {
+      user.phone = phone;
+      await user.save();
+    }
+  }
+
   await podcaster.save();
-  return podcaster;
+
+  // Retourner le podcaster avec le téléphone mis à jour
+  const data = podcaster.toJSON();
+  if (podcaster.user_id) {
+    const user = await User.findByPk(podcaster.user_id);
+    data.phone = user?.phone || null;
+    data.role = user?.role || 'podcaster';
+  }
+  return data;
 }
 
 // Mettre à jour is_core_team d'un podcaster (super admin uniquement)

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import type { FormulaKey, PricingBreakdown, SelectedPodcaster } from '../../pages/ReservationPage';
 import api, { setStoredToken } from '../../api/client';
 import { getPublicFormulas } from '../../api/formulas';
+import { validatePromoCode } from '../../api/promo';
 import './StepThreeSummary.css';
 
 // Stripe
@@ -88,6 +89,13 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
   // Info sur la formule (pour savoir si elle nécessite un podcasteur)
   const [requiresPodcaster, setRequiresPodcaster] = useState<boolean>(true);
 
+  // Code promo
+  const [promoCode, setPromoCode] = useState('');
+  const [promoDiscount, setPromoDiscount] = useState<number | null>(null);
+  const [promoValidating, setPromoValidating] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [promoSuccess, setPromoSuccess] = useState<string | null>(null);
+
   // Charger l'info de la formule au montage
   useEffect(() => {
     async function loadFormulaInfo() {
@@ -116,6 +124,52 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
     return formula;
   }
 
+  // Calcul des prix avec reduction
+  function getDiscountedPricing() {
+    if (!pricing || !promoDiscount) return null;
+    const discountMultiplier = 1 - (promoDiscount / 100);
+    const discounted_ht = Math.round(pricing.price_ht * discountMultiplier * 100) / 100;
+    const discounted_tva = Math.round(discounted_ht * 0.2 * 100) / 100;
+    const discounted_ttc = Math.round((discounted_ht + discounted_tva) * 100) / 100;
+    return { price_ht: discounted_ht, price_tva: discounted_tva, price_ttc: discounted_ttc };
+  }
+
+  const discountedPricing = getDiscountedPricing();
+
+  // Validation du code promo
+  async function handleValidatePromo() {
+    if (!promoCode.trim()) {
+      setPromoError('Veuillez entrer un code promo.');
+      return;
+    }
+
+    setPromoValidating(true);
+    setPromoError(null);
+    setPromoSuccess(null);
+
+    try {
+      const result = await validatePromoCode(promoCode.trim());
+      if (result.valid && result.discount) {
+        setPromoDiscount(result.discount);
+        setPromoSuccess(`Reduction de ${result.discount}% appliquee !`);
+      } else {
+        setPromoError(result.message || 'Code promo invalide.');
+      }
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || 'Code promo invalide.';
+      setPromoError(msg);
+    } finally {
+      setPromoValidating(false);
+    }
+  }
+
+  function handleRemovePromo() {
+    setPromoCode('');
+    setPromoDiscount(null);
+    setPromoError(null);
+    setPromoSuccess(null);
+  }
+
   // ============================
   //  FLOW PAIEMENT (RÉSERVATION / PACK D'HEURES)
   // ============================
@@ -139,7 +193,8 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
       formula,
       start_date: startIso,
       end_date: endIso,
-      podcaster_id: selectedPodcaster?.id || null
+      podcaster_id: selectedPodcaster?.id || null,
+      promo_code: promoDiscount ? promoCode.trim() : null
     });
 
     const data = res.data || {};
@@ -377,21 +432,77 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
           </div>
         </div>
 
+        {/* Section Code Promo */}
+        <div className="promo-code-section">
+          <h4>Code promo</h4>
+          {!promoDiscount ? (
+            <div className="promo-code-form">
+              <input
+                type="text"
+                placeholder="Entrez votre code"
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                disabled={promoValidating}
+              />
+              <button
+                type="button"
+                onClick={handleValidatePromo}
+                disabled={promoValidating}
+              >
+                {promoValidating ? '...' : 'Appliquer'}
+              </button>
+            </div>
+          ) : (
+            <div className="promo-code-applied">
+              <span className="promo-tag">
+                {promoCode} (-{promoDiscount}%)
+              </span>
+              <button type="button" className="promo-remove" onClick={handleRemovePromo}>
+                Retirer
+              </button>
+            </div>
+          )}
+          {promoError && <p className="promo-error">{promoError}</p>}
+          {promoSuccess && <p className="promo-success">{promoSuccess}</p>}
+        </div>
+
         <div className="recap-prices">
           {pricing && (
             <>
-              <p>
-                Prix HT :{' '}
-                <strong>{pricing.price_ht.toFixed(2)} €</strong>
-              </p>
-              <p>
-                TVA (20%) :{' '}
-                <strong>{pricing.price_tva.toFixed(2)} €</strong>
-              </p>
-              <p>
-                Prix TTC :{' '}
-                <strong>{pricing.price_ttc.toFixed(2)} €</strong>
-              </p>
+              {discountedPricing ? (
+                <>
+                  <p>
+                    Prix HT :{' '}
+                    <span className="price-original">{pricing.price_ht.toFixed(2)} €</span>
+                    <strong className="price-discounted">{discountedPricing.price_ht.toFixed(2)} €</strong>
+                  </p>
+                  <p>
+                    TVA (20%) :{' '}
+                    <span className="price-original">{pricing.price_tva.toFixed(2)} €</span>
+                    <strong className="price-discounted">{discountedPricing.price_tva.toFixed(2)} €</strong>
+                  </p>
+                  <p className="price-total">
+                    Prix TTC :{' '}
+                    <span className="price-original">{pricing.price_ttc.toFixed(2)} €</span>
+                    <strong className="price-discounted">{discountedPricing.price_ttc.toFixed(2)} €</strong>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>
+                    Prix HT :{' '}
+                    <strong>{pricing.price_ht.toFixed(2)} €</strong>
+                  </p>
+                  <p>
+                    TVA (20%) :{' '}
+                    <strong>{pricing.price_tva.toFixed(2)} €</strong>
+                  </p>
+                  <p>
+                    Prix TTC :{' '}
+                    <strong>{pricing.price_ttc.toFixed(2)} €</strong>
+                  </p>
+                </>
+              )}
             </>
           )}
         </div>
