@@ -9,11 +9,18 @@
 
 /* Hero Section */
 .bp-hero {
-  background: linear-gradient(135deg, rgba(206, 27, 29, 0.1) 0%, rgba(10, 11, 14, 0.05) 100%);
+  background: #000;
   padding: 4rem 2rem;
   text-align: center;
   border-radius: 10px;
   margin: 0 2rem 3rem 2rem;
+  color: #fff;
+}
+
+.bp-hero h1,
+.bp-hero p,
+.bp-hero strong {
+  color: #fff;
 }
 
 .bp-hero-content {
@@ -39,7 +46,7 @@
   font-size: 1.4rem;
   font-style: italic;
   margin-bottom: 1rem;
-  color: rgba(0, 0, 0, 0.7);
+  color: #fff;
 }
 
 .bp-description {
@@ -49,8 +56,8 @@
 }
 
 .bp-hero .btn.btn-primary:hover {
-  border-color: #1a1a1a;
-  color: #1a1a1a;
+  border-color: #fff;
+  color: #fff;
 }
 
 /* Sections */
@@ -77,12 +84,13 @@
 }
 
 .bp-step {
-  background: white;
+  background: #000;
   padding: 2rem;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   position: relative;
   transition: var(--transition);
+  color: #fff;
 }
 
 .bp-step:hover {
@@ -114,8 +122,12 @@
 
 .bp-step p {
   margin: 0;
-  color: rgba(0, 0, 0, 0.7);
+  color: #fff;
   line-height: 1.5;
+}
+
+.bp-step strong {
+  color: #fff;
 }
 
 .bp-step-list {
@@ -129,7 +141,7 @@
   align-items: flex-start;
   gap: 0.5rem;
   margin-bottom: 0.8rem;
-  color: rgba(0, 0, 0, 0.7);
+  color: #fff;
 }
 
 .bp-step-list li svg {
@@ -142,10 +154,19 @@
   margin-top: 0.5rem;
   font-size: 0.9rem;
   font-style: italic;
-  color: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* Why section */
+.bp-why {
+  background: #000;
+  color: #fff;
+}
+
+.bp-why .subtitle {
+  color: #fff;
+}
+
 .bp-advantages {
   display: flex;
   justify-content: center;
@@ -176,7 +197,7 @@
 
 .bp-advantage p {
   margin: 0;
-  color: rgba(0, 0, 0, 0.6);
+  color: #fff;
   font-size: 0.95rem;
 }
 
@@ -198,10 +219,11 @@
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  background: white;
+  background: #000;
   padding: 1rem 1.5rem;
   border-radius: 50px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  color: #fff;
 }
 
 .bp-timeline-number {

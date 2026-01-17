@@ -1,5 +1,6 @@
 .footer{
-  background-color: var(--background);
+  --bulma-footer-background-color: #000 !important;
+  background-color: #000 !important;
   color: #ffffff;
   padding-top: 2rem;
 }
