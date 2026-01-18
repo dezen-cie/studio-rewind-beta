@@ -149,7 +149,11 @@ export async function createPodcaster({ name, video_url, audio_url, display_orde
 }
 
 // Mettre à jour un podcaster
-export async function updatePodcaster(id, { name, video_url, audio_url, display_order, team_display_order, team_role, is_active, phone, oldVideoUrl, oldAudioUrl }, requestingUser = null) {
+export async function updatePodcaster(id, {
+  name, video_url, audio_url, display_order, team_display_order, team_role, is_active, phone, oldVideoUrl, oldAudioUrl,
+  // Champs facturation
+  is_billable, billing_firstname, billing_lastname, billing_company, billing_siret, billing_address, billing_postal_code, billing_city
+}, requestingUser = null) {
   const podcaster = await Podcaster.findByPk(id);
 
   if (!podcaster) {
@@ -212,6 +216,32 @@ export async function updatePodcaster(id, { name, video_url, audio_url, display_
 
   if (is_active !== undefined) {
     podcaster.is_active = is_active;
+  }
+
+  // Champs facturation
+  if (is_billable !== undefined) {
+    podcaster.is_billable = is_billable;
+  }
+  if (billing_firstname !== undefined) {
+    podcaster.billing_firstname = billing_firstname || null;
+  }
+  if (billing_lastname !== undefined) {
+    podcaster.billing_lastname = billing_lastname || null;
+  }
+  if (billing_company !== undefined) {
+    podcaster.billing_company = billing_company || null;
+  }
+  if (billing_siret !== undefined) {
+    podcaster.billing_siret = billing_siret || null;
+  }
+  if (billing_address !== undefined) {
+    podcaster.billing_address = billing_address || null;
+  }
+  if (billing_postal_code !== undefined) {
+    podcaster.billing_postal_code = billing_postal_code || null;
+  }
+  if (billing_city !== undefined) {
+    podcaster.billing_city = billing_city || null;
   }
 
   // Mettre à jour le téléphone dans le User associé

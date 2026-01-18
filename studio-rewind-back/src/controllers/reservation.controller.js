@@ -5,6 +5,7 @@ import {
   getUserReservations,
   getReservationsByDayPublic
 } from '../services/reservation.service.js';
+import { calculateReservationPricing } from '../utils/pricing.js';
 import {
   getBlockedSlotsForDate,
   getUnblocksForDate,
@@ -200,6 +201,28 @@ export async function getUnblockDatesForMonthPublic(req, res) {
     return res.json(dates);
   } catch (error) {
     console.error('Erreur getUnblockDatesForMonthPublic:', error);
+    return res
+      .status(error.status || 500)
+      .json({ message: error.message || 'Erreur serveur.' });
+  }
+}
+
+// ============= PUBLIC : calcul du prix (avec majorations) =============
+
+export async function calculatePricingPublic(req, res) {
+  try {
+    const { formula, start_date, end_date } = req.body;
+
+    if (!formula || !start_date || !end_date) {
+      return res.status(400).json({
+        message: 'Formule, date de début et date de fin sont obligatoires.'
+      });
+    }
+
+    const pricing = await calculateReservationPricing(formula, start_date, end_date);
+    return res.json(pricing);
+  } catch (error) {
+    console.error('Erreur calculatePricingPublic:', error);
     return res
       .status(error.status || 500)
       .json({ message: error.message || 'Erreur serveur.' });

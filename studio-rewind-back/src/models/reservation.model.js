@@ -102,6 +102,12 @@ Reservation.init(
     original_price_ttc: {
       type: DataTypes.FLOAT,
       allowNull: true
+    },
+
+    // Indique si un rappel email a été envoyé pour cette réservation
+    reminder_sent: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     }
   },
   {

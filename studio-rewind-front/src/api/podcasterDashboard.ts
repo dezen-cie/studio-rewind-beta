@@ -19,6 +19,7 @@ export interface PodcasterProfile {
   description?: string;
   profile_online?: boolean;
   team_role?: string;
+  is_billable?: boolean;
 }
 
 export interface PodcasterMeResponse {

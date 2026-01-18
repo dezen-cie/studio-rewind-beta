@@ -2,6 +2,7 @@ import { Op } from 'sequelize';
 import { Reservation, Subscription, User, Podcaster, Formula } from '../models/index.js';
 import { calculateReservationPricing } from '../utils/pricing.js';
 import { isSlotBlocked, getBlockedSlotsForDate } from './blockedSlot.service.js';
+import { sendReservationConfirmationEmail } from './reminder.service.js';
 
 // =======================
 //  VALIDATION DES ENTRÉES
@@ -312,6 +313,15 @@ export async function createReservation(
     status: is_subscription ? 'confirmed' : 'pending'
   });
 
+  // Si la réservation est confirmée immédiatement (pack d'heures), envoyer l'email
+  if (is_subscription) {
+    // Ajouter les infos utilisateur pour l'email
+    reservation.User = user;
+    sendReservationConfirmationEmail(reservation).catch(err => {
+      console.error('Erreur envoi email confirmation:', err.message);
+    });
+  }
+
   return reservation;
 }
 
@@ -343,6 +353,11 @@ export async function adminListReservations() {
       {
         model: User,
         attributes: ['id', 'email', 'firstname', 'lastname', 'company_name']
+      },
+      {
+        model: Podcaster,
+        as: 'podcaster',
+        attributes: ['id', 'name', 'is_billable']
       }
     ],
     order: [['start_date', 'ASC']]
@@ -386,6 +401,11 @@ export async function adminGetReservationsByDay(date) {
       {
         model: User,
         attributes: ['id', 'email', 'firstname', 'lastname', 'company_name']
+      },
+      {
+        model: Podcaster,
+        as: 'podcaster',
+        attributes: ['id', 'name', 'is_billable']
       }
     ],
     order: [['start_date', 'ASC']]

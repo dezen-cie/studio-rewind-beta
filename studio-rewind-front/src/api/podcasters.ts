@@ -19,6 +19,15 @@ export interface Podcaster {
   team_role?: string; // Rôle affiché sur la page équipe (ex: "CEO & Podcasteur", "CSO")
   role?: 'podcaster' | 'admin' | 'super_admin'; // Rôle de l'utilisateur associé
   is_core_team?: boolean; // Membres principaux
+  // Champs facturation
+  is_billable?: boolean;
+  billing_firstname?: string | null;
+  billing_lastname?: string | null;
+  billing_company?: string | null;
+  billing_siret?: string | null;
+  billing_address?: string | null;
+  billing_postal_code?: string | null;
+  billing_city?: string | null;
 }
 
 export interface CreatePodcasterData {
@@ -40,6 +49,15 @@ export interface UpdatePodcasterData {
   team_role?: string;
   phone?: string | null;
   is_active?: boolean;
+  // Champs facturation
+  is_billable?: boolean;
+  billing_firstname?: string | null;
+  billing_lastname?: string | null;
+  billing_company?: string | null;
+  billing_siret?: string | null;
+  billing_address?: string | null;
+  billing_postal_code?: string | null;
+  billing_city?: string | null;
 }
 
 // --- Public API ---
@@ -111,6 +129,31 @@ export async function updateAdminPodcaster(
   }
   if (data.is_active !== undefined) {
     formData.append('is_active', String(data.is_active));
+  }
+  // Champs facturation
+  if (data.is_billable !== undefined) {
+    formData.append('is_billable', String(data.is_billable));
+  }
+  if (data.billing_firstname !== undefined) {
+    formData.append('billing_firstname', data.billing_firstname || '');
+  }
+  if (data.billing_lastname !== undefined) {
+    formData.append('billing_lastname', data.billing_lastname || '');
+  }
+  if (data.billing_company !== undefined) {
+    formData.append('billing_company', data.billing_company || '');
+  }
+  if (data.billing_siret !== undefined) {
+    formData.append('billing_siret', data.billing_siret || '');
+  }
+  if (data.billing_address !== undefined) {
+    formData.append('billing_address', data.billing_address || '');
+  }
+  if (data.billing_postal_code !== undefined) {
+    formData.append('billing_postal_code', data.billing_postal_code || '');
+  }
+  if (data.billing_city !== undefined) {
+    formData.append('billing_city', data.billing_city || '');
   }
 
   const res = await api.patch<Podcaster>(`/admin/podcasters/${id}`, formData, {

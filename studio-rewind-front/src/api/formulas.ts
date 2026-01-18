@@ -118,3 +118,27 @@ export async function updateFormulaOption(
 export async function deleteFormulaOption(optionId: string): Promise<void> {
   await api.delete(`/admin/formulas/options/${optionId}`);
 }
+
+// --- Public Pricing API ---
+export interface PricingResult {
+  total_hours: number;
+  price_ht: number;
+  price_tva: number;
+  price_ttc: number;
+  surcharge_percent: number; // En pourcentage (ex: 10 pour 10%)
+  surcharge_amount: number; // Montant de la majoration en euros
+  vat_rate: number; // Taux de TVA en pourcentage (ex: 20 pour 20%)
+}
+
+export async function calculatePricing(
+  formula: string,
+  start_date: string,
+  end_date: string
+): Promise<PricingResult> {
+  const res = await api.post<PricingResult>('/reservations/calculate-pricing', {
+    formula,
+    start_date,
+    end_date
+  });
+  return res.data;
+}

@@ -176,14 +176,14 @@ export async function exportPodcasters(req, res) {
     ];
 
     const rows = data.podcasters.map(p => [
-      p.name,
+      p.name + (p.is_billable ? '' : ' (Employé)'),
       p.total_sessions,
       p.total_hours,
       p.total_revenue_ht.toFixed(2),
-      `${p.commission_rate}%`,
-      p.commission_ht.toFixed(2),
-      p.commission_tva.toFixed(2),
-      p.commission_ttc.toFixed(2),
+      p.is_billable ? `${p.commission_rate}%` : '-',
+      p.is_billable ? p.commission_ht.toFixed(2) : '-',
+      p.is_billable ? p.commission_tva.toFixed(2) : '-',
+      p.is_billable ? p.commission_ttc.toFixed(2) : '-',
       p.first_session ? new Date(p.first_session).toLocaleDateString('fr-FR') : '',
       p.last_session ? new Date(p.last_session).toLocaleDateString('fr-FR') : ''
     ]);

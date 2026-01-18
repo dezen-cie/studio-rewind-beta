@@ -79,6 +79,8 @@ function AdminDashboardPage() {
   const [summary, setSummary] = useState<{
     today_revenue_ttc: number;
     month_revenue_ttc: number;
+    month_commissions_ttc: number;
+    month_margin_ttc: number;
   } | null>(null);
 
   const [dayReservations, setDayReservations] = useState<DashboardReservation[]>([]);
@@ -402,6 +404,18 @@ function AdminDashboardPage() {
                   <div className="sr-stats-label">CA {monthLabel} (TTC)</div>
                   <div className="sr-stats-value">
                     {formatCurrency(summary?.month_revenue_ttc || 0)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="sr-stats-card sr-stats-card-highlight">
+                <div className="sr-stats-icon">
+                  <TrendingUp size={20} />
+                </div>
+                <div className="sr-stats-content">
+                  <div className="sr-stats-label">Marge Studio {monthLabel}</div>
+                  <div className="sr-stats-value">
+                    {formatCurrency(summary?.month_margin_ttc || 0)}
                   </div>
                 </div>
               </div>

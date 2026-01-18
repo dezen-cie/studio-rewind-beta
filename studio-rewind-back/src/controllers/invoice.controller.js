@@ -1,7 +1,8 @@
 // src/controllers/invoice.controller.js
 import {
   generateReservationInvoice,
-  generateCommissionStatement
+  generateCommissionStatement,
+  generateAllInvoicesZip
 } from '../services/invoice.service.js';
 import { Reservation, Podcaster } from '../models/index.js';
 
@@ -106,6 +107,54 @@ export async function downloadCommissionStatement(req, res) {
     console.error('Erreur téléchargement relevé commission:', error);
     return res.status(error.status || 500).json({
       message: error.message || 'Erreur lors de la génération du relevé de commission.'
+    });
+  }
+}
+
+/**
+ * GET /api/invoices/download-all
+ * Télécharger toutes les factures et commissions en ZIP (admin uniquement)
+ */
+export async function downloadAllInvoices(req, res) {
+  try {
+    const userRole = req.user.role;
+
+    // Vérifier que l'utilisateur est admin
+    const isAdmin = userRole === 'admin' || userRole === 'super_admin';
+    if (!isAdmin) {
+      return res.status(403).json({ message: 'Accès réservé aux administrateurs.' });
+    }
+
+    const { start_date, end_date } = req.query;
+
+    // Générer le ZIP
+    const zipBuffer = await generateAllInvoicesZip(start_date || null, end_date || null);
+
+    // Nom du fichier
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+
+    let filename = `factures-${year}${month}${day}`;
+    if (start_date && end_date) {
+      filename = `factures-du-${start_date}-au-${end_date}`;
+    } else if (start_date) {
+      filename = `factures-depuis-${start_date}`;
+    } else if (end_date) {
+      filename = `factures-jusquau-${end_date}`;
+    }
+    filename += '.zip';
+
+    // Envoyer le ZIP
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', zipBuffer.length);
+    res.send(zipBuffer);
+  } catch (error) {
+    console.error('Erreur téléchargement toutes les factures:', error);
+    return res.status(error.status || 500).json({
+      message: error.message || 'Erreur lors de la génération des factures.'
     });
   }
 }

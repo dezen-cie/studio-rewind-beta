@@ -42,9 +42,11 @@ export interface ClientsActivityResponse {
 export interface PodcasterActivity {
   id: string;
   name: string;
+  is_billable: boolean;
   total_sessions: number;
   total_hours: number;
   total_revenue_ht: number;
+  total_revenue_ttc: number;
   commission_rate: number;
   commission_ht: number;
   commission_tva: number;
@@ -58,6 +60,7 @@ export interface PodcastersTotals {
   total_sessions: number;
   total_hours: number;
   total_revenue_ht: number;
+  total_revenue_ttc: number;
   total_commission_ht: number;
   total_commission_tva: number;
   total_commission_ttc: number;

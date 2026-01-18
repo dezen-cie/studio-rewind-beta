@@ -9,9 +9,16 @@ export interface AdminReservationUser {
   company_name?: string | null;
 }
 
+export interface AdminReservationPodcaster {
+  id: string;
+  name: string;
+  is_billable?: boolean;
+}
+
 export interface AdminReservation {
   id: string;
   user_id: string;
+  podcaster_id?: string | null;
   formula: 'solo' | 'duo' | 'pro';
   start_date: string;
   end_date: string;
@@ -21,6 +28,7 @@ export interface AdminReservation {
   price_ttc: number;
   status: 'pending' | 'confirmed' | 'cancelled';
   User?: AdminReservationUser;
+  podcaster?: AdminReservationPodcaster | null;
   // Champs promo
   promo_code?: string | null;
   promo_label?: string | null;

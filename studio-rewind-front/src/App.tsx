@@ -21,6 +21,9 @@ import AdminRevenuePage from './pages/admin/AdminRevenuePage';
 import AdminActivityPage from './pages/admin/AdminActivityPage';
 import AdminPromoPage from './pages/admin/AdminPromoPage';
 import AdminEmailingPage from './pages/admin/AdminEmailingPage';
+import AdminStatsPage from './pages/admin/AdminStatsPage';
+import AdminInvoicesPage from './pages/admin/AdminInvoicesPage';
+import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 
 import PodcasterCalendarPage from './pages/podcaster/PodcasterCalendarPage';
 import PodcasterPasswordPage from './pages/podcaster/PodcasterPasswordPage';
@@ -158,6 +161,9 @@ function App() {
         <Route path="activity" element={<AdminActivityPage />} />
         <Route path="promo" element={<AdminPromoPage />} />
         <Route path="emailing" element={<AdminEmailingPage />} />
+        <Route path="stats" element={<AdminStatsPage />} />
+        <Route path="invoices" element={<AdminInvoicesPage />} />
+        <Route path="settings" element={<AdminSettingsPage />} />
         {/* Routes pour admin qui est aussi podcaster */}
         <Route path="mon-calendrier" element={<PodcasterCalendarPage />} />
         <Route path="mes-disponibilites" element={<PodcasterBlockedSlotsPage />} />

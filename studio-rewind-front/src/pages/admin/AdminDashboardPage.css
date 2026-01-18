@@ -114,12 +114,18 @@
 /* STATS GRID - Amélioration */
 .sr-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
   margin-bottom: 2rem;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
+  .sr-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
   .sr-stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -157,6 +163,20 @@
 
 .sr-stats-card.occupancy-card {
   grid-column: span 1;
+}
+
+.sr-stats-card.sr-stats-card-highlight {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.sr-stats-card.sr-stats-card-highlight .sr-stats-icon {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.sr-stats-card.sr-stats-card-highlight .sr-stats-value {
+  color: #22c55e;
 }
 
 /* Barre d'occupation */

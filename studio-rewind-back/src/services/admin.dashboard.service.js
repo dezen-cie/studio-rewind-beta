@@ -1,7 +1,7 @@
 // src/services/admin.dashboard.service.js
 import { Op } from 'sequelize';
 import { Reservation, Subscription, User, BlockedSlot, Podcaster } from '../models/index.js';
-import { getOpeningHours, isDayOpen } from './studioSettings.service.js';
+import { getOpeningHours, isDayOpen, getCommissionRate, getVatRate } from './studioSettings.service.js';
 
 function getDayRange(date = new Date()) {
   const d = new Date(date);
@@ -104,9 +104,37 @@ export async function getDashboardSummary(selectedDate = null) {
   const monthRevenue =
     Number(reservationsMonth || 0) + Number(subscriptionsMonth || 0);
 
+  // Calculer les commissions du mois (taux dynamique pour les podcasteurs facturables)
+  const COMMISSION_RATE = await getCommissionRate(); // Ex: 0.20 pour 20%
+  const VAT_RATE = await getVatRate(); // Ex: 0.20 pour 20%
+
+  const monthReservations = await Reservation.findAll({
+    where: {
+      status: 'confirmed',
+      start_date: { [Op.between]: [startMonth, endMonth] },
+      podcaster_id: { [Op.not]: null }
+    },
+    include: [{
+      model: Podcaster,
+      as: 'podcaster',
+      attributes: ['id', 'is_billable']
+    }]
+  });
+
+  let monthCommissionsHT = 0;
+  for (const r of monthReservations) {
+    if (r.podcaster?.is_billable) {
+      monthCommissionsHT += (r.price_ht || 0) * COMMISSION_RATE;
+    }
+  }
+  const monthCommissionsTVA = monthCommissionsHT * VAT_RATE;
+  const monthCommissionsTTC = monthCommissionsHT + monthCommissionsTVA;
+
   return {
     today_revenue_ttc: todayRevenue,
-    month_revenue_ttc: monthRevenue
+    month_revenue_ttc: monthRevenue,
+    month_commissions_ttc: Math.round(monthCommissionsTTC * 100) / 100,
+    month_margin_ttc: Math.round((monthRevenue - monthCommissionsTTC) * 100) / 100
   };
 }
 

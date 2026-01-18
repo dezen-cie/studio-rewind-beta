@@ -135,6 +135,11 @@ function AdminActivityPage() {
             <div className="activity-card-value">{formatCurrency(summary.commissions.total_ttc)}</div>
             <div className="activity-card-sub">HT: {formatCurrency(summary.commissions.total_ht)}</div>
           </div>
+          <div className="activity-card activity-card-highlight">
+            <div className="activity-card-label">Marge Studio</div>
+            <div className="activity-card-value">{formatCurrency(summary.revenue.total_ttc - summary.commissions.total_ttc)}</div>
+            <div className="activity-card-sub">HT: {formatCurrency(summary.revenue.total_ht - summary.commissions.total_ht)}</div>
+          </div>
         </div>
       )}
 
@@ -274,6 +279,7 @@ function AdminActivityPage() {
                   <th className="text-right">Nb Sessions</th>
                   <th className="text-right">Heures</th>
                   <th className="text-right">CA HT généré</th>
+                  <th className="text-right">CA TTC généré</th>
                   <th className="text-right">Taux</th>
                   <th className="text-right">Commission HT</th>
                   <th className="text-right">Commission TVA</th>
@@ -285,7 +291,7 @@ function AdminActivityPage() {
               <tbody>
                 {podcasters.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="text-center">Aucun podcasteur trouvé pour cette période.</td>
+                    <td colSpan={11} className="text-center">Aucun podcasteur trouvé pour cette période.</td>
                   </tr>
                 )}
                 {podcasters.map((p) => (
@@ -294,10 +300,11 @@ function AdminActivityPage() {
                     <td className="text-right">{p.total_sessions}</td>
                     <td className="text-right">{p.total_hours}</td>
                     <td className="text-right">{formatCurrency(p.total_revenue_ht)}</td>
-                    <td className="text-right">{p.commission_rate}%</td>
-                    <td className="text-right">{formatCurrency(p.commission_ht)}</td>
-                    <td className="text-right">{formatCurrency(p.commission_tva)}</td>
-                    <td className="text-right font-bold commission">{formatCurrency(p.commission_ttc)}</td>
+                    <td className="text-right">{formatCurrency(p.total_revenue_ttc)}</td>
+                    <td className="text-right">{p.is_billable ? `${p.commission_rate}%` : '-'}</td>
+                    <td className="text-right">{p.is_billable ? formatCurrency(p.commission_ht) : '-'}</td>
+                    <td className="text-right">{p.is_billable ? formatCurrency(p.commission_tva) : '-'}</td>
+                    <td className="text-right font-bold commission">{p.is_billable ? formatCurrency(p.commission_ttc) : '-'}</td>
                     <td>{formatDate(p.first_session)}</td>
                     <td>{formatDate(p.last_session)}</td>
                   </tr>
@@ -310,6 +317,7 @@ function AdminActivityPage() {
                     <td className="text-right"><strong>{podcastersTotals.total_sessions}</strong></td>
                     <td className="text-right"><strong>{podcastersTotals.total_hours} h</strong></td>
                     <td className="text-right"><strong>{formatCurrency(podcastersTotals.total_revenue_ht)}</strong></td>
+                    <td className="text-right"><strong>{formatCurrency(podcastersTotals.total_revenue_ttc)}</strong></td>
                     <td></td>
                     <td className="text-right"><strong>{formatCurrency(podcastersTotals.total_commission_ht)}</strong></td>
                     <td className="text-right"><strong>{formatCurrency(podcastersTotals.total_commission_tva)}</strong></td>

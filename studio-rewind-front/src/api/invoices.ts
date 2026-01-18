@@ -62,3 +62,41 @@ export async function downloadCommissionStatement(reservationId: string): Promis
   link.remove();
   window.URL.revokeObjectURL(url);
 }
+
+/**
+ * Télécharge toutes les factures et commissions en ZIP pour une période donnée
+ */
+export async function downloadAllInvoices(startDate?: string, endDate?: string): Promise<void> {
+  const params = new URLSearchParams();
+  if (startDate) params.append('start_date', startDate);
+  if (endDate) params.append('end_date', endDate);
+
+  const queryString = params.toString();
+  const url = `/invoices/download-all${queryString ? `?${queryString}` : ''}`;
+
+  const response = await api.get(url, {
+    responseType: 'blob'
+  });
+
+  // Créer un lien de téléchargement
+  const blob = new Blob([response.data], { type: 'application/zip' });
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+
+  // Extraire le nom du fichier depuis les headers ou générer un nom par défaut
+  const contentDisposition = response.headers['content-disposition'];
+  let filename = 'factures.zip';
+  if (contentDisposition) {
+    const match = contentDisposition.match(/filename="(.+)"/);
+    if (match) {
+      filename = match[1];
+    }
+  }
+
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(downloadUrl);
+}

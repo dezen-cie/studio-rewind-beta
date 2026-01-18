@@ -210,3 +210,22 @@
     color: #ef4444;
 }
 
+/* ============================
+   MAJORATION / SURCHARGE
+   ============================ */
+
+.surcharge-line {
+    color: #f59e0b;
+    font-weight: 500;
+}
+
+.surcharge-line span {
+    color: #f59e0b;
+}
+
+.loading-indicator {
+    opacity: 0.6;
+    font-size: 0.85rem;
+    margin-left: 0.5rem;
+}
+

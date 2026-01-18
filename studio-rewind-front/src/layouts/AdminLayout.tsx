@@ -82,61 +82,6 @@ function AdminLayout() {
                   <span>Dashboard</span>
                 </NavLink>
               </li>
-              <li>
-                <NavLink
-                  to="/admin/users"
-                  className={({ isActive }) =>
-                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
-                  }
-                >
-                  <span className="sr-admin-navlink-icon">👥</span>
-                  <span>Utilisateurs</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/admin/formulas"
-                  className={({ isActive }) =>
-                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
-                  }
-                >
-                  <span className="sr-admin-navlink-icon">💰</span>
-                  <span>Formules</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/admin/blocked-slots"
-                  className={({ isActive }) =>
-                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
-                  }
-                >
-                  <span className="sr-admin-navlink-icon">🕐</span>
-                  <span>Horaires du studio</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/admin/podcasters"
-                  className={({ isActive }) =>
-                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
-                  }
-                >
-                  <span className="sr-admin-navlink-icon">🎙️</span>
-                  <span>Podcasteurs</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/admin/messages"
-                  className={({ isActive }) =>
-                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
-                  }
-                >
-                  <span className="sr-admin-navlink-icon">✉️</span>
-                  <span>Messages</span>
-                </NavLink>
-              </li>
             </ul>
 
             <p className="sr-admin-nav-section">Réservations</p>
@@ -154,6 +99,17 @@ function AdminLayout() {
               </li>
               <li>
                 <NavLink
+                  to="/admin/blocked-slots"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">🚫</span>
+                  <span>Gestion des créneaux</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
                   to="/admin/archives"
                   className={({ isActive }) =>
                     `sr-admin-navlink ${isActive ? 'is-active' : ''}`
@@ -165,8 +121,93 @@ function AdminLayout() {
               </li>
             </ul>
 
-            <p className="sr-admin-nav-section">Gestion</p>
+            <p className="sr-admin-nav-section">Tarifs</p>
             <ul>
+              <li>
+                <NavLink
+                  to="/admin/formulas"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">💰</span>
+                  <span>Formules</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/admin/promo"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">🏷️</span>
+                  <span>Codes promo</span>
+                </NavLink>
+              </li>
+            </ul>
+
+            <p className="sr-admin-nav-section">Utilisateurs</p>
+            <ul>
+              <li>
+                <NavLink
+                  to="/admin/users"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">👥</span>
+                  <span>Clients</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/admin/podcasters"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">🎙️</span>
+                  <span>Podcasteurs</span>
+                </NavLink>
+              </li>
+            </ul>
+
+            <p className="sr-admin-nav-section">Suivi d'activité</p>
+            <ul>
+              <li>
+                <NavLink
+                  to="/admin/stats"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">📈</span>
+                  <span>Statistiques</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/admin/activity"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">📋</span>
+                  <span>Suivi comptable</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/admin/invoices"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">📄</span>
+                  <span>Factures</span>
+                </NavLink>
+              </li>
               <li>
                 <NavLink
                   to="/admin/revenue"
@@ -178,26 +219,19 @@ function AdminLayout() {
                   <span>Commissions</span>
                 </NavLink>
               </li>
+            </ul>
+
+            <p className="sr-admin-nav-section">Communication</p>
+            <ul>
               <li>
                 <NavLink
-                  to="/admin/activity"
+                  to="/admin/messages"
                   className={({ isActive }) =>
                     `sr-admin-navlink ${isActive ? 'is-active' : ''}`
                   }
                 >
-                  <span className="sr-admin-navlink-icon">📈</span>
-                  <span>Suivi d'activité</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/admin/promo"
-                  className={({ isActive }) =>
-                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
-                  }
-                >
-                  <span className="sr-admin-navlink-icon">🏷️</span>
-                  <span>Promo</span>
+                  <span className="sr-admin-navlink-icon">✉️</span>
+                  <span>Messages</span>
                 </NavLink>
               </li>
               <li>
@@ -208,7 +242,7 @@ function AdminLayout() {
                   }
                 >
                   <span className="sr-admin-navlink-icon">📧</span>
-                  <span>Emailing</span>
+                  <span>Campagnes email</span>
                 </NavLink>
               </li>
             </ul>
@@ -253,6 +287,21 @@ function AdminLayout() {
                 </ul>
               </>
             )}
+
+            <p className="sr-admin-nav-section">Configuration</p>
+            <ul>
+              <li>
+                <NavLink
+                  to="/admin/settings"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">⚙️</span>
+                  <span>Réglages</span>
+                </NavLink>
+              </li>
+            </ul>
           </nav>
 
           <div className="sr-admin-sidebar-footer">

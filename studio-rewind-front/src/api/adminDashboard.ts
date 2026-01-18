@@ -4,6 +4,8 @@ import api from './client';
 export interface DashboardSummary {
   today_revenue_ttc: number;
   month_revenue_ttc: number;
+  month_commissions_ttc: number;
+  month_margin_ttc: number;
 }
 
 export interface DashboardReservationUser {

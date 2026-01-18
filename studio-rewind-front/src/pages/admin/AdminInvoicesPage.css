@@ -1,0 +1,216 @@
+/* AdminInvoicesPage.css */
+
+.admin-invoices-page .invoices-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.invoices-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.invoices-filter-group label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.invoices-date-input {
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.invoices-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+.invoices-reset-btn {
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.invoices-reset-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.invoices-filter-spacer {
+  flex: 1;
+}
+
+.invoices-download-all-btn {
+  padding: 0.6rem 1rem;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 6px;
+  color: #10b981;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.invoices-download-all-btn:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.invoices-download-all-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.invoices-loading,
+.invoices-empty {
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.invoices-table-container {
+  overflow-x: auto;
+}
+
+.invoices-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.invoices-table th,
+.invoices-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.invoices-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.invoices-table th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.invoices-table tbody tr {
+  transition: background 0.2s;
+}
+
+.invoices-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.invoices-date {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+}
+
+.invoices-client-name {
+  font-weight: 500;
+  color: #fff;
+}
+
+.invoices-client-email {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.invoices-formula {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.invoices-podcaster {
+  font-size: 0.85rem;
+  color: var(--color-primary, #e67e22);
+}
+
+.invoices-amount {
+  font-weight: 600;
+  color: #10b981;
+  white-space: nowrap;
+}
+
+.invoices-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.invoices-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.6rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.invoices-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.invoices-btn-client {
+  background: rgba(100, 108, 255, 0.15);
+  color: #646cff;
+}
+
+.invoices-btn-client:hover:not(:disabled) {
+  background: rgba(100, 108, 255, 0.25);
+}
+
+.invoices-btn-commission {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.invoices-btn-commission:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.25);
+}
+
+@media (max-width: 900px) {
+  .invoices-table th:nth-child(4),
+  .invoices-table td:nth-child(4) {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .invoices-filter-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .invoices-table th:nth-child(3),
+  .invoices-table td:nth-child(3) {
+    display: none;
+  }
+}

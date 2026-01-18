@@ -70,7 +70,12 @@ export async function updatePodcasterController(req, res) {
 
   try {
     const { id } = req.params;
-    const { name, display_order, team_display_order, team_role, is_active, phone } = req.body;
+    const {
+      name, display_order, team_display_order, team_role, is_active, phone,
+      // Champs facturation
+      is_billable, billing_firstname, billing_lastname, billing_company, billing_siret,
+      billing_address, billing_postal_code, billing_city
+    } = req.body;
 
     // Recuperer les nouveaux fichiers si uploades
     const videoFile = req.files?.video?.[0];
@@ -89,6 +94,16 @@ export async function updatePodcasterController(req, res) {
     if (team_role !== undefined) updateData.team_role = team_role || null;
     if (is_active !== undefined) updateData.is_active = is_active === 'true' || is_active === true;
     if (phone !== undefined) updateData.phone = phone || null;
+
+    // Champs facturation
+    if (is_billable !== undefined) updateData.is_billable = is_billable === 'true' || is_billable === true;
+    if (billing_firstname !== undefined) updateData.billing_firstname = billing_firstname || null;
+    if (billing_lastname !== undefined) updateData.billing_lastname = billing_lastname || null;
+    if (billing_company !== undefined) updateData.billing_company = billing_company || null;
+    if (billing_siret !== undefined) updateData.billing_siret = billing_siret || null;
+    if (billing_address !== undefined) updateData.billing_address = billing_address || null;
+    if (billing_postal_code !== undefined) updateData.billing_postal_code = billing_postal_code || null;
+    if (billing_city !== undefined) updateData.billing_city = billing_city || null;
 
     // Si nouveau fichier video, uploader et mettre a jour l'URL
     if (videoFile) {

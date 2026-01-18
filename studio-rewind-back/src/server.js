@@ -5,6 +5,7 @@ dotenv.config();
 import app from './app.js';
 import { sequelize } from './models/index.js';
 import { processScheduledCampaigns } from './services/emailing.service.js';
+import { processReservationReminders } from './services/reminder.service.js';
 
 const PORT = process.env.PORT || 4000;
 const SYNC_DB = process.env.SYNC_DB === 'true';
@@ -44,6 +45,31 @@ async function startServer() {
         }
       }).catch(err => {
         console.error('❌ Erreur traitement campagnes programmées au démarrage:', err.message);
+      });
+
+      // Cron job: traite les rappels de réservation toutes les 15 minutes
+      const FIFTEEN_MINUTES = 15 * 60 * 1000;
+      setInterval(async () => {
+        try {
+          const results = await processReservationReminders();
+          if (results.sent > 0) {
+            console.log(`📧 ${results.sent} rappel(s) de réservation envoyé(s)`);
+          }
+          if (results.failed > 0) {
+            console.warn(`⚠️ ${results.failed} rappel(s) échoué(s)`);
+          }
+        } catch (err) {
+          console.error('❌ Erreur traitement rappels réservation:', err.message);
+        }
+      }, FIFTEEN_MINUTES);
+
+      // Exécuter une fois au démarrage pour traiter les rappels en retard
+      processReservationReminders().then(results => {
+        if (results.sent > 0) {
+          console.log(`📧 ${results.sent} rappel(s) de réservation envoyé(s) au démarrage`);
+        }
+      }).catch(err => {
+        console.error('❌ Erreur traitement rappels au démarrage:', err.message);
       });
     });
   } catch (error) {

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   getPodcasterReservationsByDate,
+  getPodcasterMe,
   type PodcasterReservation
 } from '../../api/podcasterDashboard';
 import { downloadCommissionStatement } from '../../api/invoices';
@@ -99,6 +100,7 @@ function PodcasterCalendarPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [downloadingCommissionId, setDownloadingCommissionId] = useState<string | null>(null);
+  const [isBillable, setIsBillable] = useState<boolean | null>(null);
 
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
@@ -134,6 +136,20 @@ function PodcasterCalendarPage() {
       year: 'numeric'
     });
   }, [selectedDateKey]);
+
+  // Charger le profil du podcasteur pour savoir s'il est facturable
+  useEffect(() => {
+    async function loadPodcasterProfile() {
+      try {
+        const data = await getPodcasterMe();
+        setIsBillable(data.podcaster?.is_billable || false);
+      } catch (err: any) {
+        console.error('Erreur chargement profil podcaster:', err);
+        setIsBillable(false);
+      }
+    }
+    loadPodcasterProfile();
+  }, []);
 
   // Charger les reservations pour la date selectionnee
   useEffect(() => {
@@ -325,7 +341,7 @@ function PodcasterCalendarPage() {
                         <p className="pc-reservation-price">
                           {r.price_ttc.toFixed(2)} EUR TTC
                         </p>
-                        {r.status === 'confirmed' && (
+                        {r.status === 'confirmed' && isBillable && (
                           <button
                             type="button"
                             className="pc-reservation-commission-btn"

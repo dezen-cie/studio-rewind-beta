@@ -16,7 +16,7 @@ import {
   type StudioSettings
 } from '../../api/blockedSlots';
 import { getPublicPodcasters, getPodcasterBlockedSlotsForDate, getPodcasterFullDayBlocks, type Podcaster, type PodcasterBlockedSlotPublic } from '../../api/podcasters';
-import { getPublicFormulas } from '../../api/formulas';
+import { getPublicFormulas, calculatePricing, type PricingResult } from '../../api/formulas';
 
 import type { FormulaKey, PricingBreakdown, SelectedPodcaster } from '../../pages/ReservationPage';
 
@@ -84,6 +84,10 @@ const StepTwoDateTime = ({
 
   // Dates avec ouverture exceptionnelle (pour dégriser les jours normalement fermés)
   const [exceptionalOpenDates, setExceptionalOpenDates] = useState<string[]>([]);
+
+  // Pricing dynamique (avec majorations)
+  const [dynamicPricing, setDynamicPricing] = useState<PricingResult | null>(null);
+  const [loadingPricing, setLoadingPricing] = useState(false);
 
   // Charger les podcasteurs, les heures bloquées par défaut, les paramètres du studio et l'info de la formule au montage
   useEffect(() => {
@@ -490,19 +494,56 @@ const StepTwoDateTime = ({
     }
   }, [startTime, endTime, setEndTime]);
 
+  // ====== CALCUL DU PRIX DYNAMIQUE (AVEC MAJORATIONS) ======
+  useEffect(() => {
+    async function fetchPricing() {
+      if (!selectedDate || !startTime || !formula) {
+        setDynamicPricing(null);
+        return;
+      }
+
+      // Construire les dates ISO
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      const [sh] = startTime.split(':').map(Number);
+      const endHour = sh + FIXED_DURATION;
+
+      const startDateISO = `${year}-${month}-${day}T${startTime}:00`;
+      const endDateISO = `${year}-${month}-${day}T${endHour.toString().padStart(2, '0')}:00:00`;
+
+      try {
+        setLoadingPricing(true);
+        const pricing = await calculatePricing(formula, startDateISO, endDateISO);
+        setDynamicPricing(pricing);
+      } catch (err) {
+        console.error('Erreur calcul prix:', err);
+        // Fallback: utiliser le prix de base sans majoration
+        setDynamicPricing(null);
+      } finally {
+        setLoadingPricing(false);
+      }
+    }
+
+    fetchPricing();
+  }, [selectedDate, startTime, formula]);
+
   // ====== CALCUL HEURES (toujours 1h) ======
   let bookedHours: number | null = null;
   if (startTime) {
     bookedHours = FIXED_DURATION;
   }
 
-  // ====== TARIFS HT ======
-  const TVA_RATE = 0.2;
+  // ====== TARIFS (dynamiques ou fallback) ======
+  const DEFAULT_TVA_RATE = 20; // Fallback 20%
 
-  // Prix HT de la formule (depuis la BDD)
-  const totalHT = formulaPrice;
-  const tvaAmount = totalHT * TVA_RATE;
-  const totalTTC = totalHT + tvaAmount;
+  // Utiliser le pricing dynamique si disponible, sinon fallback au prix de base
+  const totalHT = dynamicPricing?.price_ht ?? formulaPrice;
+  const vatRatePercent = dynamicPricing?.vat_rate ?? DEFAULT_TVA_RATE;
+  const tvaAmount = dynamicPricing?.price_tva ?? (formulaPrice * (DEFAULT_TVA_RATE / 100));
+  const totalTTC = dynamicPricing?.price_ttc ?? (formulaPrice + formulaPrice * (DEFAULT_TVA_RATE / 100));
+  const surchargePercent = dynamicPricing?.surcharge_percent ?? 0;
+  const surchargeAmount = dynamicPricing?.surcharge_amount ?? 0;
 
   const safeBookedHours = bookedHours ?? 0;
 
@@ -614,14 +655,20 @@ const StepTwoDateTime = ({
             <div className="recap-infos padding">
               <p className="flex-align flex-split">
                 {formulaName || formula} (1h){' '}
-                <span>€ {totalHT.toFixed(2)} HT</span>
+                <span>€ {(formulaPrice).toFixed(2)} HT</span>
               </p>
+              {surchargePercent > 0 && (
+                <p className="flex-align flex-split small surcharge-line">
+                  Majoration ({surchargePercent}%) <span>+ € {surchargeAmount.toFixed(2)}</span>
+                </p>
+              )}
               <p className="flex-align flex-split small">
-                TVA (20%) <span>€ {tvaAmount.toFixed(2)}</span>
+                TVA ({vatRatePercent}%) <span>€ {tvaAmount.toFixed(2)}</span>
               </p>
             </div>
             <p className="flex-align flex-split padding color">
               Total TTC : <strong>€ {totalTTC.toFixed(2)}</strong>
+              {loadingPricing && <span className="loading-indicator"> ...</span>}
             </p>
           </>
 

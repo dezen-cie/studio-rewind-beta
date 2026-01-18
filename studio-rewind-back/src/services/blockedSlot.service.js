@@ -1,7 +1,79 @@
 // src/services/blockedSlot.service.js
 import { Op } from 'sequelize';
 import { BlockedSlot } from '../models/index.js';
-import { getDefaultBlockedRangesFromSettings, isDayOpen } from './studioSettings.service.js';
+import { getDefaultBlockedRangesFromSettings, isDayOpen, isHolidaysClosureEnabled } from './studioSettings.service.js';
+
+/**
+ * Calcule la date de Pâques pour une année donnée (algorithme de Meeus/Jones/Butcher)
+ */
+function getEasterDate(year) {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+
+/**
+ * Retourne la liste des jours fériés français pour une année donnée
+ * @param {number} year
+ * @returns {string[]} Tableau de dates au format YYYY-MM-DD
+ */
+function getFrenchHolidays(year) {
+  const holidays = [];
+
+  // Jours fixes
+  holidays.push(`${year}-01-01`); // Jour de l'an
+  holidays.push(`${year}-05-01`); // Fête du travail
+  holidays.push(`${year}-05-08`); // Victoire 1945
+  holidays.push(`${year}-07-14`); // Fête nationale
+  holidays.push(`${year}-08-15`); // Assomption
+  holidays.push(`${year}-11-01`); // Toussaint
+  holidays.push(`${year}-11-11`); // Armistice
+  holidays.push(`${year}-12-25`); // Noël
+
+  // Jours mobiles basés sur Pâques
+  const easter = getEasterDate(year);
+
+  // Lundi de Pâques (lendemain de Pâques)
+  const easterMonday = new Date(easter);
+  easterMonday.setDate(easter.getDate() + 1);
+  holidays.push(easterMonday.toISOString().split('T')[0]);
+
+  // Ascension (39 jours après Pâques)
+  const ascension = new Date(easter);
+  ascension.setDate(easter.getDate() + 39);
+  holidays.push(ascension.toISOString().split('T')[0]);
+
+  // Lundi de Pentecôte (50 jours après Pâques)
+  const whitMonday = new Date(easter);
+  whitMonday.setDate(easter.getDate() + 50);
+  holidays.push(whitMonday.toISOString().split('T')[0]);
+
+  return holidays;
+}
+
+/**
+ * Vérifie si une date est un jour férié français
+ * @param {Date} date
+ * @returns {boolean}
+ */
+function isFrenchHoliday(date) {
+  const year = date.getFullYear();
+  const dateStr = date.toISOString().split('T')[0];
+  const holidays = getFrenchHolidays(year);
+  return holidays.includes(dateStr);
+}
 
 // Heures par défaut bloquées (hors horaires d'ouverture) - LEGACY, utilisé comme fallback
 const DEFAULT_BLOCKED_RANGES = [
@@ -113,6 +185,12 @@ export async function getUnblockDatesForMonth(year, month) {
 export async function isSlotBlocked(startDate, endDate) {
   const dateOnly = startDate.toISOString().split('T')[0];
   const dayOfWeek = startDate.getDay(); // 0=Dimanche, 1=Lundi, ...
+
+  // Vérifier si c'est un jour férié et si les fermetures jours fériés sont activées
+  const holidaysEnabled = await isHolidaysClosureEnabled();
+  if (holidaysEnabled && isFrenchHoliday(startDate)) {
+    return true;
+  }
 
   // Vérifier si le jour est ouvert selon les paramètres
   const dayIsOpen = await isDayOpen(dayOfWeek);

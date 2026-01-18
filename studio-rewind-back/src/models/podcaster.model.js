@@ -76,6 +76,41 @@ Podcaster.init(
         model: 'users',
         key: 'id'
       }
+    },
+    // ====== Champs facturation ======
+    is_billable: {
+      // Si false = employé interne, pas de commission
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    billing_firstname: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    billing_lastname: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    billing_company: {
+      // Nom de l'entreprise (optionnel)
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    billing_siret: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    billing_address: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    billing_postal_code: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    billing_city: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   },
   {

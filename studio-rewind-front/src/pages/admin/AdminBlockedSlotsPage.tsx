@@ -1,15 +1,13 @@
 // src/pages/admin/AdminBlockedSlotsPage.tsx
 import React, { useEffect, useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Calendar, Trash2, Plus, X, Clock, Save } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Trash2, Plus, X } from 'lucide-react';
 import {
   type BlockedSlot,
-  type StudioSettings,
   getAdminBlockedSlotsForMonth,
   getAdminBlockedSlotsForDate,
   createAdminBlockedSlot,
   deleteAdminBlockedSlot,
   getAdminStudioSettings,
-  updateAdminStudioSettings,
 } from '../../api/blockedSlots';
 import './AdminBlockedSlotsPage.css';
 
@@ -128,14 +126,11 @@ function AdminBlockedSlotsPage() {
 
   const [error, setError] = useState<string | null>(null);
 
-  // État pour les paramètres du studio
-  const [settings, setSettings] = useState<StudioSettings | null>(null);
+  // État pour les paramètres du studio (lecture seule)
   const [loadingSettings, setLoadingSettings] = useState(false);
-  const [savingSettings, setSavingSettings] = useState(false);
   const [settingsOpeningTime, setSettingsOpeningTime] = useState('09:00');
   const [settingsClosingTime, setSettingsClosingTime] = useState('18:00');
   const [settingsOpenDays, setSettingsOpenDays] = useState<number[]>([1, 2, 3, 4, 5]);
-  const [settingsSuccess, setSettingsSuccess] = useState(false);
 
   // Heures dynamiques basées sur les horaires d'ouverture
   const blockHours = useMemo(() => {
@@ -161,17 +156,19 @@ function AdminBlockedSlotsPage() {
   const month = currentDate.getMonth();
   const weeks = getDaysMatrix(year, month);
 
-  // Charger les paramètres du studio
+  // Charger les paramètres du studio (lecture seule pour affichage)
   async function loadSettings() {
     try {
       setLoadingSettings(true);
       const data = await getAdminStudioSettings();
-      setSettings(data);
       const openingTime = data.opening_time?.substring(0, 5) || '09:00';
       const closingTime = data.closing_time?.substring(0, 5) || '18:00';
       setSettingsOpeningTime(openingTime);
       setSettingsClosingTime(closingTime);
-      setSettingsOpenDays(data.open_days || [1, 2, 3, 4, 5]);
+      // Récupérer les jours d'ouverture
+      if (data.open_days && Array.isArray(data.open_days)) {
+        setSettingsOpenDays(data.open_days);
+      }
       // Mettre à jour les valeurs par défaut du modal
       setStartTime(openingTime);
       setEndTime(closingTime);
@@ -180,36 +177,6 @@ function AdminBlockedSlotsPage() {
     } finally {
       setLoadingSettings(false);
     }
-  }
-
-  // Sauvegarder les paramètres du studio
-  async function handleSaveSettings() {
-    try {
-      setSavingSettings(true);
-      setError(null);
-      setSettingsSuccess(false);
-      await updateAdminStudioSettings({
-        opening_time: settingsOpeningTime,
-        closing_time: settingsClosingTime,
-        open_days: settingsOpenDays
-      });
-      setSettingsSuccess(true);
-      setTimeout(() => setSettingsSuccess(false), 3000);
-    } catch (err: any) {
-      console.error('Erreur sauvegarde paramètres:', err);
-      setError(err?.response?.data?.message || 'Impossible de sauvegarder les paramètres.');
-    } finally {
-      setSavingSettings(false);
-    }
-  }
-
-  // Toggle un jour d'ouverture
-  function toggleOpenDay(day: number) {
-    setSettingsOpenDays(prev =>
-      prev.includes(day)
-        ? prev.filter(d => d !== day)
-        : [...prev, day].sort()
-    );
   }
 
   // Charger les blocages du mois
@@ -461,6 +428,17 @@ function AdminBlockedSlotsPage() {
     });
   }
 
+  // Vérifie si le jour sélectionné est un jour normalement ouvert
+  function isSelectedDayOpen(): boolean {
+    if (!selectedDate) return true;
+    const [y, m, d] = selectedDate.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    const jsDay = date.getDay(); // 0=Dimanche, 1=Lundi, ..., 6=Samedi
+    // Convertir en format settings: 1=Lundi, ..., 7=Dimanche
+    const settingsDay = jsDay === 0 ? 7 : jsDay;
+    return settingsOpenDays.includes(settingsDay);
+  }
+
   return (
     <div className="sr-page">
       <div className="sr-page-header">
@@ -475,92 +453,6 @@ function AdminBlockedSlotsPage() {
       {error && <p className="sr-page-error">{error}</p>}
 
       <div className="sr-page-body">
-        {/* SECTION HORAIRES D'OUVERTURE */}
-        <div className="sr-card opening-hours-section">
-          <div className="opening-hours-header">
-            <div className="opening-hours-title">
-              <Clock size={18} />
-              <span>Horaires d'ouverture</span>
-            </div>
-          </div>
-
-          {loadingSettings ? (
-            <p className="blocked-loading">Chargement des paramètres...</p>
-          ) : (
-            <div className="opening-hours-content">
-              <div className="opening-hours-times">
-                <div className="field">
-                  <label className="label">Heure d'ouverture</label>
-                  <div className="control">
-                    <div className="select">
-                      <select
-                        value={settingsOpeningTime}
-                        onChange={(e) => setSettingsOpeningTime(e.target.value)}
-                      >
-                        {ALL_HOURS_30MIN.filter(h => h !== '24:00').map((h) => (
-                          <option key={h} value={h}>{h}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="field">
-                  <label className="label">Heure de fermeture</label>
-                  <div className="control">
-                    <div className="select">
-                      <select
-                        value={settingsClosingTime}
-                        onChange={(e) => setSettingsClosingTime(e.target.value)}
-                      >
-                        {ALL_HOURS_30MIN.map((h) => (
-                          <option key={h} value={h}>{h === '24:00' ? '00:00 (minuit)' : h}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="opening-hours-days">
-                <label className="label">Jours d'ouverture</label>
-                <div className="days-checkboxes">
-                  {DAYS_OF_WEEK.map((day) => (
-                    <label key={day.value} className="day-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={settingsOpenDays.includes(day.value)}
-                        onChange={() => toggleOpenDay(day.value)}
-                      />
-                      <span>{day.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="opening-hours-actions">
-                <button
-                  type="button"
-                  className="button is-primary"
-                  onClick={handleSaveSettings}
-                  disabled={savingSettings}
-                >
-                  <Save size={16} />
-                  <span>{savingSettings ? 'Enregistrement...' : 'Enregistrer'}</span>
-                </button>
-                {settingsSuccess && (
-                  <span className="settings-success">Paramètres enregistrés !</span>
-                )}
-              </div>
-
-              <p className="opening-hours-info">
-                Les créneaux en dehors de ces horaires seront automatiquement bloqués pour les réservations.
-                Les jours non cochés seront également indisponibles.
-              </p>
-            </div>
-          )}
-        </div>
-
         {/* SECTION GESTION DES CRÉNEAUX BLOQUÉS */}
         <div className="blocked-slots-layout">
           {/* CALENDRIER */}
@@ -658,7 +550,7 @@ function AdminBlockedSlotsPage() {
                     onClick={() => setShowModal(true)}
                   >
                     <Plus size={16} />
-                    <span>Ajouter un blocage</span>
+                    <span>Ajout d'une exception</span>
                   </button>
                 </div>
 
@@ -666,7 +558,9 @@ function AdminBlockedSlotsPage() {
 
                 {!loadingDay && dayBlockedSlots.length === 0 && (
                   <p className="blocked-day-no-blocks">
-                    Aucun blocage pour ce jour. Les utilisateurs peuvent réserver librement.
+                    {isSelectedDayOpen()
+                      ? 'Aucun blocage pour ce jour. Les utilisateurs peuvent réserver librement.'
+                      : 'Jour non réservable pour le moment (fermé par défaut).'}
                   </p>
                 )}
 
@@ -713,7 +607,7 @@ function AdminBlockedSlotsPage() {
         <div className="blocked-modal-overlay" onClick={() => setShowModal(false)}>
           <div className="blocked-modal blocked-modal--large" onClick={(e) => e.stopPropagation()}>
             <div className="blocked-modal-header">
-              <h3>Ajouter un blocage</h3>
+              <h3>Ajout d'une exception</h3>
               <button
                 type="button"
                 className="blocked-modal-close"

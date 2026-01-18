@@ -11,7 +11,8 @@ import {
   getUnblocksByDayPublic,
   getStudioSettingsPublic,
   getComputedBlockedRangesPublic,
-  getUnblockDatesForMonthPublic
+  getUnblockDatesForMonthPublic,
+  calculatePricingPublic
 } from '../controllers/reservation.controller.js';
 
 const router = Router();
@@ -37,7 +38,10 @@ router.get('/computed-blocked-ranges', getComputedBlockedRangesPublic);
 // Route publique : récupérer les dates avec déblocages pour un mois
 router.get('/unblock-dates/:year/:month', getUnblockDatesForMonthPublic);
 
-// Prévisualisation (step 2 du tunnel : calcul prix HT/TVA/TTC)
+// Route publique : calcul du prix avec majorations (step 2 tunnel)
+router.post('/calculate-pricing', calculatePricingPublic);
+
+// Prévisualisation (step 2 du tunnel : calcul prix HT/TVA/TTC) - nécessite auth
 router.post('/preview', authenticate, preview);
 
 // Création de la réservation (step 3, après validation + Stripe plus tard)

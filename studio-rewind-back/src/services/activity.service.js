@@ -1,6 +1,7 @@
 // src/services/activity.service.js
 import { Op } from 'sequelize';
 import { Reservation, User, Podcaster, PromoCode } from '../models/index.js';
+import { getCommissionRate, getVatRate } from './studioSettings.service.js';
 
 /**
  * Recupere l'activite des clients avec CA genere
@@ -158,7 +159,9 @@ export async function getPodcastersActivity({ startDate, endDate } = {}) {
     order: [['display_order', 'ASC']]
   });
 
-  const COMMISSION_RATE = 0.20; // 20%
+  // Récupérer les taux dynamiques depuis les paramètres
+  const COMMISSION_RATE = await getCommissionRate(); // Ex: 0.20 pour 20%
+  const VAT_RATE = await getVatRate(); // Ex: 0.20 pour 20%
 
   // Pour chaque podcasteur, calculer les stats
   const podcastersData = await Promise.all(
@@ -177,11 +180,19 @@ export async function getPodcastersActivity({ startDate, endDate } = {}) {
       const totalSessions = reservations.length;
       const totalHours = reservations.reduce((sum, r) => sum + (r.total_hours || 0), 0);
       const totalRevenueHT = reservations.reduce((sum, r) => sum + (r.price_ht || 0), 0);
+      const totalRevenueTTC = reservations.reduce((sum, r) => sum + (r.price_ttc || 0), 0);
 
-      // Commission sur le HT
-      const commissionHT = totalRevenueHT * COMMISSION_RATE;
-      const commissionTVA = commissionHT * 0.2; // TVA sur commission si applicable
-      const commissionTTC = commissionHT + commissionTVA;
+      // Commission seulement pour les podcasteurs facturables
+      let commissionHT = 0;
+      let commissionTVA = 0;
+      let commissionTTC = 0;
+
+      if (podcaster.is_billable) {
+        // Commission sur le HT
+        commissionHT = totalRevenueHT * COMMISSION_RATE;
+        commissionTVA = commissionHT * VAT_RATE; // TVA sur commission dynamique
+        commissionTTC = commissionHT + commissionTVA;
+      }
 
       // Dates premiere et derniere session
       const firstSession = reservations[0]?.start_date || null;
@@ -190,10 +201,12 @@ export async function getPodcastersActivity({ startDate, endDate } = {}) {
       return {
         id: podcaster.id,
         name: podcaster.name,
+        is_billable: podcaster.is_billable || false,
         total_sessions: totalSessions,
         total_hours: Math.round(totalHours * 100) / 100,
         total_revenue_ht: Math.round(totalRevenueHT * 100) / 100,
-        commission_rate: COMMISSION_RATE * 100, // En pourcentage
+        total_revenue_ttc: Math.round(totalRevenueTTC * 100) / 100,
+        commission_rate: podcaster.is_billable ? COMMISSION_RATE * 100 : 0, // En pourcentage, 0 si non facturable
         commission_ht: Math.round(commissionHT * 100) / 100,
         commission_tva: Math.round(commissionTVA * 100) / 100,
         commission_ttc: Math.round(commissionTTC * 100) / 100,
@@ -203,15 +216,18 @@ export async function getPodcastersActivity({ startDate, endDate } = {}) {
     })
   );
 
-  // Calculer les totaux globaux
+  // Calculer les totaux globaux (commissions seulement pour les podcasteurs facturables)
+  const billablePodcasters = podcastersData.filter(p => p.is_billable);
   const totals = {
     total_podcasters: podcastersData.length,
+    total_billable: billablePodcasters.length,
     total_sessions: podcastersData.reduce((sum, p) => sum + p.total_sessions, 0),
     total_hours: Math.round(podcastersData.reduce((sum, p) => sum + p.total_hours, 0) * 100) / 100,
     total_revenue_ht: Math.round(podcastersData.reduce((sum, p) => sum + p.total_revenue_ht, 0) * 100) / 100,
-    total_commission_ht: Math.round(podcastersData.reduce((sum, p) => sum + p.commission_ht, 0) * 100) / 100,
-    total_commission_tva: Math.round(podcastersData.reduce((sum, p) => sum + p.commission_tva, 0) * 100) / 100,
-    total_commission_ttc: Math.round(podcastersData.reduce((sum, p) => sum + p.commission_ttc, 0) * 100) / 100
+    total_revenue_ttc: Math.round(podcastersData.reduce((sum, p) => sum + p.total_revenue_ttc, 0) * 100) / 100,
+    total_commission_ht: Math.round(billablePodcasters.reduce((sum, p) => sum + p.commission_ht, 0) * 100) / 100,
+    total_commission_tva: Math.round(billablePodcasters.reduce((sum, p) => sum + p.commission_tva, 0) * 100) / 100,
+    total_commission_ttc: Math.round(billablePodcasters.reduce((sum, p) => sum + p.commission_ttc, 0) * 100) / 100
   };
 
   return { podcasters: podcastersData, totals };

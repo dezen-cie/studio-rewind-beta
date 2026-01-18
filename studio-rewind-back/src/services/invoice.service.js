@@ -1,17 +1,32 @@
 // src/services/invoice.service.js
 import PDFDocument from 'pdfkit';
+import archiver from 'archiver';
+import path from 'path';
+import fs from 'fs';
+import { Op } from 'sequelize';
 import { Reservation, User, Podcaster, Formula } from '../models/index.js';
+import { getCompanyInfo, getVatRate, getCommissionRate } from './studioSettings.service.js';
 
-// Informations de l'entreprise Studio Rewind
-const COMPANY_INFO = {
-  name: 'Studio Rewind',
-  address: '123 Rue du Studio',
-  city: '75000 Paris',
-  country: 'France',
-  email: 'contact@studiorewind.fr',
-  siret: '123 456 789 00012',
-  tvaIntra: 'FR12345678901'
-};
+/**
+ * Récupère les informations entreprise depuis les settings (ou valeurs par défaut)
+ */
+async function getCompanyInfoForInvoice() {
+  const settings = await getCompanyInfo();
+  return {
+    name: settings.name || 'Studio Rewind',
+    address: settings.address || '',
+    city: `${settings.postal_code || ''} ${settings.city || ''}`.trim() || 'Paris',
+    country: 'France',
+    email: settings.email || 'contact@studiorewind.fr',
+    siret: settings.siret || '',
+    tvaIntra: settings.vat_number || '',
+    phone: settings.phone || '',
+    bank_name: settings.bank_name || '',
+    bank_iban: settings.bank_iban || '',
+    bank_bic: settings.bank_bic || '',
+    logo_path: settings.logo_path || null
+  };
+}
 
 /**
  * Formate une date en français
@@ -101,6 +116,11 @@ export async function generateReservationInvoice(reservationId) {
   const formula = await Formula.findOne({ where: { key: reservation.formula } });
   const formulaName = formula?.name || reservation.formula;
 
+  // Récupérer les informations entreprise et TVA dynamiques
+  const COMPANY_INFO = await getCompanyInfoForInvoice();
+  const vatRate = await getVatRate();
+  const vatPercent = Math.round(vatRate * 100);
+
   // Créer le document PDF
   const doc = new PDFDocument({ size: 'A4', margin: 50 });
   const chunks = [];
@@ -109,25 +129,41 @@ export async function generateReservationInvoice(reservationId) {
 
   const invoiceNumber = generateInvoiceNumber(reservation);
 
+  // Logo si disponible
+  let headerStartY = 50;
+  if (COMPANY_INFO.logo_path) {
+    const logoFullPath = path.join(process.cwd(), 'uploads', COMPANY_INFO.logo_path);
+    if (fs.existsSync(logoFullPath)) {
+      doc.image(logoFullPath, 50, 40, { width: 100 });
+      headerStartY = 100;
+    }
+  }
+
   // En-tête
-  doc.fontSize(24).font('Helvetica-Bold').text('FACTURE', { align: 'center' });
+  doc.fontSize(24).font('Helvetica-Bold').text('FACTURE', 50, headerStartY, { align: 'center', width: 495 });
   doc.moveDown(0.5);
   doc.fontSize(12).font('Helvetica').text(`N° ${invoiceNumber}`, { align: 'center' });
-  doc.moveDown(2);
+  doc.moveDown(1.5);
+
+  // Sauvegarder la position Y de départ pour les deux colonnes
+  const infoStartY = doc.y;
 
   // Informations émetteur (gauche)
-  doc.fontSize(10).font('Helvetica-Bold').text('Émetteur :', 50);
+  doc.fontSize(10).font('Helvetica-Bold').text('Émetteur :', 50, infoStartY);
   doc.font('Helvetica');
   doc.text(COMPANY_INFO.name);
-  doc.text(COMPANY_INFO.address);
+  if (COMPANY_INFO.address) doc.text(COMPANY_INFO.address);
   doc.text(COMPANY_INFO.city);
-  doc.text(`Email : ${COMPANY_INFO.email}`);
-  doc.text(`SIRET : ${COMPANY_INFO.siret}`);
-  doc.text(`TVA Intra : ${COMPANY_INFO.tvaIntra}`);
+  if (COMPANY_INFO.email) doc.text(`Email : ${COMPANY_INFO.email}`);
+  if (COMPANY_INFO.phone) doc.text(`Tél : ${COMPANY_INFO.phone}`);
+  if (COMPANY_INFO.siret) doc.text(`SIRET : ${COMPANY_INFO.siret}`);
+  if (COMPANY_INFO.tvaIntra) doc.text(`TVA Intra : ${COMPANY_INFO.tvaIntra}`);
+
+  const emitterEndY = doc.y;
 
   // Informations client (droite)
-  const clientX = 350;
-  let clientY = 130;
+  const clientX = 320;
+  let clientY = infoStartY;
   doc.font('Helvetica-Bold').text('Client :', clientX, clientY);
   clientY += 15;
   doc.font('Helvetica');
@@ -150,10 +186,16 @@ export async function generateReservationInvoice(reservationId) {
   clientY += 12;
   if (user.phone) {
     doc.text(`Tél : ${user.phone}`, clientX, clientY);
+    clientY += 12;
   }
 
+  const clientEndY = clientY;
+
+  // Positionner après les deux blocs d'info
+  const infoEndY = Math.max(emitterEndY, clientEndY) + 20;
+  doc.y = infoEndY;
+
   // Date de facture
-  doc.moveDown(4);
   doc.fontSize(10);
   doc.text(`Date de facture : ${formatDate(new Date())}`, 50);
   doc.text(`Date de paiement : ${formatDate(reservation.updatedAt)}`);
@@ -214,13 +256,23 @@ export async function generateReservationInvoice(reservationId) {
   doc.text(formatPrice(reservation.price_ht), totalsX + 100, rowY, { align: 'right', width: 80 });
   rowY += 18;
 
-  doc.text('TVA (20%) :', totalsX, rowY);
+  doc.text(`TVA (${vatPercent}%) :`, totalsX, rowY);
   doc.text(formatPrice(reservation.price_tva), totalsX + 100, rowY, { align: 'right', width: 80 });
   rowY += 18;
 
   doc.font('Helvetica-Bold').fontSize(12);
   doc.text('Total TTC :', totalsX, rowY);
   doc.text(formatPrice(reservation.price_ttc), totalsX + 100, rowY, { align: 'right', width: 80 });
+
+  // Coordonnées bancaires si disponibles
+  if (COMPANY_INFO.bank_iban) {
+    doc.moveDown(3);
+    doc.fontSize(9).font('Helvetica-Bold').text('Coordonnées bancaires :', 50);
+    doc.font('Helvetica');
+    if (COMPANY_INFO.bank_name) doc.text(`Banque : ${COMPANY_INFO.bank_name}`);
+    doc.text(`IBAN : ${COMPANY_INFO.bank_iban}`);
+    if (COMPANY_INFO.bank_bic) doc.text(`BIC : ${COMPANY_INFO.bank_bic}`);
+  }
 
   // Pied de page
   doc.fontSize(8).font('Helvetica');
@@ -230,8 +282,14 @@ export async function generateReservationInvoice(reservationId) {
     750,
     { align: 'center', width: 495 }
   );
+
+  const footerParts = [COMPANY_INFO.name];
+  if (COMPANY_INFO.address) footerParts.push(COMPANY_INFO.address);
+  if (COMPANY_INFO.city) footerParts.push(COMPANY_INFO.city);
+  if (COMPANY_INFO.siret) footerParts.push(`SIRET : ${COMPANY_INFO.siret}`);
+
   doc.text(
-    `${COMPANY_INFO.name} - ${COMPANY_INFO.address}, ${COMPANY_INFO.city} - SIRET : ${COMPANY_INFO.siret}`,
+    footerParts.join(' - '),
     50,
     765,
     { align: 'center', width: 495 }
@@ -280,11 +338,20 @@ export async function generateCommissionStatement(reservationId, podcasterId) {
   }
 
   const podcaster = reservation.podcaster;
+
+  // Vérifier si le podcasteur est facturable
+  if (!podcaster.is_billable) {
+    const err = new Error('Ce podcasteur n\'est pas facturable (employé interne).');
+    err.status = 400;
+    throw err;
+  }
+
   const formula = await Formula.findOne({ where: { key: reservation.formula } });
   const formulaName = formula?.name || reservation.formula;
 
-  // Calcul de la commission (20% du HT)
-  const commissionRate = 0.20;
+  // Récupérer les informations entreprise et taux dynamiques
+  const COMPANY_INFO = await getCompanyInfoForInvoice();
+  const commissionRate = await getCommissionRate();
   const commissionAmount = reservation.price_ht * commissionRate;
 
   // Créer le document PDF
@@ -295,30 +362,81 @@ export async function generateCommissionStatement(reservationId, podcasterId) {
 
   const statementNumber = generateCommissionNumber(reservation);
 
+  // Logo si disponible
+  let headerStartY = 50;
+  if (COMPANY_INFO.logo_path) {
+    const logoFullPath = path.join(process.cwd(), 'uploads', COMPANY_INFO.logo_path);
+    if (fs.existsSync(logoFullPath)) {
+      doc.image(logoFullPath, 50, 40, { width: 100 });
+      headerStartY = 100;
+    }
+  }
+
   // En-tête
-  doc.fontSize(24).font('Helvetica-Bold').text('RELEVÉ DE COMMISSION', { align: 'center' });
+  doc.fontSize(24).font('Helvetica-Bold').text('RELEVÉ DE COMMISSION', 50, headerStartY, { align: 'center', width: 495 });
   doc.moveDown(0.5);
   doc.fontSize(12).font('Helvetica').text(`N° ${statementNumber}`, { align: 'center' });
-  doc.moveDown(2);
+  doc.moveDown(1.5);
+
+  // Sauvegarder la position Y de départ pour les deux colonnes
+  const infoStartY = doc.y;
 
   // Informations Studio Rewind (gauche)
-  doc.fontSize(10).font('Helvetica-Bold').text('Émetteur :', 50);
+  doc.fontSize(10).font('Helvetica-Bold').text('Émetteur :', 50, infoStartY);
   doc.font('Helvetica');
   doc.text(COMPANY_INFO.name);
-  doc.text(COMPANY_INFO.address);
+  if (COMPANY_INFO.address) doc.text(COMPANY_INFO.address);
   doc.text(COMPANY_INFO.city);
-  doc.text(`Email : ${COMPANY_INFO.email}`);
+  if (COMPANY_INFO.email) doc.text(`Email : ${COMPANY_INFO.email}`);
 
-  // Informations podcasteur (droite)
-  const podX = 350;
-  let podY = 130;
+  const emitterEndY = doc.y;
+
+  // Informations podcasteur (droite) - avec infos de facturation
+  const podX = 320;
+  let podY = infoStartY;
   doc.font('Helvetica-Bold').text('Bénéficiaire :', podX, podY);
   podY += 15;
   doc.font('Helvetica');
-  doc.text(podcaster.name, podX, podY);
+
+  // Nom de l'entreprise si présent
+  if (podcaster.billing_company) {
+    doc.text(podcaster.billing_company, podX, podY);
+    podY += 12;
+  }
+
+  // Nom complet
+  const billingName = `${podcaster.billing_firstname || ''} ${podcaster.billing_lastname || ''}`.trim();
+  if (billingName) {
+    doc.text(billingName, podX, podY);
+    podY += 12;
+  } else {
+    doc.text(podcaster.name, podX, podY);
+    podY += 12;
+  }
+
+  // Adresse
+  if (podcaster.billing_address) {
+    doc.text(podcaster.billing_address, podX, podY);
+    podY += 12;
+  }
+  if (podcaster.billing_postal_code || podcaster.billing_city) {
+    doc.text(`${podcaster.billing_postal_code || ''} ${podcaster.billing_city || ''}`.trim(), podX, podY);
+    podY += 12;
+  }
+
+  // SIRET
+  if (podcaster.billing_siret) {
+    doc.text(`SIRET : ${podcaster.billing_siret}`, podX, podY);
+    podY += 12;
+  }
+
+  const podEndY = podY;
+
+  // Positionner après les deux blocs d'info
+  const infoEndY = Math.max(emitterEndY, podEndY) + 20;
+  doc.y = infoEndY;
 
   // Date
-  doc.moveDown(4);
   doc.fontSize(10);
   doc.text(`Date d'émission : ${formatDate(new Date())}`, 50);
   doc.text(`Période : ${formatDate(reservation.start_date)}`);
@@ -384,8 +502,12 @@ export async function generateCommissionStatement(reservationId, podcasterId) {
 
   // Pied de page
   doc.fontSize(8);
+  const footerParts = [COMPANY_INFO.name];
+  if (COMPANY_INFO.address) footerParts.push(COMPANY_INFO.address);
+  if (COMPANY_INFO.city) footerParts.push(COMPANY_INFO.city);
+
   doc.text(
-    `${COMPANY_INFO.name} - ${COMPANY_INFO.address}, ${COMPANY_INFO.city}`,
+    footerParts.join(' - '),
     50,
     765,
     { align: 'center', width: 495 }
@@ -396,6 +518,102 @@ export async function generateCommissionStatement(reservationId, podcasterId) {
   return new Promise((resolve) => {
     doc.on('end', () => {
       resolve(Buffer.concat(chunks));
+    });
+  });
+}
+
+/**
+ * Génère un ZIP contenant toutes les factures et commissions pour une période
+ * @param {string|null} startDate - Date de début (optionnel)
+ * @param {string|null} endDate - Date de fin (optionnel)
+ * @returns {Promise<Buffer>} Buffer du ZIP
+ */
+export async function generateAllInvoicesZip(startDate = null, endDate = null) {
+  // Construire la condition de date
+  const whereCondition = {
+    status: 'confirmed'
+  };
+
+  if (startDate || endDate) {
+    whereCondition.start_date = {};
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      whereCondition.start_date[Op.gte] = start;
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      whereCondition.start_date[Op.lte] = end;
+    }
+  }
+
+  // Récupérer toutes les réservations confirmées
+  const reservations = await Reservation.findAll({
+    where: whereCondition,
+    include: [
+      { model: User },
+      { model: Podcaster, as: 'podcaster' }
+    ],
+    order: [['start_date', 'DESC']]
+  });
+
+  if (reservations.length === 0) {
+    const err = new Error('Aucune facture à télécharger pour cette période.');
+    err.status = 404;
+    throw err;
+  }
+
+  // Créer l'archive ZIP
+  const archive = archiver('zip', { zlib: { level: 9 } });
+  const chunks = [];
+
+  archive.on('data', (chunk) => chunks.push(chunk));
+
+  // Dossier pour les factures clients
+  const clientInvoicesFolder = 'factures-clients/';
+  // Dossier pour les relevés de commission
+  const commissionFolder = 'releves-commissions/';
+
+  // Générer les PDFs et les ajouter à l'archive
+  for (const reservation of reservations) {
+    try {
+      // Générer la facture client
+      const invoiceBuffer = await generateReservationInvoice(reservation.id);
+      const invoiceDate = new Date(reservation.start_date);
+      const year = invoiceDate.getFullYear();
+      const month = String(invoiceDate.getMonth() + 1).padStart(2, '0');
+      const shortId = reservation.id.substring(0, 8).toUpperCase();
+      const invoiceFilename = `facture-${year}${month}-${shortId}.pdf`;
+
+      archive.append(invoiceBuffer, { name: clientInvoicesFolder + invoiceFilename });
+
+      // Si la réservation a un podcasteur facturable, générer le relevé de commission
+      if (reservation.podcaster_id && reservation.podcaster?.is_billable) {
+        try {
+          const commissionBuffer = await generateCommissionStatement(reservation.id, reservation.podcaster_id);
+          const commissionFilename = `commission-${year}${month}-${shortId}.pdf`;
+
+          archive.append(commissionBuffer, { name: commissionFolder + commissionFilename });
+        } catch (commissionError) {
+          // Ignorer les erreurs de commission (ex: podcasteur non facturable)
+          console.log(`Commission non générée pour réservation ${reservation.id}: ${commissionError.message}`);
+        }
+      }
+    } catch (error) {
+      console.error(`Erreur génération PDF pour réservation ${reservation.id}:`, error);
+      // Continuer avec les autres réservations
+    }
+  }
+
+  archive.finalize();
+
+  return new Promise((resolve, reject) => {
+    archive.on('end', () => {
+      resolve(Buffer.concat(chunks));
+    });
+    archive.on('error', (err) => {
+      reject(err);
     });
   });
 }

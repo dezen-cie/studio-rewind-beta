@@ -53,6 +53,16 @@ function AdminPodcastersPage() {
   const editVideoRef = useRef<HTMLInputElement>(null);
   const editAudioRef = useRef<HTMLInputElement>(null);
 
+  // Champs facturation (edit)
+  const [editIsBillable, setEditIsBillable] = useState(false);
+  const [editBillingFirstname, setEditBillingFirstname] = useState('');
+  const [editBillingLastname, setEditBillingLastname] = useState('');
+  const [editBillingCompany, setEditBillingCompany] = useState('');
+  const [editBillingSiret, setEditBillingSiret] = useState('');
+  const [editBillingAddress, setEditBillingAddress] = useState('');
+  const [editBillingPostalCode, setEditBillingPostalCode] = useState('');
+  const [editBillingCity, setEditBillingCity] = useState('');
+
   useEffect(() => {
     loadPodcasters();
   }, []);
@@ -100,6 +110,15 @@ function AdminPodcastersPage() {
     setEditIsActive(true);
     if (editVideoRef.current) editVideoRef.current.value = '';
     if (editAudioRef.current) editAudioRef.current.value = '';
+    // Reset champs facturation
+    setEditIsBillable(false);
+    setEditBillingFirstname('');
+    setEditBillingLastname('');
+    setEditBillingCompany('');
+    setEditBillingSiret('');
+    setEditBillingAddress('');
+    setEditBillingPostalCode('');
+    setEditBillingCity('');
   }
 
   function startCreate() {
@@ -119,6 +138,15 @@ function AdminPodcastersPage() {
     setEditTeamOrder(p.team_display_order !== null && p.team_display_order !== undefined ? String(p.team_display_order) : '');
     setEditTeamRole(p.team_role || '');
     setEditIsActive(p.is_active);
+    // Champs facturation
+    setEditIsBillable(p.is_billable || false);
+    setEditBillingFirstname(p.billing_firstname || '');
+    setEditBillingLastname(p.billing_lastname || '');
+    setEditBillingCompany(p.billing_company || '');
+    setEditBillingSiret(p.billing_siret || '');
+    setEditBillingAddress(p.billing_address || '');
+    setEditBillingPostalCode(p.billing_postal_code || '');
+    setEditBillingCity(p.billing_city || '');
   }
 
   function cancelForm() {
@@ -202,6 +230,34 @@ function AdminPodcastersPage() {
       return;
     }
 
+    // Validation des champs facturation si facturable
+    if (editIsBillable) {
+      if (!editBillingFirstname.trim()) {
+        setError('Le prenom de facturation est obligatoire pour un podcasteur facturable.');
+        return;
+      }
+      if (!editBillingLastname.trim()) {
+        setError('Le nom de facturation est obligatoire pour un podcasteur facturable.');
+        return;
+      }
+      if (!editBillingSiret.trim()) {
+        setError('Le SIRET est obligatoire pour un podcasteur facturable.');
+        return;
+      }
+      if (!editBillingAddress.trim()) {
+        setError('L\'adresse est obligatoire pour un podcasteur facturable.');
+        return;
+      }
+      if (!editBillingPostalCode.trim()) {
+        setError('Le code postal est obligatoire pour un podcasteur facturable.');
+        return;
+      }
+      if (!editBillingCity.trim()) {
+        setError('La ville est obligatoire pour un podcasteur facturable.');
+        return;
+      }
+    }
+
     try {
       setSaving(true);
       setError(null);
@@ -213,7 +269,16 @@ function AdminPodcastersPage() {
         display_order: editOrder ? parseInt(editOrder, 10) : undefined,
         team_display_order: editTeamOrder === '' ? null : parseInt(editTeamOrder, 10),
         team_role: editTeamRole.trim(),
-        is_active: editIsActive
+        is_active: editIsActive,
+        // Champs facturation
+        is_billable: editIsBillable,
+        billing_firstname: editBillingFirstname.trim() || null,
+        billing_lastname: editBillingLastname.trim() || null,
+        billing_company: editBillingCompany.trim() || null,
+        billing_siret: editBillingSiret.trim() || null,
+        billing_address: editBillingAddress.trim() || null,
+        billing_postal_code: editBillingPostalCode.trim() || null,
+        billing_city: editBillingCity.trim() || null
       });
       setPodcasters((prev) =>
         prev
@@ -612,6 +677,7 @@ function AdminPodcastersPage() {
                               </label>
                             </div>
                           </div>
+
                           <div className="column is-3">
                             <div className="field">
                               <label className="label">Nouvelle video</label>
@@ -659,7 +725,123 @@ function AdminPodcastersPage() {
                             </div>
                           </div>
                         </div>
-                        <div className="buttons">
+
+                        {/* Section facturation */}
+                        <div className="mt-4">
+                          <div className="field">
+                            <label className="checkbox">
+                              <input
+                                type="checkbox"
+                                checked={editIsBillable}
+                                onChange={(e) => setEditIsBillable(e.target.checked)}
+                                disabled={saving}
+                              />{' '}
+                              Facturable
+                            </label>
+                          </div>
+
+                          {editIsBillable && (
+                            <>
+                              <div className="columns">
+                                <div className="column is-3">
+                                  <div className="field">
+                                    <label className="label">Prenom *</label>
+                                    <input
+                                      type="text"
+                                      className="input"
+                                      value={editBillingFirstname}
+                                      onChange={(e) => setEditBillingFirstname(e.target.value)}
+                                      disabled={saving}
+                                      placeholder="Ex: Jean"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="column is-3">
+                                  <div className="field">
+                                    <label className="label">Nom *</label>
+                                    <input
+                                      type="text"
+                                      className="input"
+                                      value={editBillingLastname}
+                                      onChange={(e) => setEditBillingLastname(e.target.value)}
+                                      disabled={saving}
+                                      placeholder="Ex: Dupont"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="column is-3">
+                                  <div className="field">
+                                    <label className="label">Entreprise</label>
+                                    <input
+                                      type="text"
+                                      className="input"
+                                      value={editBillingCompany}
+                                      onChange={(e) => setEditBillingCompany(e.target.value)}
+                                      disabled={saving}
+                                      placeholder="Optionnel"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="column is-3">
+                                  <div className="field">
+                                    <label className="label">SIRET *</label>
+                                    <input
+                                      type="text"
+                                      className="input"
+                                      value={editBillingSiret}
+                                      onChange={(e) => setEditBillingSiret(e.target.value)}
+                                      disabled={saving}
+                                      placeholder="123 456 789 00012"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="columns">
+                                <div className="column is-6">
+                                  <div className="field">
+                                    <label className="label">Adresse *</label>
+                                    <input
+                                      type="text"
+                                      className="input"
+                                      value={editBillingAddress}
+                                      onChange={(e) => setEditBillingAddress(e.target.value)}
+                                      disabled={saving}
+                                      placeholder="Ex: 12 rue de la Paix"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="column is-2">
+                                  <div className="field">
+                                    <label className="label">Code postal *</label>
+                                    <input
+                                      type="text"
+                                      className="input"
+                                      value={editBillingPostalCode}
+                                      onChange={(e) => setEditBillingPostalCode(e.target.value)}
+                                      disabled={saving}
+                                      placeholder="75001"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="column is-4">
+                                  <div className="field">
+                                    <label className="label">Ville *</label>
+                                    <input
+                                      type="text"
+                                      className="input"
+                                      value={editBillingCity}
+                                      onChange={(e) => setEditBillingCity(e.target.value)}
+                                      disabled={saving}
+                                      placeholder="Paris"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+
+                        <div className="buttons mt-4">
                           <button
                             className="button is-success"
                             disabled={saving}

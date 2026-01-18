@@ -1,0 +1,534 @@
+/* AdminStatsPage.css */
+
+.admin-stats-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Loading & Error States */
+.stats-loading,
+.stats-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  gap: 1rem;
+}
+
+.stats-loading .spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #646cff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Period Selector */
+.stats-period-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.stats-period-dropdown {
+  position: relative;
+}
+
+.stats-period-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: rgba(100, 108, 255, 0.15);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.stats-period-btn:hover {
+  background: rgba(100, 108, 255, 0.25);
+  border-color: rgba(100, 108, 255, 0.5);
+}
+
+.stats-period-btn svg {
+  color: #646cff;
+}
+
+.stats-period-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 100;
+  min-width: 180px;
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 0.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.stats-period-option {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.stats-period-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.stats-period-option.active {
+  background: rgba(100, 108, 255, 0.2);
+  color: #646cff;
+}
+
+.stats-period-info {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* KPI Grid */
+.stats-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 1200px) {
+  .stats-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .stats-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stats-kpi-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.stats-kpi-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.stats-kpi-icon.revenue {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.stats-kpi-icon.reservations {
+  background: rgba(100, 108, 255, 0.15);
+  color: #646cff;
+}
+
+.stats-kpi-icon.occupancy {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.stats-kpi-icon.hours {
+  background: rgba(236, 72, 153, 0.15);
+  color: #ec4899;
+}
+
+.stats-kpi-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.stats-kpi-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.25rem;
+}
+
+.stats-kpi-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.stats-kpi-change {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.stats-kpi-change.positive {
+  color: #10b981;
+}
+
+.stats-kpi-change.negative {
+  color: #ef4444;
+}
+
+.stats-kpi-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.stats-kpi-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* Chart Card */
+.stats-chart-card {
+  padding: 1.5rem;
+  overflow: visible;
+}
+
+.stats-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.stats-card-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.stats-card-header h3 svg {
+  color: #646cff;
+}
+
+.stats-chart-groupby {
+  display: flex;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 0.25rem;
+}
+
+.stats-chart-groupby button {
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.stats-chart-groupby button:hover {
+  color: #fff;
+}
+
+.stats-chart-groupby button.active {
+  background: rgba(100, 108, 255, 0.2);
+  color: #646cff;
+}
+
+.stats-empty,
+.stats-empty-small {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: rgba(255, 255, 255, 0.4);
+  gap: 0.75rem;
+}
+
+.stats-empty-small {
+  padding: 2rem 1rem;
+}
+
+.stats-empty p,
+.stats-empty-small p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Bar Chart */
+.stats-chart {
+  display: flex;
+  gap: 1rem;
+  height: 250px;
+  overflow: visible;
+}
+
+.stats-chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  min-width: 60px;
+  text-align: right;
+}
+
+.stats-chart-bars {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: visible;
+}
+
+.stats-chart-bar-container {
+  flex: 1;
+  min-width: 30px;
+  max-width: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+}
+
+.stats-chart-bar {
+  width: 100%;
+  max-width: 40px;
+  background: linear-gradient(180deg, #646cff, #4f46e5);
+  border-radius: 4px 4px 0 0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  min-height: 4px;
+}
+
+.stats-chart-bar:hover {
+  background: linear-gradient(180deg, #818cf8, #646cff);
+  transform: scaleX(1.1);
+}
+
+.stats-chart-bar-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.stats-chart-bar:hover .stats-chart-bar-tooltip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stats-chart-bar-tooltip strong {
+  font-size: 0.9rem;
+  color: #10b981;
+}
+
+.stats-chart-bar-tooltip span {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.stats-chart-label {
+  position: absolute;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+}
+
+/* Bottom Grid */
+.stats-bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 1200px) {
+  .stats-bottom-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 800px) {
+  .stats-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stats-list-card {
+  padding: 1.25rem;
+}
+
+.stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stats-list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.stats-list-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.stats-list-item.with-bar {
+  flex-wrap: wrap;
+}
+
+.stats-list-rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: rgba(100, 108, 255, 0.15);
+  border-radius: 50%;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #646cff;
+  flex-shrink: 0;
+}
+
+.stats-list-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.stats-list-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.stats-list-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.stats-list-name {
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stats-list-detail {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.stats-list-value {
+  font-weight: 600;
+  color: #10b981;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.stats-list-value.sessions {
+  color: #646cff;
+}
+
+.stats-list-bar-container {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 0.25rem 0;
+}
+
+.stats-list-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #646cff, #818cf8);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* Responsive period selector */
+@media (max-width: 600px) {
+  .stats-period-selector {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .stats-period-info {
+    text-align: center;
+  }
+
+  .stats-period-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stats-period-dropdown-menu {
+    width: 100%;
+  }
+}

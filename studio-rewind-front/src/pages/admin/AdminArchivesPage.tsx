@@ -8,6 +8,7 @@ import {
   updateAdminReservation,
   cancelAdminReservation,
 } from '../../api/adminReservations';
+import { downloadInvoice } from '../../api/invoices';
 import type { AdminLayoutOutletContext } from '../../layouts/AdminLayout';
 import AdminPagination from '../../components/admin/Pagination';
 
@@ -198,6 +199,21 @@ function AdminArchivesPage() {
       console.error('Erreur cancelAdminReservation:', err);
       const message =
         err?.response?.data?.message || "Impossible d'annuler la réservation.";
+      setError(message);
+    } finally {
+      setActionLoadingId(null);
+    }
+  }
+
+  async function handleDownloadInvoice(reservationId: string) {
+    try {
+      setActionLoadingId(reservationId);
+      setError(null);
+      await downloadInvoice(reservationId);
+    } catch (err: any) {
+      console.error('Erreur téléchargement facture:', err);
+      const message =
+        err?.response?.data?.message || 'Impossible de télécharger la facture.';
       setError(message);
     } finally {
       setActionLoadingId(null);
@@ -501,6 +517,15 @@ function AdminArchivesPage() {
                                 >
                                   {isBusy ? 'Annulation...' : 'Annuler'}
                                 </button>
+                                {r.status === 'confirmed' && (
+                                  <button
+                                    className="button is-link"
+                                    onClick={() => handleDownloadInvoice(r.id)}
+                                    disabled={isBusy}
+                                  >
+                                    📄 Facture
+                                  </button>
+                                )}
                               </>
                             )}
                           </div>

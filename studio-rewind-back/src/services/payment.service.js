@@ -3,6 +3,7 @@ import stripe from '../config/stripe.js';
 import { Reservation, User, Formula, PromoCode, Podcaster } from '../models/index.js';
 import { calculateReservationPricing } from '../utils/pricing.js';
 import { checkAvailability } from './reservation.service.js';
+import { sendReservationConfirmationEmail } from './reminder.service.js';
 
 // ==============================
 //  PaymentIntent + réservation
@@ -243,6 +244,11 @@ export async function confirmReservationPayment(
   reservation.status = 'confirmed';
   await reservation.save();
 
+  // Envoyer l'email de confirmation (async, ne bloque pas)
+  sendReservationConfirmationEmail(reservation).catch(err => {
+    console.error('Erreur envoi email confirmation:', err.message);
+  });
+
   return reservation;
 }
 
@@ -307,6 +313,12 @@ export async function getReservationPaymentInfo(userId, reservationId) {
   if (paymentIntent.status === 'succeeded') {
     reservation.status = 'confirmed';
     await reservation.save();
+
+    // Envoyer l'email de confirmation (async, ne bloque pas)
+    sendReservationConfirmationEmail(reservation).catch(err => {
+      console.error('Erreur envoi email confirmation:', err.message);
+    });
+
     const err = new Error('Le paiement a déjà été effectué. Votre réservation est confirmée.');
     err.status = 400;
     throw err;
