@@ -63,6 +63,11 @@ export const uploadPodcasterMedia = upload.fields([
   { name: 'audio', maxCount: 1 }
 ]);
 
+// Middleware pour upload photo formule
+export const uploadFormulaPhoto = upload.fields([
+  { name: 'photo', maxCount: 1 }
+]);
+
 /**
  * Generer un nom de fichier unique
  */

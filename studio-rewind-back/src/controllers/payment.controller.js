@@ -1,7 +1,8 @@
 // src/controllers/payment.controller.js
 import {
   createReservationPaymentIntent,
-  confirmReservationPayment
+  confirmReservationPayment,
+  getReservationPaymentInfo
 } from '../services/payment.service.js';
 
 /**
@@ -82,4 +83,24 @@ export async function confirmSubscriptionPayment(_req, res) {
     message:
       "La confirmation d'abonnement via cette route n'est plus disponible. Le flux d'abonnement dédié est désactivé."
   });
+}
+
+/**
+ * GET /api/payments/reservation/:id/resume
+ * Récupère les infos de paiement pour reprendre un paiement abandonné
+ */
+export async function getResumePaymentInfo(req, res) {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    const result = await getReservationPaymentInfo(userId, id);
+
+    return res.json(result);
+  } catch (error) {
+    console.error('Erreur getResumePaymentInfo:', error);
+    return res
+      .status(error.status || 500)
+      .json({ message: error.message || 'Erreur serveur.' });
+  }
 }

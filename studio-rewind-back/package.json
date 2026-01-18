@@ -11,7 +11,7 @@
     "seed:team": "node src/seeders/createTeam.js",
     "seed:formulas": "node src/seeders/createFormulas.js",
     "seed:demo": "node src/seeders/createDemoData.js",
-    "migrate:formula-enum": "node src/seeders/migrateFormulaEnum.js",
+    "migrate:formula-enum": "node src/migrations/migrate-formula-enum-to-string.js",
     "migrate:team-order": "node src/seeders/addTeamDisplayOrder.js",
     "db:reset": "node src/scripts/dbReset.js && npm run seed:superadmin && npm run seed:formulas && npm run seed:team",
     "db:migrate": "npm run migrate:formula-enum && npm run migrate:team-order"

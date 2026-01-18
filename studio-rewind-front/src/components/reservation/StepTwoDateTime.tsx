@@ -70,8 +70,10 @@ const StepTwoDateTime = ({
   const [podcasters, setPodcasters] = useState<Podcaster[]>([]);
   const [loadingPodcasters, setLoadingPodcasters] = useState(true);
 
-  // Info sur la formule (pour savoir si elle nécessite un podcasteur)
+  // Info sur la formule (pour savoir si elle nécessite un podcasteur et son prix)
   const [requiresPodcaster, setRequiresPodcaster] = useState<boolean>(true);
+  const [formulaPrice, setFormulaPrice] = useState<number>(0);
+  const [formulaName, setFormulaName] = useState<string>('');
 
   // Dates avec jour entier bloque pour le podcasteur selectionne (pour griser le calendrier)
   const [fullDayBlockedDates, setFullDayBlockedDates] = useState<string[]>([]);
@@ -89,10 +91,12 @@ const StepTwoDateTime = ({
         setPodcasters(podcastersData);
         setDefaultBlockedRanges(defaultHours);
 
-        // Trouver la formule actuelle et vérifier si elle nécessite un podcasteur
+        // Trouver la formule actuelle et récupérer ses infos
         const currentFormula = formulas.find((f) => f.key === formula);
         if (currentFormula) {
           setRequiresPodcaster(currentFormula.requires_podcaster ?? true);
+          setFormulaPrice(currentFormula.price_ttc);
+          setFormulaName(currentFormula.name);
         }
       } catch (err) {
         console.error('Erreur chargement données initiales:', err);
@@ -453,19 +457,11 @@ const StepTwoDateTime = ({
 
   // ====== TARIFS HT ======
   const TVA_RATE = 0.2;
-  let totalHT: number = 0;
-  let tvaAmount: number = 0;
-  let totalTTC: number = 0;
 
-  // Prix HT par formule (durée fixe 1h)
-  let priceHT: number = 0;
-  if (formula === 'solo') priceHT = 99;
-  if (formula === 'duo') priceHT = 490;
-  if (formula === 'pro') priceHT = 990;
-
-  totalHT = priceHT;
-  tvaAmount = totalHT * TVA_RATE;
-  totalTTC = totalHT + tvaAmount;
+  // Prix HT de la formule (depuis la BDD)
+  const totalHT = formulaPrice;
+  const tvaAmount = totalHT * TVA_RATE;
+  const totalTTC = totalHT + tvaAmount;
 
   const safeBookedHours = bookedHours ?? 0;
 
@@ -550,7 +546,7 @@ const StepTwoDateTime = ({
 
           {formula && (
             <p>
-              Formule choisie : <strong>{formula}</strong>
+              Formule choisie : <strong>{formulaName || formula}</strong>
             </p>
           )}
 
@@ -576,7 +572,7 @@ const StepTwoDateTime = ({
           <>
             <div className="recap-infos padding">
               <p className="flex-align flex-split">
-                Formule {formula?.toUpperCase()} (1h){' '}
+                {formulaName || formula} (1h){' '}
                 <span>€ {totalHT.toFixed(2)} HT</span>
               </p>
               <p className="flex-align flex-split small">

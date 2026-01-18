@@ -171,6 +171,21 @@
 }
 
 
+/* Classe dynamique pour les formules avec couleurs de la BDD */
+.formule-dynamic {
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: -1;
+    background: transparent;
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    animation: glowPulse 4s ease-in-out infinite;
+  }
+}
+
+/* Classes statiques de fallback (rétrocompatibilité) */
 .formule1,
 .formule2,
 .formule3,

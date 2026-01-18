@@ -443,3 +443,25 @@
   margin: 0.25rem 0;
   font-weight: 500;
 }
+
+/* ===== Lien de paiement pour réservations pending ===== */
+
+.member-reservation-pay-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: var(--color-primary);
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.member-reservation-pay-link:hover {
+  background: transparent;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-1px);
+}

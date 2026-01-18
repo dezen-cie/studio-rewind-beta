@@ -67,6 +67,20 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
+/* Lien vers le site */
+
+.member-header-site-link {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 0.85rem;
+  margin-right: 1rem;
+  transition: color 0.15s ease;
+}
+
+.member-header-site-link:hover {
+  color: #ffffff;
+}
+
 /* Bouton déconnexion */
 
 .member-header-logout {

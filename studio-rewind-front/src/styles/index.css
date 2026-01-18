@@ -134,3 +134,13 @@ html, body{
     color: #fff;
     opacity: 0.8;
 }
+
+/* Barre podcasteur sur le site public */
+.sr-podcaster-topbar {
+    background: rgba(206, 27, 29, 0.95);
+}
+
+/* Barre membre sur le site public */
+.sr-member-topbar {
+    background: rgba(34, 197, 94, 0.95);
+}

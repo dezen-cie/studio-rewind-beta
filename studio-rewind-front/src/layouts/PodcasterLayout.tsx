@@ -49,6 +49,12 @@ function PodcasterLayout() {
             </div>
           </div>
 
+          <div className="sr-admin-site-link">
+            <a href="/" target="_blank" rel="noopener noreferrer">
+              Voir le site
+            </a>
+          </div>
+
           <nav className="sr-admin-nav">
             <p className="sr-admin-nav-section">Mon espace</p>
             <ul>

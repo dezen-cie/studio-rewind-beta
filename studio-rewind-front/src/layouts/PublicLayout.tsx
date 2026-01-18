@@ -11,9 +11,12 @@ function PublicLayout() {
   const navigate = useNavigate()
   function goToReservation() { navigate('/reservation?step=1'); }
 
-  // Vérifier si l'utilisateur est admin ou super_admin
-  const isAdmin = isAuthenticated() && ['admin', 'super_admin'].includes(getUserRole() || '');
-  
+  // Vérifier le rôle de l'utilisateur connecté
+  const userRole = isAuthenticated() ? getUserRole() : null;
+  const isAdmin = userRole === 'admin' || userRole === 'super_admin';
+  const isPodcaster = userRole === 'podcaster';
+  const isMember = userRole === 'client';
+
   let headerContent: ReactNode;
 
   switch (location.pathname) {
@@ -109,6 +112,18 @@ function PublicLayout() {
       {isAdmin && (
         <div className="sr-admin-topbar">
           <Link to="/admin">Retour à l'administration</Link>
+        </div>
+      )}
+
+      {isPodcaster && (
+        <div className="sr-admin-topbar sr-podcaster-topbar">
+          <Link to="/podcaster">Retour à l'espace podcasteur</Link>
+        </div>
+      )}
+
+      {isMember && (
+        <div className="sr-admin-topbar sr-member-topbar">
+          <Link to="/member">Retour à l'espace membre</Link>
         </div>
       )}
 

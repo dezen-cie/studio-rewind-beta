@@ -18,7 +18,8 @@ Reservation.init(
     },
 
     formula: {
-      type: DataTypes.ENUM('solo', 'duo', 'pro'),
+      // Clé de la formule (ex: 'solo', 'duo', 'pro', ou toute formule créée dynamiquement)
+      type: DataTypes.STRING,
       allowNull: false
     },
 

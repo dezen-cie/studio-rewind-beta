@@ -68,6 +68,9 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptMarketing, setAcceptMarketing] = useState(false);
 
+  // Erreurs de validation par champ
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
   // LOGIN
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -86,8 +89,9 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
   const [reservationId, setReservationId] = useState<string | null>(null);
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
 
-  // Info sur la formule (pour savoir si elle nécessite un podcasteur)
+  // Info sur la formule (pour savoir si elle nécessite un podcasteur et son nom)
   const [requiresPodcaster, setRequiresPodcaster] = useState<boolean>(true);
+  const [formulaName, setFormulaName] = useState<string>('');
 
   // Code promo
   const [promoCode, setPromoCode] = useState('');
@@ -104,6 +108,7 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
         const currentFormula = formulas.find((f) => f.key === formula);
         if (currentFormula) {
           setRequiresPodcaster(currentFormula.requires_podcaster ?? true);
+          setFormulaName(currentFormula.name);
         }
       } catch (err) {
         console.error('Erreur chargement info formule:', err);
@@ -118,6 +123,9 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
   }
 
   function getFormulaLabel() {
+    // Utiliser le nom de la formule depuis la BDD
+    if (formulaName) return formulaName;
+    // Fallback pour les anciennes clés
     if (formula === 'solo') return 'Formule SOLO';
     if (formula === 'duo') return 'Formule DUO';
     if (formula === 'pro') return 'Formule PRO';
@@ -168,6 +176,87 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
     setPromoDiscount(null);
     setPromoError(null);
     setPromoSuccess(null);
+  }
+
+  // ============================
+  //  VALIDATION DES CHAMPS
+  // ============================
+
+  // Regex pour valider le format du numéro de TVA (format européen simplifié)
+  // Ex: FR12345678901, DE123456789, BE0123456789
+  const vatRegex = /^[A-Z]{2}[0-9A-Z]{2,13}$/i;
+
+  // Regex pour valider l'email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // Regex pour valider le téléphone (format français ou international)
+  const phoneRegex = /^(\+?[0-9]{1,4})?[0-9]{9,14}$/;
+
+  function validateRegisterForm(): boolean {
+    const errors: Record<string, string> = {};
+
+    // Champs communs
+    if (!regEmail.trim()) {
+      errors.regEmail = 'L\'email est obligatoire.';
+    } else if (!emailRegex.test(regEmail.trim())) {
+      errors.regEmail = 'Format d\'email invalide.';
+    }
+
+    if (!regPassword) {
+      errors.regPassword = 'Le mot de passe est obligatoire.';
+    } else if (regPassword.length < 6) {
+      errors.regPassword = 'Le mot de passe doit contenir au moins 6 caractères.';
+    }
+
+    if (!regPasswordConfirm) {
+      errors.regPasswordConfirm = 'La confirmation du mot de passe est obligatoire.';
+    } else if (regPassword !== regPasswordConfirm) {
+      errors.regPasswordConfirm = 'Les mots de passe ne correspondent pas.';
+    }
+
+    // Champs spécifiques selon le type de compte
+    if (accountType === 'particulier') {
+      if (!firstname.trim()) {
+        errors.firstname = 'Le prénom est obligatoire.';
+      }
+      if (!lastname.trim()) {
+        errors.lastname = 'Le nom est obligatoire.';
+      }
+      if (!phone.trim()) {
+        errors.phone = 'Le numéro de téléphone est obligatoire.';
+      } else if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+        errors.phone = 'Format de téléphone invalide.';
+      }
+    } else {
+      // Professionnel
+      if (!companyName.trim()) {
+        errors.companyName = 'Le nom de l\'entreprise est obligatoire.';
+      }
+      if (!vatNumber.trim()) {
+        errors.vatNumber = 'Le numéro de TVA est obligatoire.';
+      } else if (!vatRegex.test(vatNumber.replace(/\s/g, ''))) {
+        errors.vatNumber = 'Format de TVA invalide (ex: FR12345678901).';
+      }
+    }
+
+    // RGPD
+    if (!acceptTerms) {
+      errors.acceptTerms = 'Vous devez accepter les CGU et la politique de confidentialité.';
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
+
+  // Fonction pour effacer l'erreur d'un champ quand l'utilisateur le modifie
+  function clearFieldError(fieldName: string) {
+    if (fieldErrors[fieldName]) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+    }
   }
 
   // ============================
@@ -240,20 +329,9 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
     setError(null);
     setSuccess(null);
 
-    if (!acceptTerms) {
-      setError(
-        "Vous devez accepter les CGU et la politique de confidentialité."
-      );
-      return;
-    }
-
-    if (!regPassword || regPassword !== regPasswordConfirm) {
-      setError('Les mots de passe ne correspondent pas.');
-      return;
-    }
-
-    if (!regEmail.trim()) {
-      setError("L'email est obligatoire.");
+    // Validation complète des champs
+    if (!validateRegisterForm()) {
+      // Les erreurs sont affichées par champ, pas besoin d'erreur globale
       return;
     }
 
@@ -537,7 +615,16 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
                       'customer-tab' +
                       (accountType === 'particulier' ? ' active' : '')
                     }
-                    onClick={() => setAccountType('particulier')}
+                    onClick={() => {
+                      setAccountType('particulier');
+                      // Effacer les erreurs des champs pro quand on passe en particulier
+                      setFieldErrors((prev) => {
+                        const newErrors = { ...prev };
+                        delete newErrors.companyName;
+                        delete newErrors.vatNumber;
+                        return newErrors;
+                      });
+                    }}
                   >
                     Particulier
                   </button>
@@ -547,7 +634,17 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
                       'customer-tab' +
                       (accountType === 'professionnel' ? ' active' : '')
                     }
-                    onClick={() => setAccountType('professionnel')}
+                    onClick={() => {
+                      setAccountType('professionnel');
+                      // Effacer les erreurs des champs particulier quand on passe en pro
+                      setFieldErrors((prev) => {
+                        const newErrors = { ...prev };
+                        delete newErrors.firstname;
+                        delete newErrors.lastname;
+                        delete newErrors.phone;
+                        return newErrors;
+                      });
+                    }}
                   >
                     Professionnel
                   </button>
@@ -557,131 +654,164 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
                   className="customer-form"
                   onSubmit={handleRegisterSubmit}
                 >
-                  <div className="form-row">
-                    <label htmlFor="regEmail">Email</label>
+                  <div className={`form-row ${fieldErrors.regEmail ? 'has-error' : ''}`}>
+                    <label htmlFor="regEmail">Email *</label>
                     <input
                       id="regEmail"
                       type="email"
                       value={regEmail}
-                      onChange={(e) => setRegEmail(e.target.value)}
-                      required
+                      onChange={(e) => {
+                        setRegEmail(e.target.value);
+                        clearFieldError('regEmail');
+                      }}
+                      className={fieldErrors.regEmail ? 'input-error' : ''}
                     />
+                    {fieldErrors.regEmail && <span className="field-error">{fieldErrors.regEmail}</span>}
                   </div>
 
-                  <div className="form-row">
-                    <label htmlFor="regPassword">Mot de passe</label>
+                  <div className={`form-row ${fieldErrors.regPassword ? 'has-error' : ''}`}>
+                    <label htmlFor="regPassword">Mot de passe *</label>
                     <input
                       id="regPassword"
                       type="password"
                       value={regPassword}
-                      onChange={(e) => setRegPassword(e.target.value)}
-                      required
+                      onChange={(e) => {
+                        setRegPassword(e.target.value);
+                        clearFieldError('regPassword');
+                      }}
+                      className={fieldErrors.regPassword ? 'input-error' : ''}
                     />
+                    {fieldErrors.regPassword && <span className="field-error">{fieldErrors.regPassword}</span>}
                   </div>
 
-                  <div className="form-row">
+                  <div className={`form-row ${fieldErrors.regPasswordConfirm ? 'has-error' : ''}`}>
                     <label htmlFor="regPasswordConfirm">
-                      Confirmation du mot de passe
+                      Confirmation du mot de passe *
                     </label>
                     <input
                       id="regPasswordConfirm"
                       type="password"
                       value={regPasswordConfirm}
-                      onChange={(e) =>
-                        setRegPasswordConfirm(e.target.value)
-                      }
-                      required
+                      onChange={(e) => {
+                        setRegPasswordConfirm(e.target.value);
+                        clearFieldError('regPasswordConfirm');
+                      }}
+                      className={fieldErrors.regPasswordConfirm ? 'input-error' : ''}
                     />
+                    {fieldErrors.regPasswordConfirm && <span className="field-error">{fieldErrors.regPasswordConfirm}</span>}
                   </div>
 
                   {accountType === 'particulier' && (
                     <>
-                      <div className="form-row">
-                        <label htmlFor="firstname">Prénom</label>
+                      <div className={`form-row ${fieldErrors.firstname ? 'has-error' : ''}`}>
+                        <label htmlFor="firstname">Prénom *</label>
                         <input
                           id="firstname"
                           type="text"
                           value={firstname}
-                          onChange={(e) =>
-                            setFirstname(e.target.value)
-                          }
+                          onChange={(e) => {
+                            setFirstname(e.target.value);
+                            clearFieldError('firstname');
+                          }}
+                          className={fieldErrors.firstname ? 'input-error' : ''}
                         />
+                        {fieldErrors.firstname && <span className="field-error">{fieldErrors.firstname}</span>}
                       </div>
 
-                      <div className="form-row">
-                        <label htmlFor="lastname">Nom</label>
+                      <div className={`form-row ${fieldErrors.lastname ? 'has-error' : ''}`}>
+                        <label htmlFor="lastname">Nom *</label>
                         <input
                           id="lastname"
                           type="text"
                           value={lastname}
-                          onChange={(e) =>
-                            setLastname(e.target.value)
-                          }
+                          onChange={(e) => {
+                            setLastname(e.target.value);
+                            clearFieldError('lastname');
+                          }}
+                          className={fieldErrors.lastname ? 'input-error' : ''}
                         />
+                        {fieldErrors.lastname && <span className="field-error">{fieldErrors.lastname}</span>}
                       </div>
                     </>
                   )}
 
                   {accountType === 'professionnel' && (
                     <>
-                      <div className="form-row">
+                      <div className={`form-row ${fieldErrors.companyName ? 'has-error' : ''}`}>
                         <label htmlFor="companyName">
-                          Nom de l&apos;entreprise
+                          Nom de l&apos;entreprise *
                         </label>
                         <input
                           id="companyName"
                           type="text"
                           value={companyName}
-                          onChange={(e) =>
-                            setCompanyName(e.target.value)
-                          }
+                          onChange={(e) => {
+                            setCompanyName(e.target.value);
+                            clearFieldError('companyName');
+                          }}
+                          className={fieldErrors.companyName ? 'input-error' : ''}
                         />
+                        {fieldErrors.companyName && <span className="field-error">{fieldErrors.companyName}</span>}
                       </div>
 
-                      <div className="form-row">
+                      <div className={`form-row ${fieldErrors.vatNumber ? 'has-error' : ''}`}>
                         <label htmlFor="vatNumber">
-                          Numéro de TVA
+                          Numéro de TVA *
                         </label>
                         <input
                           id="vatNumber"
                           type="text"
                           value={vatNumber}
-                          onChange={(e) =>
-                            setVatNumber(e.target.value)
-                          }
+                          onChange={(e) => {
+                            setVatNumber(e.target.value.toUpperCase());
+                            clearFieldError('vatNumber');
+                          }}
+                          placeholder="Ex: FR12345678901"
+                          className={fieldErrors.vatNumber ? 'input-error' : ''}
                         />
+                        {fieldErrors.vatNumber && <span className="field-error">{fieldErrors.vatNumber}</span>}
                       </div>
                     </>
                   )}
 
-                  <div className="form-row">
-                    <label htmlFor="phone">
-                      Numéro de téléphone
-                    </label>
-                    <input
-                      id="phone"
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                    />
-                  </div>
+                  {accountType === 'particulier' && (
+                    <div className={`form-row ${fieldErrors.phone ? 'has-error' : ''}`}>
+                      <label htmlFor="phone">
+                        Numéro de téléphone *
+                      </label>
+                      <input
+                        id="phone"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => {
+                          setPhone(e.target.value);
+                          clearFieldError('phone');
+                        }}
+                        placeholder="Ex: 0612345678"
+                        className={fieldErrors.phone ? 'input-error' : ''}
+                      />
+                      {fieldErrors.phone && <span className="field-error">{fieldErrors.phone}</span>}
+                    </div>
+                  )}
 
-                  <div className="form-row checkbox-row">
+                  <div className={`form-row checkbox-row ${fieldErrors.acceptTerms ? 'has-error' : ''}`}>
                     <label>
                       <input
                         type="checkbox"
                         checked={acceptTerms}
-                        onChange={(e) =>
-                          setAcceptTerms(e.target.checked)
-                        }
+                        onChange={(e) => {
+                          setAcceptTerms(e.target.checked);
+                          clearFieldError('acceptTerms');
+                        }}
                       />
                       <span>
                         J&apos;ai lu et j&apos;accepte les CGU et la
                         Politique de confidentialité. Je consens au
                         traitement de mes données personnelles
-                        conformément à cette politique.
+                        conformément à cette politique. *
                       </span>
                     </label>
+                    {fieldErrors.acceptTerms && <span className="field-error">{fieldErrors.acceptTerms}</span>}
                   </div>
 
                   <div className="form-row checkbox-row">

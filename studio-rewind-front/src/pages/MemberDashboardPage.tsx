@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import {
   type MemberReservation,
   getMemberReservations
@@ -143,6 +143,19 @@ function getStatusClass(status: MemberReservationStatus) {
       return 'sr-status-cancelled';
     default:
       return '';
+  }
+}
+
+function getStatusLabel(status: MemberReservationStatus) {
+  switch (status) {
+    case 'confirmed':
+      return 'Confirmée';
+    case 'pending':
+      return 'En attente de paiement';
+    case 'cancelled':
+      return 'Annulée';
+    default:
+      return status;
   }
 }
 
@@ -1073,7 +1086,7 @@ function MemberDashboardPage() {
                                 r.status
                               )}`}
                             >
-                              {r.status}
+                              {getStatusLabel(r.status)}
                             </span>
                           </div>
                           <p className="member-reservation-dates">
@@ -1088,6 +1101,14 @@ function MemberDashboardPage() {
                           <p className="member-reservation-extra">
                             {r.total_hours} h – {r.price_ttc.toFixed(2)} € TTC
                           </p>
+                          {r.status === 'pending' && (
+                            <Link
+                              to={`/paiement/${r.id}`}
+                              className="member-reservation-pay-link"
+                            >
+                              Finaliser le paiement →
+                            </Link>
+                          )}
                         </li>
                       ))}
                     </ul>
@@ -1118,7 +1139,7 @@ function MemberDashboardPage() {
                             r.status
                           )}`}
                         >
-                          {r.status}
+                          {getStatusLabel(r.status)}
                         </span>
                       </div>
                       <p className="member-reservation-dates">
@@ -1133,6 +1154,14 @@ function MemberDashboardPage() {
                       <p className="member-reservation-extra">
                         {r.total_hours} h – {r.price_ttc.toFixed(2)} € TTC
                       </p>
+                      {r.status === 'pending' && (
+                        <Link
+                          to={`/paiement/${r.id}`}
+                          className="member-reservation-pay-link"
+                        >
+                          Finaliser le paiement →
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>

@@ -8,7 +8,8 @@ import './Reservation.css'
 import Menus from '../components/Header/Menus';
 
 
-export type FormulaKey = 'solo' | 'duo' | 'pro';
+// Type élargi pour supporter les formules dynamiques
+export type FormulaKey = string;
 
 export interface PricingBreakdown {
   hours: number;

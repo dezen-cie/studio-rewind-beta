@@ -15,8 +15,8 @@ async function getFormulaByKey(formulaKey) {
 // Retourne { total_hours, price_ht, price_tva, price_ttc }
 // Toutes les formules sont maintenant à prix fixe pour 1h (prix stocké en HT)
 export async function calculateReservationPricing(formulaKey, startDate, endDate) {
-  if (!['solo', 'duo', 'pro'].includes(formulaKey)) {
-    const error = new Error('Formule invalide.');
+  if (!formulaKey) {
+    const error = new Error('Formule non spécifiée.');
     error.status = 400;
     throw error;
   }

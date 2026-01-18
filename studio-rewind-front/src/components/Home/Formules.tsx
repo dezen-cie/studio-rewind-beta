@@ -128,7 +128,6 @@ import {
   type PublicFormula,
   type FormulaOption
 } from '../../api/formulas';
-import type { FormulaKey } from '../../pages/ReservationPage';
 
 // Map des icônes Lucide disponibles
 const iconMap: Record<string, LucideIcon> = {
@@ -292,35 +291,45 @@ function OptionItem({ option }: { option: FormulaOption }) {
   );
 }
 
-// Config statique pour les styles CSS et descriptions (fallback)
-const formulaConfig: Record<
-  FormulaKey,
-  {
-    cssClass: string;
-    description: string;
-    priceSuffix: string;
-    reservationLink: string;
+// Fonction pour convertir RGB en RGBA avec opacité
+function rgbToRgba(rgb: string, alpha: number): string {
+  const match = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+  if (match) {
+    return `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${alpha})`;
   }
-> = {
-  solo: {
-    cssClass: 'formule formule1',
-    description: "Formule idéale pour débuter, accès au studio avec accompagnement de base.",
-    priceSuffix: 'HT',
-    reservationLink: '/reservation?step=2&formula=solo'
-  },
-  duo: {
-    cssClass: 'formule formule2',
-    description: "Accompagnement complet avec un podcasteur expérimenté pour optimiser ton contenu.",
-    priceSuffix: 'HT',
-    reservationLink: '/reservation?step=2&formula=duo'
-  },
-  pro: {
-    cssClass: 'formule formule3',
-    description: "Formule premium avec accompagnement VIP et services de post-production inclus.",
-    priceSuffix: 'HT',
-    reservationLink: '/reservation?step=2&formula=pro'
-  }
-};
+  return rgb;
+}
+
+// Génère les styles inline pour une formule avec ses couleurs
+function getFormulaStyles(f: PublicFormula): React.CSSProperties {
+  const borderStart = f.border_start || 'rgb(153, 221, 252)';
+  const borderEnd = f.border_end || 'rgb(196, 202, 0)';
+  const minHeight = f.min_height || 420;
+
+  return {
+    position: 'relative',
+    minHeight: `${minHeight}px`,
+    border: '3px solid transparent',
+    borderRadius: '15px',
+    transform: 'translateY(-6px)',
+    background: `linear-gradient(180deg, rgb(33, 27, 39) 0%, rgb(5, 3, 8) 100%) padding-box, linear-gradient(90deg, ${borderStart}, ${borderEnd}) border-box`,
+    // Variables CSS personnalisées pour l'animation
+    '--border-start': borderStart,
+    '--border-end': borderEnd,
+    '--glow-main': rgbToRgba(borderStart, 0.9),
+    '--glow-soft': rgbToRgba(borderEnd, 0.6),
+  } as React.CSSProperties;
+}
+
+// Style pour le badge avec dégradé
+function getBadgeStyles(f: PublicFormula): React.CSSProperties {
+  const borderStart = f.border_start || 'rgb(153, 221, 252)';
+  const borderEnd = f.border_end || 'rgb(196, 202, 0)';
+
+  return {
+    background: `linear-gradient(90deg, ${borderStart}, ${borderEnd})`,
+  };
+}
 
 function Formules() {
   const sliderRef = useRef<HTMLDivElement | null>(null);
@@ -348,16 +357,13 @@ function Formules() {
         setError(null);
 
         const data = await getPublicFormulas();
-      
+
         if (!mounted) return;
 
-        const allowed = data.filter((f) =>
-          ['solo', 'duo', 'pro'].includes(f.key)
-        );
+        // Trier par display_order puis par prix (l'API retourne déjà les formules actives)
+        data.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0) || a.price_ttc - b.price_ttc);
 
-        allowed.sort((a, b) => a.price_ttc - b.price_ttc);
-
-        setFormulas(allowed);
+        setFormulas(data);
       } catch (err) {
         console.error('Erreur formules :', err);
         if (mounted) setError('Impossible de charger les formules.');
@@ -401,25 +407,30 @@ function Formules() {
 
           <div className="formule-cards" ref={sliderRef}>
             {formulas.map((f) => {
-              const cfg = formulaConfig[f.key as FormulaKey];
-              if (!cfg) return null;
-
               // Options de l'API ou fallback vide
               const options = f.options || [];
               // Trier par display_order
               const sortedOptions = [...options].sort((a, b) => a.display_order - b.display_order);
+              // Lien vers la réservation avec la clé de la formule
+              const reservationLink = `/reservation?step=2&formula=${f.key}`;
 
               return (
-                <div key={f.id} className={cfg.cssClass}>
-                  <h4 className="formule-badge">{f.name}</h4>
+                <div
+                  key={f.id}
+                  className="formule formule-dynamic"
+                  style={getFormulaStyles(f)}
+                >
+                  <h4 className="formule-badge" style={getBadgeStyles(f)}>{f.name}</h4>
 
-                  <p className="formule-desc">{f.description || cfg.description}</p>
-
-                  <p className="price">
-                    {f.price_ttc}€ <span>{cfg.priceSuffix}</span>
+                  <p className="formule-desc">
+                    {f.description || 'Découvrez cette formule adaptée à vos besoins.'}
                   </p>
 
-                  <Link to={cfg.reservationLink}>
+                  <p className="price">
+                    {f.price_ttc}€ <span>HT</span>
+                  </p>
+
+                  <Link to={reservationLink}>
                     <button className="btn btn-primary">
                       Choisir cette formule
                     </button>

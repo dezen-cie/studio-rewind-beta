@@ -27,6 +27,7 @@ import PodcasterPasswordPage from './pages/podcaster/PodcasterPasswordPage';
 import PodcasterBlockedSlotsPage from './pages/podcaster/PodcasterBlockedSlotsPage';
 import PodcasterProfilePage from './pages/podcaster/PodcasterProfilePage';
 
+import ResumePaymentPage from './pages/ResumePaymentPage';
 import { isAuthenticated, getUserRole } from './utils/auth';
 import type { JSX } from 'react';
 import Team from './pages/Team';
@@ -115,6 +116,14 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/reservation" element={<ReservationPage />} />
       <Route path="/unsubscribe" element={<UnsubscribePage />} />
+      <Route
+        path="/paiement/:id"
+        element={
+          <PrivateRoute>
+            <ResumePaymentPage />
+          </PrivateRoute>
+        }
+      />
 
       {/* Layout membre */}
       <Route

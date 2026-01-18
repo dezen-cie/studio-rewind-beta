@@ -1,6 +1,6 @@
 // src/services/payment.service.js
 import stripe from '../config/stripe.js';
-import { Reservation, User, Formula, PromoCode } from '../models/index.js';
+import { Reservation, User, Formula, PromoCode, Podcaster } from '../models/index.js';
 import { calculateReservationPricing } from '../utils/pricing.js';
 import { checkAvailability } from './reservation.service.js';
 
@@ -244,4 +244,99 @@ export async function confirmReservationPayment(
   await reservation.save();
 
   return reservation;
+}
+
+// ==============================
+//  Récupérer le client secret d'une réservation pending
+//  (pour reprendre un paiement abandonné)
+// ==============================
+
+export async function getReservationPaymentInfo(userId, reservationId) {
+  if (!reservationId) {
+    const err = new Error('reservation_id est obligatoire.');
+    err.status = 400;
+    throw err;
+  }
+
+  const reservation = await Reservation.findOne({
+    where: {
+      id: reservationId,
+      user_id: userId
+    },
+    include: [
+      {
+        model: Podcaster,
+        as: 'podcaster',
+        attributes: ['id', 'name']
+      }
+    ]
+  });
+
+  if (!reservation) {
+    const err = new Error('Réservation introuvable.');
+    err.status = 404;
+    throw err;
+  }
+
+  // Vérifier que la réservation est bien pending
+  if (reservation.status !== 'pending') {
+    const err = new Error(`Cette réservation est déjà ${reservation.status === 'confirmed' ? 'confirmée' : 'annulée'}.`);
+    err.status = 400;
+    throw err;
+  }
+
+  // Vérifier qu'on a bien un PaymentIntent
+  if (!reservation.stripe_payment_intent_id) {
+    const err = new Error('Aucun paiement en attente pour cette réservation.');
+    err.status = 400;
+    throw err;
+  }
+
+  // Récupérer le PaymentIntent Stripe pour obtenir le client_secret
+  const paymentIntent = await stripe.paymentIntents.retrieve(
+    reservation.stripe_payment_intent_id
+  );
+
+  if (!paymentIntent) {
+    const err = new Error('PaymentIntent introuvable côté Stripe.');
+    err.status = 404;
+    throw err;
+  }
+
+  // Si le paiement a déjà réussi, confirmer la réservation
+  if (paymentIntent.status === 'succeeded') {
+    reservation.status = 'confirmed';
+    await reservation.save();
+    const err = new Error('Le paiement a déjà été effectué. Votre réservation est confirmée.');
+    err.status = 400;
+    throw err;
+  }
+
+  // Si le paiement a été annulé, on ne peut pas reprendre
+  if (paymentIntent.status === 'canceled') {
+    const err = new Error('Le paiement a été annulé. Veuillez créer une nouvelle réservation.');
+    err.status = 400;
+    throw err;
+  }
+
+  // Récupérer le nom de la formule
+  const formula = await Formula.findOne({ where: { key: reservation.formula } });
+
+  return {
+    clientSecret: paymentIntent.client_secret,
+    reservationId: reservation.id,
+    paymentIntentId: reservation.stripe_payment_intent_id,
+    reservation: {
+      id: reservation.id,
+      formula: reservation.formula,
+      formulaName: formula?.name || reservation.formula,
+      start_date: reservation.start_date,
+      end_date: reservation.end_date,
+      total_hours: reservation.total_hours,
+      price_ht: reservation.price_ht,
+      price_tva: reservation.price_tva,
+      price_ttc: reservation.price_ttc,
+      podcaster: reservation.podcaster
+    }
+  };
 }

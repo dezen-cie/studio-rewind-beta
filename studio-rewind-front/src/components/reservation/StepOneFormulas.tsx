@@ -1,34 +1,31 @@
 // src/components/reservation/StepOneFormulas.tsx
 import { useEffect, useMemo, useState } from 'react';
-import type { FormulaKey } from '../../pages/ReservationPage';
 import {
   getPublicFormulas,
   type PublicFormula
 } from '../../api/formulas';
 
 interface StepOneFormulasProps {
-  onSelectFormula: (formula: FormulaKey) => void;
-}
-
-// On borne les clés qu'on considère dans le tunnel de résa
-const ALLOWED_KEYS: FormulaKey[] = ['solo', 'duo', 'pro'];
-
-function getFormulaDescription(key: FormulaKey): string {
-  switch (key) {
-    case 'solo':
-      return "Formule idéale pour débuter, accès au studio avec accompagnement de base.";
-    case 'duo':
-      return "Accompagnement complet avec un podcasteur expérimenté pour optimiser ton contenu.";
-    case 'pro':
-      return "Formule premium avec accompagnement VIP et services de post-production inclus.";
-    default:
-      return '';
-  }
+  onSelectFormula: (formula: string) => void;
 }
 
 function formatPriceHt(price: number): string {
   // 99 -> "99,00€ HT"
   return `${price.toFixed(2).replace('.', ',')}€ HT`;
+}
+
+// Helper pour construire l'URL complète des images uploadées
+function getImageUrl(imageUrl: string | null | undefined): string | null {
+  if (!imageUrl) return null;
+  // Si c'est une URL relative du backend (/uploads/...), on ajoute le base URL de l'API
+  if (imageUrl.startsWith('/uploads/')) {
+    const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000/api';
+    // Enlever '/api' de la fin pour avoir le domaine du backend
+    const backendBase = apiBase.replace(/\/api$/, '');
+    return `${backendBase}${imageUrl}`;
+  }
+  // Sinon c'est une URL complète (Supabase, etc.)
+  return imageUrl;
 }
 
 function StepOneFormulas({ onSelectFormula }: StepOneFormulasProps) {
@@ -58,12 +55,11 @@ function StepOneFormulas({ onSelectFormula }: StepOneFormulasProps) {
     load();
   }, []);
 
-  // On filtre les formules utilisables dans le tunnel
-  // puis on les trie de la moins chère à la plus chère
+  // Trier par display_order puis par prix (l'API retourne déjà les formules actives)
   const orderedFormulas = useMemo(() => {
-    return formulas
-      .filter((f) => ALLOWED_KEYS.includes(f.key))
-      .sort((a, b) => a.price_ttc - b.price_ttc);
+    return [...formulas].sort(
+      (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0) || a.price_ttc - b.price_ttc
+    );
   }, [formulas]);
 
   return (
@@ -86,8 +82,10 @@ function StepOneFormulas({ onSelectFormula }: StepOneFormulasProps) {
         {orderedFormulas.map((f) => {
           // Prix affiché en HT (durée fixe 1h)
           const priceLabel = formatPriceHt(f.price_ttc);
-
-          const buttonLabel = 'Sélectionner'
+          // Description de la BDD ou fallback
+          const description = f.description || 'Découvrez cette formule adaptée à vos besoins.';
+          // URL de l'image avec le bon domaine
+          const imageUrl = getImageUrl(f.image_url);
 
           return (
             <article
@@ -96,13 +94,37 @@ function StepOneFormulas({ onSelectFormula }: StepOneFormulasProps) {
               onClick={() => onSelectFormula(f.key)}
               style={{ cursor: 'pointer' }}
             >
-              <picture>
-                <source
-                  srcSet={`/images/formule-${f.key}.webp`}
-                  type="image/webp"
+              {imageUrl ? (
+                // Image depuis la BDD
+                <img
+                  src={imageUrl}
+                  alt={f.name}
+                  loading="lazy"
+                  onError={(e) => {
+                    // Fallback si l'image n'existe pas
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/images/formule-solo.jpg';
+                  }}
                 />
-                <img src={`/images/formule-${f.key}.jpg`} alt={f.name} loading="lazy" />
-              </picture>
+              ) : (
+                // Fallback sur les images statiques
+                <picture>
+                  <source
+                    srcSet={`/images/formule-${f.key}.webp`}
+                    type="image/webp"
+                  />
+                  <img
+                    src={`/images/formule-${f.key}.jpg`}
+                    alt={f.name}
+                    loading="lazy"
+                    onError={(e) => {
+                      // Fallback si l'image n'existe pas
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/images/formule-solo.jpg';
+                    }}
+                  />
+                </picture>
+              )}
               <div>
               <div className="reservation-formula-info">
                 <p className="reservation-formula-title">
@@ -112,7 +134,7 @@ function StepOneFormulas({ onSelectFormula }: StepOneFormulasProps) {
                   {priceLabel}
                 </p>
                 <p className="reservation-formula-description">
-                  {getFormulaDescription(f.key)}
+                  {description}
                 </p>
                 </div>
               </div>
@@ -121,7 +143,7 @@ function StepOneFormulas({ onSelectFormula }: StepOneFormulasProps) {
                 className="select"
                 onClick={() => onSelectFormula(f.key)}
               >
-                {buttonLabel}
+                Sélectionner
               </button>
             </article>
           );

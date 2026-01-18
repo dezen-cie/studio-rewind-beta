@@ -127,11 +127,90 @@ import {
   type PublicFormula,
   type FormulaOption,
   getAdminFormulas,
+  createAdminFormula,
   updateAdminFormula,
+  deleteAdminFormula,
+  uploadFormulaImage,
+  deleteFormulaImage,
   createFormulaOption,
   updateFormulaOption,
   deleteFormulaOption
 } from '../../api/formulas';
+
+// Fonction utilitaire pour convertir hex en rgb
+function hexToRgb(hex: string): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (result) {
+    const r = parseInt(result[1], 16);
+    const g = parseInt(result[2], 16);
+    const b = parseInt(result[3], 16);
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+  return hex;
+}
+
+// Fonction utilitaire pour convertir rgb en hex
+function rgbToHex(rgb: string): string {
+  const match = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+  if (match) {
+    const r = parseInt(match[1]).toString(16).padStart(2, '0');
+    const g = parseInt(match[2]).toString(16).padStart(2, '0');
+    const b = parseInt(match[3]).toString(16).padStart(2, '0');
+    return `#${r}${g}${b}`;
+  }
+  return rgb;
+}
+
+// Helper pour construire l'URL complète des images uploadées
+function getImageUrl(imageUrl: string | null | undefined): string | null {
+  if (!imageUrl) return null;
+  if (imageUrl.startsWith('/uploads/')) {
+    const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000/api';
+    const backendBase = apiBase.replace(/\/api$/, '');
+    return `${backendBase}${imageUrl}`;
+  }
+  return imageUrl;
+}
+
+// Composant ColorPicker simple
+function ColorPicker({
+  label,
+  value,
+  onChange,
+  disabled
+}: {
+  label: string;
+  value: string;
+  onChange: (color: string) => void;
+  disabled?: boolean;
+}) {
+  const hexValue = rgbToHex(value);
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <label style={{ fontSize: '0.8rem', color: 'var(--sr-color-text-muted)', minWidth: '80px' }}>
+        {label}
+      </label>
+      <input
+        type="color"
+        value={hexValue}
+        onChange={(e) => onChange(hexToRgb(e.target.value))}
+        disabled={disabled}
+        style={{
+          width: '40px',
+          height: '30px',
+          padding: '0',
+          border: '1px solid var(--sr-color-border-subtle)',
+          borderRadius: 'var(--sr-radius-sm)',
+          cursor: disabled ? 'not-allowed' : 'pointer'
+        }}
+      />
+      <span style={{ fontSize: '0.75rem', color: 'var(--sr-color-text-muted)', fontFamily: 'monospace' }}>
+        {value}
+      </span>
+    </div>
+  );
+}
 
 // Map des icônes disponibles (groupées par catégorie pour faciliter la recherche)
 const iconMap: Record<string, LucideIcon> = {
@@ -401,7 +480,30 @@ function AdminFormulasPage() {
   const [editName, setEditName] = useState('');
   const [editPrice, setEditPrice] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editBorderStart, setEditBorderStart] = useState('rgb(153, 221, 252)');
+  const [editBorderEnd, setEditBorderEnd] = useState('rgb(196, 202, 0)');
+  const [editMinHeight, setEditMinHeight] = useState('420');
+  const [editDisplayOrder, setEditDisplayOrder] = useState('0');
+  const [editIsActive, setEditIsActive] = useState(true);
+  const [editRequiresPodcaster, setEditRequiresPodcaster] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Gestion de la création
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newPrice, setNewPrice] = useState('');
+  const [newDescription, setNewDescription] = useState('');
+  const [newBillingType, setNewBillingType] = useState<'hourly' | 'subscription'>('hourly');
+  const [newBorderStart, setNewBorderStart] = useState('rgb(153, 221, 252)');
+  const [newBorderEnd, setNewBorderEnd] = useState('rgb(196, 202, 0)');
+  const [newMinHeight, setNewMinHeight] = useState('420');
+  const [newDisplayOrder, setNewDisplayOrder] = useState('0');
+  const [newRequiresPodcaster, setNewRequiresPodcaster] = useState(true);
+  const [creating, setCreating] = useState(false);
+  // Options temporaires pour la création
+  const [tempOptions, setTempOptions] = useState<Array<{ icon: string; content: string }>>([]);
+  const [tempOptionIcon, setTempOptionIcon] = useState('Circle');
+  const [tempOptionContent, setTempOptionContent] = useState('');
 
   // Gestion des options
   const [expandedFormulaId, setExpandedFormulaId] = useState<string | null>(null);
@@ -412,14 +514,17 @@ function AdminFormulasPage() {
   const [newOptionContent, setNewOptionContent] = useState('');
   const [savingOption, setSavingOption] = useState(false);
 
+  // Gestion des images
+  const [uploadingImageId, setUploadingImageId] = useState<string | null>(null);
+
   useEffect(() => {
     async function load() {
       try {
         setError(null);
         setLoading(true);
         const data = await getAdminFormulas();
-        // Trier par prix croissant
-        data.sort((a, b) => a.price_ttc - b.price_ttc);
+        // Trier par display_order puis par prix
+        data.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0) || a.price_ttc - b.price_ttc);
         setFormulas(data);
       } catch (err: any) {
         console.error('Erreur getAdminFormulas:', err);
@@ -435,28 +540,17 @@ function AdminFormulasPage() {
     load();
   }, []);
 
-  function getBillingLabel(f: PublicFormula) {
-    return f.billing_type === 'subscription' ? 'Forfait' : 'À l\'heure';
-  }
-
-  function getKeyLabel(key: string) {
-    switch (key) {
-      case 'solo':
-        return 'Solo';
-      case 'duo':
-        return 'Duo';
-      case 'pro':
-        return 'Pro';
-      default:
-        return key;
-    }
-  }
-
   function startEdit(f: PublicFormula) {
     setEditingId(f.id);
     setEditName(f.name);
     setEditPrice(String(f.price_ttc));
     setEditDescription(f.description || '');
+    setEditBorderStart(f.border_start || 'rgb(153, 221, 252)');
+    setEditBorderEnd(f.border_end || 'rgb(196, 202, 0)');
+    setEditMinHeight(String(f.min_height || 420));
+    setEditDisplayOrder(String(f.display_order ?? 0));
+    setEditIsActive(f.is_active ?? true);
+    setEditRequiresPodcaster(f.requires_podcaster ?? true);
   }
 
   function cancelEdit() {
@@ -464,17 +558,25 @@ function AdminFormulasPage() {
     setEditName('');
     setEditPrice('');
     setEditDescription('');
+    setEditBorderStart('rgb(153, 221, 252)');
+    setEditBorderEnd('rgb(196, 202, 0)');
+    setEditMinHeight('420');
+    setEditDisplayOrder('0');
+    setEditIsActive(true);
+    setEditRequiresPodcaster(true);
   }
 
   async function handleSave(f: PublicFormula) {
-    const newName = editName.trim();
-    const newPrice = parseFloat(editPrice);
+    const trimmedName = editName.trim();
+    const parsedPrice = parseFloat(editPrice);
+    const parsedMinHeight = parseInt(editMinHeight);
+    const parsedDisplayOrder = parseInt(editDisplayOrder);
 
-    if (!newName) {
+    if (!trimmedName) {
       setError('Le nom ne peut pas être vide.');
       return;
     }
-    if (isNaN(newPrice) || newPrice < 0) {
+    if (isNaN(parsedPrice) || parsedPrice < 0) {
       setError('Le prix doit être un nombre positif.');
       return;
     }
@@ -483,14 +585,20 @@ function AdminFormulasPage() {
       setSaving(true);
       setError(null);
       const updated = await updateAdminFormula(f.id, {
-        name: newName,
-        price_ttc: newPrice,
-        description: editDescription.trim() || null
+        name: trimmedName,
+        price_ttc: parsedPrice,
+        description: editDescription.trim() || null,
+        border_start: editBorderStart,
+        border_end: editBorderEnd,
+        min_height: isNaN(parsedMinHeight) ? 420 : parsedMinHeight,
+        display_order: isNaN(parsedDisplayOrder) ? 0 : parsedDisplayOrder,
+        is_active: editIsActive,
+        requires_podcaster: editRequiresPodcaster
       });
       setFormulas((prev) =>
         prev
           .map((x) => (x.id === updated.id ? updated : x))
-          .sort((a, b) => a.price_ttc - b.price_ttc)
+          .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0) || a.price_ttc - b.price_ttc)
       );
       cancelEdit();
     } catch (err: any) {
@@ -504,20 +612,133 @@ function AdminFormulasPage() {
     }
   }
 
-  async function handleToggleRequiresPodcaster(f: PublicFormula) {
+  // Ajouter une option temporaire lors de la création
+  function addTempOption() {
+    const content = tempOptionContent.trim();
+    if (!content) return;
+    setTempOptions((prev) => [...prev, { icon: tempOptionIcon, content }]);
+    setTempOptionIcon('Circle');
+    setTempOptionContent('');
+  }
+
+  // Supprimer une option temporaire
+  function removeTempOption(index: number) {
+    setTempOptions((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  // Création d'une nouvelle formule
+  async function handleCreate() {
+    const trimmedName = newName.trim();
+    const parsedPrice = parseFloat(newPrice);
+    const parsedMinHeight = parseInt(newMinHeight);
+    const parsedDisplayOrder = parseInt(newDisplayOrder);
+
+    if (!trimmedName) {
+      setError('Le nom de la formule est requis.');
+      return;
+    }
+    if (isNaN(parsedPrice) || parsedPrice < 0) {
+      setError('Le prix doit être un nombre positif.');
+      return;
+    }
+
+    try {
+      setCreating(true);
+      setError(null);
+      const created = await createAdminFormula({
+        name: trimmedName,
+        billing_type: newBillingType,
+        price_ttc: parsedPrice,
+        description: newDescription.trim() || null,
+        border_start: newBorderStart,
+        border_end: newBorderEnd,
+        min_height: isNaN(parsedMinHeight) ? 420 : parsedMinHeight,
+        display_order: isNaN(parsedDisplayOrder) ? formulas.length : parsedDisplayOrder,
+        is_active: true,
+        requires_podcaster: newRequiresPodcaster
+      });
+
+      // Créer les options associées
+      const createdOptions = [];
+      for (let i = 0; i < tempOptions.length; i++) {
+        const opt = tempOptions[i];
+        try {
+          const createdOpt = await createFormulaOption(created.id, {
+            icon: opt.icon,
+            content: opt.content,
+            display_order: i
+          });
+          createdOptions.push(createdOpt);
+        } catch (err) {
+          console.error('Erreur création option:', err);
+        }
+      }
+
+      // Mettre à jour avec les options
+      const formulaWithOptions = { ...created, options: createdOptions };
+      setFormulas((prev) =>
+        [...prev, formulaWithOptions].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0) || a.price_ttc - b.price_ttc)
+      );
+
+      // Reset du formulaire
+      setNewName('');
+      setNewPrice('');
+      setNewDescription('');
+      setNewBillingType('hourly');
+      setNewBorderStart('rgb(153, 221, 252)');
+      setNewBorderEnd('rgb(196, 202, 0)');
+      setNewMinHeight('420');
+      setNewDisplayOrder('0');
+      setNewRequiresPodcaster(true);
+      setTempOptions([]);
+      setTempOptionIcon('Circle');
+      setTempOptionContent('');
+      setShowCreateForm(false);
+    } catch (err: any) {
+      console.error('Erreur createAdminFormula:', err);
+      const message =
+        err?.response?.data?.message ||
+        "Impossible de créer la formule.";
+      setError(message);
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  // Suppression d'une formule
+  async function handleDelete(f: PublicFormula) {
+    if (!confirm(`Supprimer la formule "${f.name}" ? Cette action est irréversible.`)) {
+      return;
+    }
+
+    try {
+      setError(null);
+      await deleteAdminFormula(f.id);
+      setFormulas((prev) => prev.filter((x) => x.id !== f.id));
+    } catch (err: any) {
+      console.error('Erreur deleteAdminFormula:', err);
+      const message =
+        err?.response?.data?.message ||
+        "Impossible de supprimer la formule.";
+      setError(message);
+    }
+  }
+
+  // Toggle actif/inactif
+  async function handleToggleActive(f: PublicFormula) {
     try {
       setError(null);
       const updated = await updateAdminFormula(f.id, {
-        requires_podcaster: !f.requires_podcaster
+        is_active: !f.is_active
       });
       setFormulas((prev) =>
         prev.map((x) => (x.id === updated.id ? updated : x))
       );
     } catch (err: any) {
-      console.error('Erreur toggle requires_podcaster:', err);
+      console.error('Erreur toggle is_active:', err);
       const message =
         err?.response?.data?.message ||
-        "Impossible de modifier l'option podcasteur.";
+        "Impossible de modifier le statut.";
       setError(message);
     }
   }
@@ -662,44 +883,318 @@ function AdminFormulasPage() {
     return iconMap[iconName] || Circle;
   }
 
+  // === Gestion des images ===
+
+  async function handleImageUpload(formulaId: string, file: File) {
+    try {
+      setUploadingImageId(formulaId);
+      setError(null);
+      const updated = await uploadFormulaImage(formulaId, file);
+      setFormulas((prev) =>
+        prev.map((f) => (f.id === updated.id ? { ...f, image_url: updated.image_url } : f))
+      );
+    } catch (err: any) {
+      console.error('Erreur upload image:', err);
+      const message =
+        err?.response?.data?.message || "Impossible d'uploader l'image.";
+      setError(message);
+    } finally {
+      setUploadingImageId(null);
+    }
+  }
+
+  async function handleImageDelete(formulaId: string) {
+    if (!confirm("Supprimer l'image de cette formule ?")) return;
+
+    try {
+      setUploadingImageId(formulaId);
+      setError(null);
+      const updated = await deleteFormulaImage(formulaId);
+      setFormulas((prev) =>
+        prev.map((f) => (f.id === updated.id ? { ...f, image_url: null } : f))
+      );
+    } catch (err: any) {
+      console.error('Erreur suppression image:', err);
+      const message =
+        err?.response?.data?.message || "Impossible de supprimer l'image.";
+      setError(message);
+    } finally {
+      setUploadingImageId(null);
+    }
+  }
+
   return (
     <div className="sr-page">
       <div className="sr-page-header">
         <div>
           <h2 className="sr-page-title">Formules</h2>
           <p className="sr-page-subtitle">
-            Gère les noms et prix des formules affichées sur le site.
+            Gère les formules affichées sur le site et dans le tunnel de réservation.
           </p>
         </div>
-        <div className="sr-section-meta">
+        <div className="sr-section-meta" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           {formulas.length > 0 && (
             <span className="sr-chip">
               {formulas.length} formule{formulas.length > 1 ? 's' : ''}
             </span>
           )}
+          <button
+            className="button is-primary"
+            onClick={() => setShowCreateForm(!showCreateForm)}
+          >
+            <Plus size={16} style={{ marginRight: '6px' }} />
+            Nouvelle formule
+          </button>
         </div>
       </div>
 
       {error && <p className="sr-page-error">{error}</p>}
+
+      {/* Formulaire de création */}
+      {showCreateForm && (
+        <div className="sr-card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+          <h3 style={{ marginBottom: '1rem', color: 'var(--sr-color-heading)' }}>
+            Créer une nouvelle formule
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+            <div>
+              <label className="label is-small">Nom *</label>
+              <input
+                type="text"
+                className="input"
+                placeholder="Ex: Formule Premium"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                disabled={creating}
+              />
+            </div>
+            <div>
+              <label className="label is-small">Prix HT *</label>
+              <input
+                type="number"
+                className="input"
+                placeholder="Ex: 99"
+                value={newPrice}
+                onChange={(e) => setNewPrice(e.target.value)}
+                disabled={creating}
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div>
+              <label className="label is-small">Type de facturation</label>
+              <select
+                className="input"
+                value={newBillingType}
+                onChange={(e) => setNewBillingType(e.target.value as 'hourly' | 'subscription')}
+                disabled={creating}
+              >
+                <option value="hourly">À l'heure</option>
+                <option value="subscription">Forfait</option>
+              </select>
+            </div>
+            <div>
+              <label className="label is-small">Ordre d'affichage</label>
+              <input
+                type="number"
+                className="input"
+                placeholder="0"
+                value={newDisplayOrder}
+                onChange={(e) => setNewDisplayOrder(e.target.value)}
+                disabled={creating}
+                min="0"
+              />
+            </div>
+            <div>
+              <label className="label is-small">Hauteur min (px)</label>
+              <input
+                type="number"
+                className="input"
+                placeholder="420"
+                value={newMinHeight}
+                onChange={(e) => setNewMinHeight(e.target.value)}
+                disabled={creating}
+                min="200"
+              />
+            </div>
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '1.5rem' }}>
+                <input
+                  type="checkbox"
+                  checked={newRequiresPodcaster}
+                  onChange={(e) => setNewRequiresPodcaster(e.target.checked)}
+                  disabled={creating}
+                />
+                <span>Avec podcasteur</span>
+              </label>
+            </div>
+            <div style={{ gridColumn: 'span 2' }}>
+              <label className="label is-small">Description</label>
+              <textarea
+                className="textarea"
+                placeholder="Description de la formule..."
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                disabled={creating}
+                rows={2}
+              />
+            </div>
+            <div>
+              <ColorPicker
+                label="Couleur début"
+                value={newBorderStart}
+                onChange={setNewBorderStart}
+                disabled={creating}
+              />
+            </div>
+            <div>
+              <ColorPicker
+                label="Couleur fin"
+                value={newBorderEnd}
+                onChange={setNewBorderEnd}
+                disabled={creating}
+              />
+            </div>
+          </div>
+
+          {/* Aperçu des couleurs */}
+          <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--sr-color-text-muted)' }}>Aperçu :</span>
+            <div
+              style={{
+                width: '150px',
+                height: '40px',
+                borderRadius: '8px',
+                background: `linear-gradient(90deg, ${newBorderStart}, ${newBorderEnd})`,
+                border: '2px solid transparent',
+                boxShadow: `0 0 10px ${newBorderStart}`
+              }}
+            />
+          </div>
+
+          {/* Section Options */}
+          <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'var(--sr-color-surface-soft)', borderRadius: 'var(--sr-radius-md)' }}>
+            <h4 style={{ marginBottom: '1rem', color: 'var(--sr-color-heading)', fontSize: '0.95rem' }}>
+              Options de la formule
+            </h4>
+
+            {/* Liste des options ajoutées */}
+            {tempOptions.length > 0 && (
+              <div style={{ marginBottom: '1rem' }}>
+                {tempOptions.map((opt, index) => {
+                  const TempIcon = iconMap[opt.icon] || Circle;
+                  return (
+                    <div
+                      key={index}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        padding: '0.5rem',
+                        marginBottom: '0.5rem',
+                        background: 'var(--sr-color-surface)',
+                        borderRadius: 'var(--sr-radius-sm)',
+                        border: '1px solid var(--sr-color-border-subtle)'
+                      }}
+                    >
+                      <TempIcon size={16} />
+                      <span style={{ flex: 1 }}>{opt.content}</span>
+                      <button
+                        type="button"
+                        className="button is-small is-danger"
+                        onClick={() => removeTempOption(index)}
+                        disabled={creating}
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Formulaire d'ajout d'option */}
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <div>
+                <label className="label is-small" style={{ color: 'var(--sr-color-text-muted)' }}>Icône</label>
+                <IconPicker
+                  value={tempOptionIcon}
+                  onChange={setTempOptionIcon}
+                  disabled={creating}
+                />
+              </div>
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <label className="label is-small" style={{ color: 'var(--sr-color-text-muted)' }}>Contenu</label>
+                <input
+                  type="text"
+                  className="input is-small"
+                  placeholder="Ex: Accès au studio 1h"
+                  value={tempOptionContent}
+                  onChange={(e) => setTempOptionContent(e.target.value)}
+                  disabled={creating}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addTempOption();
+                    }
+                  }}
+                />
+              </div>
+              <button
+                type="button"
+                className="button is-primary is-small"
+                onClick={addTempOption}
+                disabled={creating || !tempOptionContent.trim()}
+              >
+                <Plus size={14} />
+                <span style={{ marginLeft: '4px' }}>Ajouter</span>
+              </button>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem' }}>
+            <button
+              className="button is-success"
+              onClick={handleCreate}
+              disabled={creating || !newName.trim() || !newPrice}
+            >
+              {creating ? 'Création...' : 'Créer la formule'}
+            </button>
+            <button
+              className="button"
+              onClick={() => {
+                setShowCreateForm(false);
+                setTempOptions([]);
+                setTempOptionIcon('Circle');
+                setTempOptionContent('');
+              }}
+              disabled={creating}
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="sr-page-body">
         <div className="sr-card">
           {loading && <p>Chargement des formules...</p>}
 
           {!loading && !error && formulas.length === 0 && (
-            <p>Aucune formule trouvée.</p>
+            <p>Aucune formule trouvée. Cliquez sur "Nouvelle formule" pour en créer une.</p>
           )}
 
           {!loading && formulas.length > 0 && (
             <table className="table is-fullwidth is-striped is-hoverable">
               <thead>
                 <tr>
-                  <th>Clé</th>
+                  <th style={{ width: '50px' }}>Ordre</th>
                   <th>Nom</th>
                   <th>Description</th>
-                  <th>Type</th>
                   <th>Prix HT</th>
                   <th>Podcasteur</th>
+                  <th>Couleurs</th>
+                  <th>Statut</th>
                   <th></th>
                 </tr>
               </thead>
@@ -714,121 +1209,293 @@ function AdminFormulasPage() {
 
                   return (
                     <Fragment key={f.id}>
-                      <tr>
+                      {/* Ligne principale - toujours en lecture seule */}
+                      <tr style={{ opacity: f.is_active === false ? 0.5 : 1 }}>
                         <td>
-                          <code>{getKeyLabel(f.key)}</code>
+                          <code>{f.display_order ?? 0}</code>
                         </td>
                         <td>
-                          {isEditing ? (
-                            <input
-                              type="text"
-                              className="input is-small"
-                              value={editName}
-                              onChange={(e) => setEditName(e.target.value)}
-                              disabled={saving}
-                            />
-                          ) : (
-                            f.name
-                          )}
+                          <div>
+                            <strong>{f.name}</strong>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--sr-color-text-muted)' }}>
+                              {f.key}
+                            </div>
+                          </div>
                         </td>
-                        <td style={{ maxWidth: '250px' }}>
-                          {isEditing ? (
-                            <textarea
-                              className="textarea is-small"
-                              value={editDescription}
-                              onChange={(e) => setEditDescription(e.target.value)}
-                              disabled={saving}
-                              rows={2}
-                              style={{ minWidth: '200px', resize: 'vertical' }}
-                              placeholder="Description de la formule..."
-                            />
-                          ) : (
-                            <span style={{ fontSize: '0.85rem', color: f.description ? 'inherit' : 'var(--sr-color-text-muted)' }}>
-                              {f.description || 'Non définie'}
-                            </span>
-                          )}
+                        <td style={{ maxWidth: '200px' }}>
+                          <span style={{ fontSize: '0.8rem', color: f.description ? 'inherit' : 'var(--sr-color-text-muted)' }}>
+                            {f.description ? (f.description.length > 50 ? f.description.substring(0, 50) + '...' : f.description) : '—'}
+                          </span>
                         </td>
-                        <td>{getBillingLabel(f)}</td>
+                        <td>{f.price_ttc.toFixed(2).replace('.', ',')}€</td>
                         <td>
-                          {isEditing ? (
-                            <input
-                              type="number"
-                              className="input is-small"
-                              value={editPrice}
-                              onChange={(e) => setEditPrice(e.target.value)}
-                              disabled={saving}
-                              min="0"
-                              step="0.01"
-                              style={{ width: '100px' }}
-                            />
-                          ) : (
-                            `${f.price_ttc.toFixed(2).replace('.', ',')}€`
-                          )}
+                          <span
+                            className={`sr-chip ${f.requires_podcaster ? 'is-info' : ''}`}
+                            style={{ fontSize: '0.75rem' }}
+                          >
+                            {f.requires_podcaster ? 'Oui' : 'Non'}
+                          </span>
                         </td>
                         <td>
-                          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                            <input
-                              type="checkbox"
-                              checked={f.requires_podcaster ?? true}
-                              onChange={() => handleToggleRequiresPodcaster(f)}
-                              disabled={isEditing}
-                            />
-                            <span style={{ fontSize: '0.85rem', color: 'var(--sr-color-text-muted)' }}>
-                              {f.requires_podcaster ?? true ? 'Requis' : 'Non requis'}
-                            </span>
-                          </label>
+                          <div
+                            style={{
+                              width: '60px',
+                              height: '24px',
+                              borderRadius: '4px',
+                              background: `linear-gradient(90deg, ${f.border_start || 'rgb(153, 221, 252)'}, ${f.border_end || 'rgb(196, 202, 0)'})`
+                            }}
+                            title={`${f.border_start} → ${f.border_end}`}
+                          />
                         </td>
                         <td>
-                          <div className="buttons are-small">
-                            {isEditing ? (
-                              <>
-                                <button
-                                  className="button is-success"
-                                  disabled={saving}
-                                  onClick={() => handleSave(f)}
-                                >
-                                  {saving ? '...' : 'Enregistrer'}
-                                </button>
-                                <button
-                                  className="button"
-                                  disabled={saving}
-                                  onClick={cancelEdit}
-                                >
-                                  Annuler
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                <button
-                                  className="button is-info"
-                                  onClick={() => startEdit(f)}
-                                >
-                                  <Edit size={14} />
-                                </button>
-                                <button
-                                  className="button"
-                                  onClick={() => toggleExpandFormula(f.id)}
-                                  title="Gérer les options"
-                                >
-                                  {isExpanded ? (
-                                    <ChevronUp size={14} />
-                                  ) : (
-                                    <ChevronDown size={14} />
-                                  )}
-                                  <span style={{ marginLeft: '4px' }}>
-                                    Options ({options.length})
-                                  </span>
-                                </button>
-                              </>
-                            )}
+                          <span
+                            className={`sr-chip ${f.is_active !== false ? 'is-success' : 'is-danger'}`}
+                            style={{ cursor: 'pointer', fontSize: '0.75rem' }}
+                            onClick={() => handleToggleActive(f)}
+                            title="Cliquer pour changer le statut"
+                          >
+                            {f.is_active !== false ? 'Actif' : 'Inactif'}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="buttons are-small" style={{ flexWrap: 'nowrap' }}>
+                            <button
+                              className={`button is-small ${isEditing ? 'is-warning' : 'is-info'}`}
+                              onClick={() => isEditing ? cancelEdit() : startEdit(f)}
+                              title={isEditing ? 'Fermer l\'édition' : 'Modifier'}
+                            >
+                              {isEditing ? <X size={14} /> : <Edit size={14} />}
+                            </button>
+                            <button
+                              className="button is-small"
+                              onClick={() => toggleExpandFormula(f.id)}
+                              title="Gérer les options"
+                            >
+                              {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                              <span style={{ marginLeft: '4px', fontSize: '0.75rem' }}>
+                                {options.length}
+                              </span>
+                            </button>
+                            <button
+                              className="button is-danger is-small"
+                              onClick={() => handleDelete(f)}
+                              title="Supprimer"
+                            >
+                              <Trash2 size={14} />
+                            </button>
                           </div>
                         </td>
                       </tr>
 
+                      {/* Panneau d'édition */}
+                      {isEditing && (
+                        <tr key={`${f.id}-edit`}>
+                          <td colSpan={8} style={{ background: 'var(--sr-color-surface)', borderRadius: 'var(--sr-radius-md)', padding: '1.5rem' }}>
+                            <h4 style={{ marginBottom: '1rem', color: 'var(--sr-color-heading)' }}>
+                              Modifier "{f.name}"
+                            </h4>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+                              <div>
+                                <label className="label is-small">Nom *</label>
+                                <input
+                                  type="text"
+                                  className="input"
+                                  value={editName}
+                                  onChange={(e) => setEditName(e.target.value)}
+                                  disabled={saving}
+                                />
+                              </div>
+                              <div>
+                                <label className="label is-small">Prix HT *</label>
+                                <input
+                                  type="number"
+                                  className="input"
+                                  value={editPrice}
+                                  onChange={(e) => setEditPrice(e.target.value)}
+                                  disabled={saving}
+                                  min="0"
+                                  step="0.01"
+                                />
+                              </div>
+                              <div>
+                                <label className="label is-small">Ordre d'affichage</label>
+                                <input
+                                  type="number"
+                                  className="input"
+                                  value={editDisplayOrder}
+                                  onChange={(e) => setEditDisplayOrder(e.target.value)}
+                                  disabled={saving}
+                                  min="0"
+                                />
+                              </div>
+                              <div>
+                                <label className="label is-small">Hauteur min (px)</label>
+                                <input
+                                  type="number"
+                                  className="input"
+                                  value={editMinHeight}
+                                  onChange={(e) => setEditMinHeight(e.target.value)}
+                                  disabled={saving}
+                                  min="200"
+                                />
+                              </div>
+                              <div style={{ gridColumn: 'span 2' }}>
+                                <label className="label is-small">Description</label>
+                                <textarea
+                                  className="textarea"
+                                  value={editDescription}
+                                  onChange={(e) => setEditDescription(e.target.value)}
+                                  disabled={saving}
+                                  rows={2}
+                                  placeholder="Description de la formule..."
+                                />
+                              </div>
+
+                              {/* Section Image */}
+                              <div style={{ gridColumn: 'span 2' }}>
+                                <label className="label is-small">Image de la formule</label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                                  {getImageUrl(f.image_url) && (
+                                    <div style={{ position: 'relative' }}>
+                                      <img
+                                        src={getImageUrl(f.image_url)!}
+                                        alt={f.name}
+                                        style={{
+                                          width: '120px',
+                                          height: '80px',
+                                          objectFit: 'cover',
+                                          borderRadius: 'var(--sr-radius-md)',
+                                          border: '2px solid var(--sr-color-border-subtle)'
+                                        }}
+                                      />
+                                      <button
+                                        type="button"
+                                        className="button is-danger is-small"
+                                        onClick={() => handleImageDelete(f.id)}
+                                        disabled={uploadingImageId === f.id}
+                                        style={{
+                                          position: 'absolute',
+                                          top: '-8px',
+                                          right: '-8px',
+                                          padding: '4px',
+                                          minWidth: 'unset',
+                                          borderRadius: '50%'
+                                        }}
+                                        title="Supprimer l'image"
+                                      >
+                                        <X size={12} />
+                                      </button>
+                                    </div>
+                                  )}
+                                  <div>
+                                    <input
+                                      type="file"
+                                      accept="image/jpeg,image/png,image/webp"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) handleImageUpload(f.id, file);
+                                        e.target.value = '';
+                                      }}
+                                      disabled={uploadingImageId === f.id}
+                                      style={{ display: 'none' }}
+                                      id={`image-upload-${f.id}`}
+                                    />
+                                    <label
+                                      htmlFor={`image-upload-${f.id}`}
+                                      className="button is-info is-small"
+                                      style={{ cursor: uploadingImageId === f.id ? 'wait' : 'pointer' }}
+                                    >
+                                      <Upload size={14} style={{ marginRight: '6px' }} />
+                                      {uploadingImageId === f.id
+                                        ? 'Upload...'
+                                        : f.image_url
+                                        ? 'Changer l\'image'
+                                        : 'Ajouter une image'}
+                                    </label>
+                                    <p style={{ fontSize: '0.75rem', color: 'var(--sr-color-text-muted)', marginTop: '4px' }}>
+                                      JPG, PNG ou WebP
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div>
+                                <ColorPicker
+                                  label="Couleur début"
+                                  value={editBorderStart}
+                                  onChange={setEditBorderStart}
+                                  disabled={saving}
+                                />
+                              </div>
+                              <div>
+                                <ColorPicker
+                                  label="Couleur fin"
+                                  value={editBorderEnd}
+                                  onChange={setEditBorderEnd}
+                                  disabled={saving}
+                                />
+                              </div>
+                              <div>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '1.5rem' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={editIsActive}
+                                    onChange={(e) => setEditIsActive(e.target.checked)}
+                                    disabled={saving}
+                                  />
+                                  <span>Formule active</span>
+                                </label>
+                              </div>
+                              <div>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '1.5rem' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={editRequiresPodcaster}
+                                    onChange={(e) => setEditRequiresPodcaster(e.target.checked)}
+                                    disabled={saving}
+                                  />
+                                  <span>Avec podcasteur</span>
+                                </label>
+                              </div>
+                            </div>
+                            {/* Aperçu des couleurs */}
+                            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                              <span style={{ fontSize: '0.85rem', color: 'var(--sr-color-text-muted)' }}>Aperçu :</span>
+                              <div
+                                style={{
+                                  width: '150px',
+                                  height: '40px',
+                                  borderRadius: '8px',
+                                  background: `linear-gradient(90deg, ${editBorderStart}, ${editBorderEnd})`,
+                                  border: '2px solid transparent',
+                                  boxShadow: `0 0 10px ${editBorderStart}`
+                                }}
+                              />
+                            </div>
+                            <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem' }}>
+                              <button
+                                className="button is-success"
+                                disabled={saving}
+                                onClick={() => handleSave(f)}
+                              >
+                                {saving ? 'Enregistrement...' : 'Enregistrer'}
+                              </button>
+                              <button
+                                className="button"
+                                disabled={saving}
+                                onClick={cancelEdit}
+                              >
+                                Annuler
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+
                       {/* Options de la formule */}
-                      {isExpanded && (
+                      {isExpanded && !isEditing && (
                         <tr key={`${f.id}-options`}>
-                          <td colSpan={6} style={{ background: 'var(--sr-color-surface)', borderRadius: 'var(--sr-radius-md)' }}>
+                          <td colSpan={8} style={{ background: 'var(--sr-color-surface)', borderRadius: 'var(--sr-radius-md)' }}>
                             <div style={{ padding: '1rem' }}>
                               <h4 style={{ marginBottom: '1rem', color: 'var(--sr-color-heading)' }}>
                                 Options de la formule "{f.name}"

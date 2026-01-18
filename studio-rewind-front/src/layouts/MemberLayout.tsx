@@ -38,6 +38,14 @@ function MemberLayout() {
         </div>
 
         <div className="member-header-right">
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="member-header-site-link"
+          >
+            Voir le site
+          </a>
           <button
             type="button"
             className="member-header-logout"
