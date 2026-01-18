@@ -28,8 +28,9 @@
     }
 
     .handwritten{
-        font-family: 'caveat';
-        font-size: 2rem;
+        font-family: 'Poppins', sans-serif;
+        font-style: italic;
+        font-size: 1.5rem;
         line-height: 1.5;
         width: 50%;
         text-align: center;
