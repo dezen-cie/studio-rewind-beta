@@ -17,6 +17,7 @@ export interface PublicFormula {
   billing_type: 'hourly' | 'subscription';
   price_ttc: number; // Contient le prix HT
   requires_podcaster: boolean; // Si true, nécessite de choisir un podcasteur
+  description?: string | null; // Description affichée sur le site
   options?: FormulaOption[];
 }
 
@@ -28,7 +29,7 @@ export async function getAdminFormulas(): Promise<PublicFormula[]> {
 
 export async function updateAdminFormula(
   id: string,
-  data: { name?: string; price_ttc?: number; requires_podcaster?: boolean }
+  data: { name?: string; price_ttc?: number; requires_podcaster?: boolean; description?: string | null }
 ): Promise<PublicFormula> {
   const res = await api.patch<PublicFormula>(`/admin/formulas/${id}`, data);
   return res.data;

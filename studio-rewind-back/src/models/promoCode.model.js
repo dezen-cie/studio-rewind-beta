@@ -43,7 +43,7 @@ PromoCode.init(
 
     expires_at: {
       type: DataTypes.DATE,
-      allowNull: false
+      allowNull: true // null = sans expiration
     }
   },
   {

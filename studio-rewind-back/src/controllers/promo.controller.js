@@ -1,11 +1,24 @@
 // src/controllers/promo.controller.js
-import { createPromoCode, validatePromoCode, markPromoCodeAsUsed, getPromoStats, getAllPromoCodes, deletePromoCode } from '../services/promo.service.js';
+import {
+  createPromoCode,
+  createManualPromoCode,
+  validatePromoCode,
+  markPromoCodeAsUsed,
+  getPromoStats,
+  getAllPromoCodes,
+  deletePromoCode,
+  getActivePopup,
+  getAllPopups,
+  createOrUpdatePopup,
+  deletePopup,
+  togglePopupActive
+} from '../services/promo.service.js';
 import { sendMail } from '../config/mailer.js';
 
 /**
  * Genere le template HTML de l'email promo
  */
-function getPromoEmailTemplate(code, discount) {
+function getPromoEmailTemplate(code, discount, validityText = 'Ce code est valable 30 jours et ne peut etre utilise qu\'une seule fois.') {
   return `
 <!DOCTYPE html>
 <html lang="fr">
@@ -49,7 +62,7 @@ function getPromoEmailTemplate(code, discount) {
               </div>
 
               <p style="margin: 0 0 20px; color: #555555; font-size: 14px; line-height: 1.6; text-align: center;">
-                Utilisez ce code lors de votre reservation pour beneficier de votre reduction. Ce code est valable 30 jours et ne peut etre utilise qu'une seule fois.
+                Utilisez ce code lors de votre reservation pour beneficier de votre reduction. ${validityText} Ce code ne peut etre utilise qu'une seule fois.
               </p>
 
               <!-- CTA Button -->
@@ -83,7 +96,7 @@ function getPromoEmailTemplate(code, discount) {
 
 /**
  * POST /api/promo/subscribe
- * Inscription pour recevoir un code promo
+ * Inscription pour recevoir un code promo (utilise la config popup si disponible)
  */
 export async function subscribe(req, res) {
   try {
@@ -99,16 +112,28 @@ export async function subscribe(req, res) {
       return res.status(400).json({ message: 'Email invalide.' });
     }
 
-    // Cree le code promo
-    const promoCode = await createPromoCode(email);
+    // Recuperer la popup active pour utiliser ses parametres
+    const activePopup = await getActivePopup();
+
+    const discount = activePopup?.discount || 15;
+    const prefix = activePopup?.code_prefix || 'BIENVENUE';
+    const validityDays = activePopup?.code_validity_days || 30;
+
+    // Cree le code promo avec les parametres de la popup
+    const promoCode = await createPromoCode(email, { discount, prefix, validityDays });
+
+    // Texte de validite
+    const validityText = validityDays
+      ? `Valable ${validityDays} jours.`
+      : 'Valable sans limite de temps.';
 
     // Envoie l'email avec le code
-    const htmlContent = getPromoEmailTemplate(promoCode.code, promoCode.discount);
+    const htmlContent = getPromoEmailTemplate(promoCode.code, promoCode.discount, validityText);
 
     await sendMail({
       to: email,
       subject: `Votre code promo -${promoCode.discount}% - Studio Rewind`,
-      text: `Bienvenue chez Studio Rewind ! Votre code promo est : ${promoCode.code}. Il vous donne droit a ${promoCode.discount}% de reduction sur votre premiere reservation. Valable 30 jours.`,
+      text: `Bienvenue chez Studio Rewind ! Votre code promo est : ${promoCode.code}. Il vous donne droit a ${promoCode.discount}% de reduction sur votre premiere reservation. ${validityText}`,
       html: htmlContent
     });
 
@@ -221,6 +246,150 @@ export async function adminDelete(req, res) {
     res.json({ success: true, message: 'Code promo supprime.' });
   } catch (error) {
     console.error('Erreur delete promo:', error);
+    res.status(error.status || 500).json({ message: error.message });
+  }
+}
+
+/**
+ * POST /api/promo/admin/create
+ * Cree un code promo manuel (admin)
+ */
+export async function adminCreatePromo(req, res) {
+  try {
+    const { code, discount, validityDays } = req.body;
+
+    if (!code) {
+      return res.status(400).json({ message: 'Le code promo est requis.' });
+    }
+
+    if (!discount || discount < 1 || discount > 100) {
+      return res.status(400).json({ message: 'Le pourcentage de reduction doit etre entre 1 et 100.' });
+    }
+
+    const promoCode = await createManualPromoCode({
+      code,
+      discount: parseInt(discount, 10),
+      validityDays: validityDays ? parseInt(validityDays, 10) : null
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Code promo cree avec succes.',
+      promoCode
+    });
+
+  } catch (error) {
+    console.error('Erreur create promo:', error);
+    res.status(error.status || 500).json({ message: error.message });
+  }
+}
+
+// ============================================================
+// POPUP CONTROLLERS
+// ============================================================
+
+/**
+ * GET /api/promo/popup/active
+ * Recupere la popup active (public)
+ */
+export async function getPopupActive(req, res) {
+  try {
+    const popup = await getActivePopup();
+    res.json(popup);
+  } catch (error) {
+    console.error('Erreur get active popup:', error);
+    res.status(500).json({ message: 'Erreur lors de la recuperation de la popup.' });
+  }
+}
+
+/**
+ * GET /api/promo/admin/popups
+ * Liste toutes les popups (admin)
+ */
+export async function adminListPopups(req, res) {
+  try {
+    const popups = await getAllPopups();
+    res.json(popups);
+  } catch (error) {
+    console.error('Erreur list popups:', error);
+    res.status(500).json({ message: 'Erreur lors de la recuperation des popups.' });
+  }
+}
+
+/**
+ * POST /api/promo/admin/popups
+ * Cree ou met a jour une popup (admin)
+ */
+export async function adminSavePopup(req, res) {
+  try {
+    const { id, title, subtitle, text, discount, code_prefix, code_validity_days, show_once, is_active } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ message: 'Le titre est requis.' });
+    }
+
+    if (!discount || discount < 1 || discount > 100) {
+      return res.status(400).json({ message: 'Le pourcentage de reduction doit etre entre 1 et 100.' });
+    }
+
+    const popup = await createOrUpdatePopup({
+      id,
+      title,
+      subtitle,
+      text,
+      discount: parseInt(discount, 10),
+      code_prefix: code_prefix || 'PROMO',
+      code_validity_days: code_validity_days ? parseInt(code_validity_days, 10) : null,
+      show_once: show_once !== false,
+      is_active: is_active === true
+    });
+
+    res.status(id ? 200 : 201).json({
+      success: true,
+      message: id ? 'Popup mise a jour.' : 'Popup creee avec succes.',
+      popup
+    });
+
+  } catch (error) {
+    console.error('Erreur save popup:', error);
+    res.status(error.status || 500).json({ message: error.message });
+  }
+}
+
+/**
+ * DELETE /api/promo/admin/popups/:id
+ * Supprime une popup (admin)
+ */
+export async function adminDeletePopup(req, res) {
+  try {
+    const { id } = req.params;
+    await deletePopup(id);
+    res.json({ success: true, message: 'Popup supprimee.' });
+  } catch (error) {
+    console.error('Erreur delete popup:', error);
+    res.status(error.status || 500).json({ message: error.message });
+  }
+}
+
+/**
+ * PATCH /api/promo/admin/popups/:id/toggle
+ * Active/desactive une popup (admin)
+ */
+export async function adminTogglePopup(req, res) {
+  try {
+    const { id } = req.params;
+    const { is_active } = req.body;
+
+    const popup = await togglePopupActive(id, is_active === true);
+
+    res.json({
+      success: true,
+      message: is_active ? 'Popup activee.' : 'Popup desactivee.',
+      popup
+    });
+
+  } catch (error) {
+    console.error('Erreur toggle popup:', error);
     res.status(error.status || 500).json({ message: error.message });
   }
 }

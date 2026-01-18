@@ -64,8 +64,23 @@ export async function getClientsActivity({ startDate, endDate } = {}) {
       const totalOriginalHT = reservations.reduce((sum, r) => sum + (r.original_price_ht || r.price_ht || 0), 0);
       const totalDiscount = totalOriginalHT - totalHT;
 
-      // Compter les promos utilisees
+      // Compter les promos utilisees et collecter les codes
       const promosUsed = reservations.filter(r => r.promo_code).length;
+      const promoCodes = [...new Set(reservations.filter(r => r.promo_code).map(r => r.promo_code))];
+
+      // Determiner le type de promo (Code manuel ou Popup)
+      let promoType = null;
+      if (promoCodes.length > 0) {
+        // Chercher les codes promo dans la base pour determiner leur type
+        const promoRecords = await PromoCode.findAll({
+          where: { code: promoCodes }
+        });
+
+        // Si au moins un code est manuel (email = manual@admin.local), type = Code
+        // Sinon type = Popup
+        const hasManualCode = promoRecords.some(p => p.email === 'manual@admin.local');
+        promoType = hasManualCode ? 'Code' : 'Popup';
+      }
 
       // Dates premiere et derniere reservation
       const firstReservation = reservations[0]?.start_date || null;
@@ -85,6 +100,8 @@ export async function getClientsActivity({ startDate, endDate } = {}) {
         total_ttc: Math.round(totalTTC * 100) / 100,
         total_discount: Math.round(totalDiscount * 100) / 100,
         promos_used: promosUsed,
+        promo_type: promoType,
+        promo_codes: promoCodes,
         first_reservation: firstReservation,
         last_reservation: lastReservation,
         created_at: user.createdAt

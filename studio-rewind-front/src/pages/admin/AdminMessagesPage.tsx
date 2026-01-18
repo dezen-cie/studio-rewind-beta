@@ -146,6 +146,11 @@ function AdminMessagesPage() {
       setSendingReply(true);
       setError(null);
       await replyToAdminMessage(selected.id, replySubject, replyText);
+
+      // Recharger le message pour afficher la réponse
+      const updatedMsg = await getAdminMessageById(selected.id);
+      setSelected(updatedMsg);
+
       setReplyText('');
       alert(`Réponse envoyée avec succès à ${selected.email}`);
     } catch (err: any) {
@@ -300,6 +305,42 @@ function AdminMessagesPage() {
                         {selected.content}
                       </div>
                     </div>
+
+                    {/* Affichage de la réponse si elle existe */}
+                    {selected.reply_content && (
+                      <div
+                        className="sr-card"
+                        style={{
+                          marginBottom: '0.8rem',
+                          backgroundColor: 'rgba(0, 0, 0, 0.3)'
+                        }}
+                      >
+                        <div className="is-flex is-justify-content-space-between is-align-items-center">
+                          <div>
+                            <p className="has-text-weight-semibold" style={{ color: '#ce1b1d' }}>
+                              Vous avez répondu :
+                            </p>
+                            <p className="is-size-7 has-text-grey-light">
+                              Sujet : {selected.reply_subject}
+                            </p>
+                            <p className="is-size-7 has-text-grey-light">
+                              Envoyé le : {selected.replied_at ? formatDate(selected.replied_at) : 'N/A'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div
+                          className="content"
+                          style={{
+                            marginTop: '0.9rem',
+                            whiteSpace: 'pre-wrap',
+                            fontSize: '0.9rem'
+                          }}
+                        >
+                          {selected.reply_content}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="sr-card">
                       <p

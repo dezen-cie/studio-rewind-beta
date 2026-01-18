@@ -10,6 +10,7 @@
     "seed:superadmin": "node src/seeders/createSuperAdmin.js",
     "seed:team": "node src/seeders/createTeam.js",
     "seed:formulas": "node src/seeders/createFormulas.js",
+    "seed:demo": "node src/seeders/createDemoData.js",
     "migrate:formula-enum": "node src/seeders/migrateFormulaEnum.js",
     "migrate:team-order": "node src/seeders/addTeamDisplayOrder.js",
     "db:reset": "node src/scripts/dbReset.js && npm run seed:superadmin && npm run seed:formulas && npm run seed:team",
@@ -33,7 +34,8 @@
     "pg": "^8.12.0",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.3",
-    "stripe": "^20.0.0"
+    "stripe": "^20.0.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"

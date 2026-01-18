@@ -66,6 +66,7 @@ export async function register(req, res) {
       company_name,
       vat_number,
       phone,
+      optin_commercial,
     } = req.body;
 
     if (!email || !password || !account_type || !phone) {
@@ -95,6 +96,7 @@ export async function register(req, res) {
       phone,
       role: 'client',
       is_active: true,
+      optin_commercial: optin_commercial || false,
     });
 
     return sendAuthResponse(res, user);

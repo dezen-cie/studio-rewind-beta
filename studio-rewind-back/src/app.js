@@ -28,6 +28,8 @@ import adminRevenueRoutes from './routes/admin.revenue.routes.js';
 import promoRoutes from './routes/promo.routes.js';
 import adminPromoRoutes from './routes/admin.promo.routes.js';
 import adminActivityRoutes from './routes/admin.activity.routes.js';
+import adminEmailingRoutes from './routes/admin.emailing.routes.js';
+import { unsubscribeController, trackOpenController, trackClickController, oneClickUnsubscribeController } from './controllers/emailing.controller.js';
 
 const app = express();
 
@@ -120,6 +122,19 @@ app.use('/api/admin/revenue', adminRevenueRoutes);
 app.use('/api/promo', promoRoutes);
 app.use('/api/admin/promo', adminPromoRoutes);
 app.use('/api/admin/activity', adminActivityRoutes);
+app.use('/api/admin/emailing', adminEmailingRoutes);
+
+// Route publique de desabonnement (pas d'auth requise)
+app.post('/api/emailing/unsubscribe', unsubscribeController);
+
+// Route one-click unsubscribe pour Gmail/clients email (RFC 8058)
+// Accepte POST (Gmail automatic) et GET (manual clicks)
+app.post('/api/emailing/unsubscribe/:token', oneClickUnsubscribeController);
+app.get('/api/emailing/unsubscribe/:token', oneClickUnsubscribeController);
+
+// Routes publiques de tracking email (pas d'auth requise)
+app.get('/api/emailing/track/open/:campaignId/:token', trackOpenController);
+app.get('/api/emailing/track/click/:campaignId/:token', trackClickController);
 
 // Route de santé
 app.get('/health', (req, res) => {

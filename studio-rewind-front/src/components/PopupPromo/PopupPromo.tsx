@@ -1,58 +1,83 @@
 // src/components/PopupPromo/PopupPromo.tsx
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { subscribePromo } from '../../api/promo';
+import { subscribePromo, getActivePopupConfig, type PopupConfig } from '../../api/promo';
 import './PopupPromo.css';
 
 const POPUP_STORAGE_KEY = 'sr_promo_popup_seen';
-const POPUP_EXPIRY_DAYS = 7;
 
 // En dev, ajouter ?popup=1 dans l'URL pour forcer l'affichage
 const DEV_MODE = import.meta.env.DEV;
 
 function PopupPromo() {
   const [isVisible, setIsVisible] = useState(false);
+  const [popupConfig, setPopupConfig] = useState<PopupConfig | null>(null);
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // En dev, ?popup=1 force l'affichage
-    const urlParams = new URLSearchParams(window.location.search);
-    const forcePopup = DEV_MODE && urlParams.get('popup') === '1';
+    // Charger la config de la popup active
+    async function loadPopupConfig() {
+      try {
+        const config = await getActivePopupConfig();
 
-    if (!forcePopup) {
-      // Verifie si le popup a deja ete affiche
-      const storedData = localStorage.getItem(POPUP_STORAGE_KEY);
-
-      if (storedData) {
-        const { timestamp } = JSON.parse(storedData);
-        const now = Date.now();
-        const expiryTime = POPUP_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
-
-        // Si moins de 7 jours, ne pas afficher
-        if (now - timestamp < expiryTime) {
+        // Si pas de popup active, ne rien afficher
+        if (!config) {
           return;
         }
+
+        setPopupConfig(config);
+
+        // En dev, ?popup=1 force l'affichage
+        const urlParams = new URLSearchParams(window.location.search);
+        const forcePopup = DEV_MODE && urlParams.get('popup') === '1';
+
+        if (!forcePopup) {
+          // Si show_once est desactive, on affiche toujours la popup
+          if (!config.show_once) {
+            // On affiche a chaque visite, pas de verification du localStorage
+          } else {
+            // show_once est active : verifier si deja vu
+            const storedData = localStorage.getItem(POPUP_STORAGE_KEY);
+
+            if (storedData) {
+              const { popupId } = JSON.parse(storedData);
+
+              // Si c'est la meme popup et show_once actif, ne pas reafficher
+              if (popupId === config.id) {
+                return;
+              }
+            }
+          }
+        }
+
+        // Affiche le popup apres un delai de 2 secondes (ou immediatement si force)
+        setTimeout(() => {
+          setIsVisible(true);
+        }, forcePopup ? 500 : 2000);
+
+      } catch (err) {
+        console.error('Erreur chargement popup config:', err);
+        // En cas d'erreur, on n'affiche pas la popup
       }
     }
 
-    // Affiche le popup apres un delai de 2 secondes (ou immediatement si force)
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, forcePopup ? 500 : 2000);
-
-    return () => clearTimeout(timer);
+    loadPopupConfig();
   }, []);
 
   function handleClose() {
     setIsVisible(false);
-    // Stocke le timestamp pour ne plus afficher pendant 7 jours
-    localStorage.setItem(
-      POPUP_STORAGE_KEY,
-      JSON.stringify({ timestamp: Date.now() })
-    );
+    // Stocke l'ID de la popup seulement si show_once est actif
+    if (popupConfig && popupConfig.show_once) {
+      localStorage.setItem(
+        POPUP_STORAGE_KEY,
+        JSON.stringify({
+          popupId: popupConfig.id
+        })
+      );
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -89,7 +114,13 @@ function PopupPromo() {
     }
   }
 
-  if (!isVisible) return null;
+  if (!isVisible || !popupConfig) return null;
+
+  // Valeurs par defaut si non definies
+  const title = popupConfig.title || 'Offre speciale';
+  const subtitle = popupConfig.subtitle;
+  const text = popupConfig.text;
+  const discount = popupConfig.discount || 15;
 
   return (
     <div className="popup-promo-overlay" onClick={handleClose}>
@@ -100,11 +131,23 @@ function PopupPromo() {
 
         {!success ? (
           <>
-            <div className="popup-promo-badge">Offre de lancement</div>
-            <h2 className="popup-promo-title">Bienvenue chez Studio Rewind</h2>
+            <div className="popup-promo-badge">{title}</div>
+            {subtitle && <h2 className="popup-promo-title">{subtitle}</h2>}
             <p className="popup-promo-text">
-              Pour votre premier podcast, beneficiez de <strong>-15%</strong> sur nos formules.
+              {text || (
+                <>
+                  Pour votre premier podcast, beneficiez de <strong>-{discount}%</strong> sur nos formules.
+                </>
+              )}
+              {!text && discount && (
+                <></>
+              )}
             </p>
+            {text && discount && (
+              <p className="popup-promo-discount">
+                <strong>{discount}%</strong> de reduction
+              </p>
+            )}
 
             <form className="popup-promo-form" onSubmit={handleSubmit}>
               <div className="popup-promo-field">

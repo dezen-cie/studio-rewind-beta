@@ -413,7 +413,7 @@ function Formules() {
                 <div key={f.id} className={cfg.cssClass}>
                   <h4 className="formule-badge">{f.name}</h4>
 
-                  <p className="formule-desc">{cfg.description}</p>
+                  <p className="formule-desc">{f.description || cfg.description}</p>
 
                   <p className="price">
                     {f.price_ttc}€ <span>{cfg.priceSuffix}</span>

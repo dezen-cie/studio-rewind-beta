@@ -37,6 +37,12 @@ Formula.init(
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true
+    },
+    description: {
+      // description affichée sur le site (ex: "Formule idéale pour débuter...")
+      type: DataTypes.TEXT,
+      allowNull: true,
+      defaultValue: null
     }
   },
   {

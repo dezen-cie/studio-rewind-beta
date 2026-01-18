@@ -207,6 +207,8 @@ function AdminActivityPage() {
                   <th className="text-right">CA TTC</th>
                   <th className="text-right">Réductions</th>
                   <th className="text-right">Promos</th>
+                  <th>Type Promo</th>
+                  <th>Code Promo</th>
                   <th>1ère Résa</th>
                   <th>Dernière Résa</th>
                 </tr>
@@ -214,7 +216,7 @@ function AdminActivityPage() {
               <tbody>
                 {clients.length === 0 && (
                   <tr>
-                    <td colSpan={13} className="text-center">Aucun client trouvé pour cette période.</td>
+                    <td colSpan={15} className="text-center">Aucun client trouvé pour cette période.</td>
                   </tr>
                 )}
                 {clients.map((c) => (
@@ -234,6 +236,8 @@ function AdminActivityPage() {
                     <td className="text-right font-bold">{formatCurrency(c.total_ttc)}</td>
                     <td className="text-right discount">{c.total_discount > 0 ? `-${formatCurrency(c.total_discount)}` : '-'}</td>
                     <td className="text-right">{c.promos_used || '-'}</td>
+                    <td>{c.promo_type || '-'}</td>
+                    <td>{c.promo_codes?.length > 0 ? c.promo_codes.join(', ') : '-'}</td>
                     <td>{formatDate(c.first_reservation)}</td>
                     <td>{formatDate(c.last_reservation)}</td>
                   </tr>
@@ -250,6 +254,8 @@ function AdminActivityPage() {
                     <td className="text-right"><strong>{formatCurrency(clientsTotals.total_ttc)}</strong></td>
                     <td className="text-right discount"><strong>{clientsTotals.total_discount > 0 ? `-${formatCurrency(clientsTotals.total_discount)}` : '-'}</strong></td>
                     <td className="text-right"><strong>{clientsTotals.total_promos}</strong></td>
+                    <td></td>
+                    <td></td>
                     <td colSpan={2}></td>
                   </tr>
                 </tfoot>

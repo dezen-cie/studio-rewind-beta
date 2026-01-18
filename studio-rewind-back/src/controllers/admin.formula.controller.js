@@ -21,12 +21,13 @@ export async function listFormulas(req, res) {
 export async function updateFormulaController(req, res) {
   try {
     const { id } = req.params;
-    const { name, price_ttc, requires_podcaster } = req.body;
+    const { name, price_ttc, requires_podcaster, description } = req.body;
 
     const payload = {};
     if (name !== undefined) payload.name = name;
     if (price_ttc !== undefined) payload.price_ttc = Number(price_ttc);
     if (requires_podcaster !== undefined) payload.requires_podcaster = Boolean(requires_podcaster);
+    if (description !== undefined) payload.description = description;
 
     const formula = await updateFormula(id, payload);
     return res.json(formula);

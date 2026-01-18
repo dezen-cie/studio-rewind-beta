@@ -16,6 +16,8 @@ export interface ClientActivity {
   total_ttc: number;
   total_discount: number;
   promos_used: number;
+  promo_type: 'Code' | 'Popup' | null;
+  promo_codes: string[];
   first_reservation: string | null;
   last_reservation: string | null;
   created_at: string;

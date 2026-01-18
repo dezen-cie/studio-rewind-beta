@@ -40,3 +40,26 @@ export async function applyPromoCode(code: string): Promise<PromoApplyResponse> 
   const { data } = await api.post<PromoApplyResponse>('/promo/apply', { code });
   return data;
 }
+
+/**
+ * Configuration de la popup active
+ */
+export interface PopupConfig {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  text: string | null;
+  discount: number;
+  code_prefix: string;
+  code_validity_days: number | null;
+  show_once: boolean;
+  is_active: boolean;
+}
+
+/**
+ * Recuperer la popup active (public)
+ */
+export async function getActivePopupConfig(): Promise<PopupConfig | null> {
+  const { data } = await api.get<PopupConfig | null>('/promo/popup/active');
+  return data;
+}

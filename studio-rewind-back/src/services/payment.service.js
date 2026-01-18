@@ -92,7 +92,7 @@ export async function createReservationPaymentIntent(
       throw err;
     }
 
-    if (promoCodeRecord.expires_at < new Date()) {
+    if (promoCodeRecord.expires_at && promoCodeRecord.expires_at < new Date()) {
       const err = new Error('Ce code promo a expire.');
       err.status = 400;
       throw err;

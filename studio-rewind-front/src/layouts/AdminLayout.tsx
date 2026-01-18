@@ -200,6 +200,17 @@ function AdminLayout() {
                   <span>Promo</span>
                 </NavLink>
               </li>
+              <li>
+                <NavLink
+                  to="/admin/emailing"
+                  className={({ isActive }) =>
+                    `sr-admin-navlink ${isActive ? 'is-active' : ''}`
+                  }
+                >
+                  <span className="sr-admin-navlink-icon">📧</span>
+                  <span>Emailing</span>
+                </NavLink>
+              </li>
             </ul>
 
             {user?.podcaster_id && (

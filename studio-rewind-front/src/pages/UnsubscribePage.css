@@ -1,0 +1,127 @@
+/* src/pages/UnsubscribePage.css */
+.unsubscribe-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 1rem;
+}
+
+.unsubscribe-card {
+  background: white;
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+}
+
+.unsubscribe-logo {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #ce1b1d 0%, #a01618 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 1.5rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.unsubscribe-card h1 {
+  font-size: 1.5rem;
+  color: #1a1a2e;
+  margin: 0 0 1.5rem;
+}
+
+.unsubscribe-text {
+  color: #666;
+  font-size: 1rem;
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+
+.unsubscribe-text.error {
+  color: #dc3545;
+}
+
+.unsubscribe-email {
+  font-weight: 600;
+  color: #1a1a2e;
+  background: #f8f9fa;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin: 0 0 1.5rem;
+}
+
+.unsubscribe-subtext {
+  color: #999;
+  font-size: 0.875rem;
+  margin: 0 0 1.5rem;
+}
+
+.unsubscribe-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: white;
+  margin: 0 auto 1.5rem;
+}
+
+.unsubscribe-icon.success {
+  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+}
+
+.unsubscribe-icon.error {
+  background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+}
+
+.unsubscribe-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.unsubscribe-btn {
+  display: inline-block;
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #1a1a2e;
+  color: white;
+}
+
+.unsubscribe-btn:hover {
+  background: #2a2a4e;
+}
+
+.unsubscribe-btn.confirm {
+  background: #dc3545;
+}
+
+.unsubscribe-btn.confirm:hover {
+  background: #b02a37;
+}
+
+.unsubscribe-btn.cancel {
+  background: transparent;
+  color: #666;
+  border: 1px solid #e0e0e0;
+}
+
+.unsubscribe-btn.cancel:hover {
+  background: #f8f9fa;
+}

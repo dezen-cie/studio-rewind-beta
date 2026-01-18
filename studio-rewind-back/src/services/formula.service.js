@@ -69,7 +69,7 @@ export async function deleteFormulaOption(optionId) {
   return { success: true };
 }
 
-export async function updateFormula(id, { name, price_ttc, requires_podcaster }) {
+export async function updateFormula(id, { name, price_ttc, requires_podcaster, description }) {
   const formula = await Formula.findByPk(id);
 
   if (!formula) {
@@ -93,6 +93,10 @@ export async function updateFormula(id, { name, price_ttc, requires_podcaster })
 
   if (typeof requires_podcaster === 'boolean') {
     formula.requires_podcaster = requires_podcaster;
+  }
+
+  if (typeof description === 'string') {
+    formula.description = description.trim() || null;
   }
 
   await formula.save();

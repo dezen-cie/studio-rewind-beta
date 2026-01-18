@@ -20,6 +20,7 @@ import AdminPodcastersPage from './pages/admin/AdminPodcastersPage';
 import AdminRevenuePage from './pages/admin/AdminRevenuePage';
 import AdminActivityPage from './pages/admin/AdminActivityPage';
 import AdminPromoPage from './pages/admin/AdminPromoPage';
+import AdminEmailingPage from './pages/admin/AdminEmailingPage';
 
 import PodcasterCalendarPage from './pages/podcaster/PodcasterCalendarPage';
 import PodcasterPasswordPage from './pages/podcaster/PodcasterPasswordPage';
@@ -35,6 +36,7 @@ import PolitiqueConfidentialite from './pages/PolitiqueConfidentialite';
 import NotFound from './pages/NotFound';
 import AdminArchivesPage from './pages/admin/AdminArchivesPage';
 import BecomePodcaster from './pages/BecomePodcaster';
+import UnsubscribePage from './pages/UnsubscribePage';
 
 type PrivateRouteProps = {
   children: JSX.Element;
@@ -109,9 +111,10 @@ function App() {
         <Route path="/politique-de-confidentialite" element={<PolitiqueConfidentialite />} />
       </Route>
 
-      {/* 🔓 Page de login SANS layout */}
+      {/* 🔓 Pages SANS layout */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/reservation" element={<ReservationPage />} />
+      <Route path="/unsubscribe" element={<UnsubscribePage />} />
 
       {/* Layout membre */}
       <Route
@@ -145,6 +148,7 @@ function App() {
         <Route path="revenue" element={<AdminRevenuePage />} />
         <Route path="activity" element={<AdminActivityPage />} />
         <Route path="promo" element={<AdminPromoPage />} />
+        <Route path="emailing" element={<AdminEmailingPage />} />
         {/* Routes pour admin qui est aussi podcaster */}
         <Route path="mon-calendrier" element={<PodcasterCalendarPage />} />
         <Route path="mes-disponibilites" element={<PodcasterBlockedSlotsPage />} />

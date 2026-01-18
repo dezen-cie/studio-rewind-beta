@@ -33,7 +33,7 @@ if (hasSmtpConfig) {
   );
 }
 
-export async function sendMail({ to, subject, text, html }) {
+export async function sendMail({ to, subject, text, html, headers = {} }) {
   const from =
     process.env.SMTP_FROM || 'no-reply@studio-rewind.local';
 
@@ -43,7 +43,8 @@ export async function sendMail({ to, subject, text, html }) {
       to,
       subject,
       text,
-      html
+      html,
+      headers
     });
 
     // Log simple en mode SMTP réel, détaillé uniquement en mode JSON (sans SMTP)

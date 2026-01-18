@@ -21,6 +21,10 @@ export interface AdminMessage {
   createdAt?: string;
   created_at?: string;
   User?: AdminMessageUser;
+  // Champs de réponse
+  reply_subject?: string | null;
+  reply_content?: string | null;
+  replied_at?: string | null;
 }
 
 export async function getAdminMessages(): Promise<AdminMessage[]> {

@@ -172,11 +172,17 @@ export async function replyToMessageAdmin(id, { subject, text }) {
     html
   });
 
-  // On peut marquer le message comme "read"
+  // Sauvegarder la réponse dans le message
+  message.reply_subject = replySubject;
+  message.reply_content = text;
+  message.replied_at = new Date();
+
+  // Marquer comme lu si nouveau
   if (message.status === 'new') {
     message.status = 'read';
-    await message.save();
   }
+
+  await message.save();
 
   return { success: true };
 }

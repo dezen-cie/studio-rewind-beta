@@ -400,6 +400,7 @@ function AdminFormulasPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editPrice, setEditPrice] = useState('');
+  const [editDescription, setEditDescription] = useState('');
   const [saving, setSaving] = useState(false);
 
   // Gestion des options
@@ -455,12 +456,14 @@ function AdminFormulasPage() {
     setEditingId(f.id);
     setEditName(f.name);
     setEditPrice(String(f.price_ttc));
+    setEditDescription(f.description || '');
   }
 
   function cancelEdit() {
     setEditingId(null);
     setEditName('');
     setEditPrice('');
+    setEditDescription('');
   }
 
   async function handleSave(f: PublicFormula) {
@@ -481,7 +484,8 @@ function AdminFormulasPage() {
       setError(null);
       const updated = await updateAdminFormula(f.id, {
         name: newName,
-        price_ttc: newPrice
+        price_ttc: newPrice,
+        description: editDescription.trim() || null
       });
       setFormulas((prev) =>
         prev
@@ -692,6 +696,7 @@ function AdminFormulasPage() {
                 <tr>
                   <th>Clé</th>
                   <th>Nom</th>
+                  <th>Description</th>
                   <th>Type</th>
                   <th>Prix HT</th>
                   <th>Podcasteur</th>
@@ -724,6 +729,23 @@ function AdminFormulasPage() {
                             />
                           ) : (
                             f.name
+                          )}
+                        </td>
+                        <td style={{ maxWidth: '250px' }}>
+                          {isEditing ? (
+                            <textarea
+                              className="textarea is-small"
+                              value={editDescription}
+                              onChange={(e) => setEditDescription(e.target.value)}
+                              disabled={saving}
+                              rows={2}
+                              style={{ minWidth: '200px', resize: 'vertical' }}
+                              placeholder="Description de la formule..."
+                            />
+                          ) : (
+                            <span style={{ fontSize: '0.85rem', color: f.description ? 'inherit' : 'var(--sr-color-text-muted)' }}>
+                              {f.description || 'Non définie'}
+                            </span>
                           )}
                         </td>
                         <td>{getBillingLabel(f)}</td>

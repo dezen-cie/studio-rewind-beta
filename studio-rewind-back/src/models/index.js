@@ -11,6 +11,8 @@ import BlockedSlot from './blockedSlot.model.js';
 import Podcaster from './podcaster.model.js';
 import PodcasterBlockedSlot from './podcasterBlockedSlot.model.js';
 import PromoCode from './promoCode.model.js';
+import PopupConfig from './popupConfig.model.js';
+import EmailCampaign from './emailCampaign.model.js';
 
 // ====== Modèle Message ======
 class Message extends Model {}
@@ -47,6 +49,22 @@ Message.init(
     status: {
       type: DataTypes.ENUM('new', 'read', 'archived'),
       defaultValue: 'new'
+    },
+
+    // Champs pour stocker la réponse
+    reply_subject: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+
+    reply_content: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+
+    replied_at: {
+      type: DataTypes.DATE,
+      allowNull: true
     }
   },
   {
@@ -103,5 +121,7 @@ export {
   BlockedSlot,
   Podcaster,
   PodcasterBlockedSlot,
-  PromoCode
+  PromoCode,
+  PopupConfig,
+  EmailCampaign
 };

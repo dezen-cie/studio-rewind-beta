@@ -264,7 +264,8 @@ const StepThreeSummary: React.FC<StepThreeSummaryProps> = ({
         email: regEmail,
         password: regPassword,
         account_type: accountType,
-        phone
+        phone,
+        optin_commercial: acceptMarketing
       };
 
       if (accountType === 'particulier') {

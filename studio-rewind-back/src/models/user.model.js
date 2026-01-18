@@ -51,6 +51,12 @@ User.init(
     is_active: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
+    },
+
+    // Consentement pour recevoir des offres commerciales
+    optin_commercial: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     }
   },
   {

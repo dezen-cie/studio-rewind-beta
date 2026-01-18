@@ -202,3 +202,163 @@
   background: rgba(255, 255, 255, 0.03);
   border-radius: 8px;
 }
+
+/* ============================================================
+   SECTION CREATION (2 colonnes)
+   ============================================================ */
+
+.promo-creation-section {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .promo-creation-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+.promo-form-card {
+  padding: 1.5rem;
+}
+
+.promo-form-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.25rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color, #fff);
+}
+
+.promo-form-subtitle {
+  margin: 0 0 1.25rem 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.promo-form-card .field {
+  margin-bottom: 1rem;
+}
+
+.promo-form-card .label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.4rem;
+}
+
+.promo-form-card .help {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.25rem;
+}
+
+.promo-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+}
+
+.promo-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* ============================================================
+   LISTE DES POPUPS
+   ============================================================ */
+
+.promo-popups-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.promo-popup-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.promo-popup-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.promo-popup-item--active {
+  background: rgba(100, 108, 255, 0.1);
+  border-color: rgba(100, 108, 255, 0.3);
+}
+
+.promo-popup-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.promo-popup-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.promo-popup-header strong {
+  color: var(--text-color, #fff);
+  font-size: 0.95rem;
+}
+
+.promo-popup-subtitle {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.promo-popup-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.promo-popup-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.promo-popup-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.promo-popup-actions .button {
+  padding: 0.4rem 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .promo-popup-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .promo-popup-actions {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 0.75rem;
+  }
+}
