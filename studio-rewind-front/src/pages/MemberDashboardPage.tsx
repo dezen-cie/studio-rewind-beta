@@ -4,13 +4,14 @@ import {
   type MemberReservation,
   getMemberReservations
 } from '../api/memberReservations';
+import { downloadInvoice } from '../api/invoices';
 
 import api from '../api/client';
 import './MemberDashboardPage.css';
 import PasswordCard from '../components/PasswordCard';
 import Contact from '../components/Contact';
 import { getPublicPodcasters, getPodcasterBlockedSlotsForDate, type Podcaster, type PodcasterBlockedSlotPublic } from '../api/podcasters';
-import { getBlockedSlotsForDate, getDefaultBlockedHours, getUnblocksForDate, type BlockedSlot, type DefaultBlockedRange } from '../api/blockedSlots';
+import { getBlockedSlotsForDate, getDefaultBlockedHours, getUnblocksForDate, getStudioSettingsPublic, type BlockedSlot, type DefaultBlockedRange, type StudioSettings } from '../api/blockedSlots';
 import { User } from 'lucide-react';
 
 type MemberReservationStatus = MemberReservation['status'];
@@ -225,7 +226,9 @@ function MemberDashboardPage() {
   const [podcasterBlockedSlots, setPodcasterBlockedSlots] = useState<PodcasterBlockedSlotPublic[]>([]);
   const [adminBlockedSlots, setAdminBlockedSlots] = useState<BlockedSlot[]>([]);
   const [defaultBlockedRanges, setDefaultBlockedRanges] = useState<DefaultBlockedRange[]>([]);
+  const [studioSettings, setStudioSettings] = useState<StudioSettings | null>(null);
   const [unblocks, setUnblocks] = useState<BlockedSlot[]>([]);
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -266,16 +269,18 @@ function MemberDashboardPage() {
     load();
     loadSubscription();
 
-    // Charger les podcasteurs et heures bloquées par défaut
+    // Charger les podcasteurs, heures bloquées par défaut et paramètres du studio
     async function loadPodcastersAndDefaults() {
       try {
         setLoadingPodcasters(true);
-        const [podcastersData, defaultHours] = await Promise.all([
+        const [podcastersData, defaultHours, settings] = await Promise.all([
           getPublicPodcasters(),
-          getDefaultBlockedHours()
+          getDefaultBlockedHours(),
+          getStudioSettingsPublic()
         ]);
         setPodcasters(podcastersData);
         setDefaultBlockedRanges(defaultHours);
+        setStudioSettings(settings);
       } catch (err) {
         console.error('Erreur chargement podcasteurs:', err);
       } finally {
@@ -636,9 +641,21 @@ function MemberDashboardPage() {
 
   // ====== HEURES DISPONIBLES À AFFICHER (incluant les déblocages exceptionnels) ======
   const availableHours = useMemo(() => {
-    // Heures normales d'ouverture (9h-18h)
+    // Heures normales d'ouverture basées sur les paramètres du studio
     const normalHours = new Set<number>();
-    for (let h = 9; h <= 18; h++) {
+
+    // Récupérer les heures d'ouverture et de fermeture
+    let openingHour = 9;
+    let closingHour = 18;
+
+    if (studioSettings) {
+      const openTime = studioSettings.opening_time || '09:00';
+      const closeTime = studioSettings.closing_time || '18:00';
+      openingHour = parseInt(openTime.split(':')[0], 10);
+      closingHour = parseInt(closeTime.split(':')[0], 10);
+    }
+
+    for (let h = openingHour; h <= closingHour; h++) {
       normalHours.add(h);
     }
 
@@ -659,7 +676,7 @@ function MemberDashboardPage() {
     return Array.from(normalHours)
       .sort((a, b) => a - b)
       .map(h => `${h.toString().padStart(2, '0')}:00`);
-  }, [unblocks]);
+  }, [unblocks, studioSettings]);
 
   // durée sélectionnée pour le pack
   let aboSelectedHours: number | null = null;
@@ -677,7 +694,17 @@ function MemberDashboardPage() {
     return d.toISOString();
   }
 
- 
+  async function handleDownloadInvoice(reservationId: string) {
+    try {
+      setDownloadingInvoiceId(reservationId);
+      await downloadInvoice(reservationId);
+    } catch (err: any) {
+      console.error('Erreur téléchargement facture:', err);
+      alert(err?.response?.data?.message || 'Impossible de télécharger la facture.');
+    } finally {
+      setDownloadingInvoiceId(null);
+    }
+  }
 
   // ====== ACTION : CRÉER RÉSERVATION VIA PACK ======
   async function handleCreateSubscriptionReservation() {
@@ -1109,6 +1136,16 @@ function MemberDashboardPage() {
                               Finaliser le paiement →
                             </Link>
                           )}
+                          {r.status === 'confirmed' && (
+                            <button
+                              type="button"
+                              className="member-reservation-invoice-btn"
+                              onClick={() => handleDownloadInvoice(r.id)}
+                              disabled={downloadingInvoiceId === r.id}
+                            >
+                              {downloadingInvoiceId === r.id ? 'Téléchargement...' : '📄 Télécharger la facture'}
+                            </button>
+                          )}
                         </li>
                       ))}
                     </ul>
@@ -1162,12 +1199,22 @@ function MemberDashboardPage() {
                           Finaliser le paiement →
                         </Link>
                       )}
+                      {r.status === 'confirmed' && (
+                        <button
+                          type="button"
+                          className="member-reservation-invoice-btn"
+                          onClick={() => handleDownloadInvoice(r.id)}
+                          disabled={downloadingInvoiceId === r.id}
+                        >
+                          {downloadingInvoiceId === r.id ? 'Téléchargement...' : '📄 Télécharger la facture'}
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ul>
               )}
             </section>
-        
+
           </div>
           <div className="card-more">
             <PasswordCard />

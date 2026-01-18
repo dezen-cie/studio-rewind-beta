@@ -1,12 +1,15 @@
 // src/pages/admin/AdminBlockedSlotsPage.tsx
-import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, Calendar, Trash2, Plus, X } from 'lucide-react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, Calendar, Trash2, Plus, X, Clock, Save } from 'lucide-react';
 import {
   type BlockedSlot,
+  type StudioSettings,
   getAdminBlockedSlotsForMonth,
   getAdminBlockedSlotsForDate,
   createAdminBlockedSlot,
   deleteAdminBlockedSlot,
+  getAdminStudioSettings,
+  updateAdminStudioSettings,
 } from '../../api/blockedSlots';
 import './AdminBlockedSlotsPage.css';
 
@@ -53,20 +56,51 @@ function toDateKey(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-// Heures disponibles pour blocages (9h-18h)
-const BLOCK_HOURS: string[] = [];
-for (let h = 9; h <= 18; h++) {
-  BLOCK_HOURS.push(`${h.toString().padStart(2, '0')}:00`);
+// Fonction pour générer les heures de blocage selon les horaires d'ouverture
+function generateBlockHours(openingTime: string, closingTime: string): string[] {
+  const openingHour = parseInt(openingTime.split(':')[0], 10);
+  const closingHour = parseInt(closingTime.split(':')[0], 10);
+  const hours: string[] = [];
+  for (let h = openingHour; h <= closingHour; h++) {
+    hours.push(`${h.toString().padStart(2, '0')}:00`);
+  }
+  return hours;
 }
 
-// Heures hors horaires (0-9h et 18-24h) pour les déblocages
-const UNBLOCK_HOURS: string[] = [];
-for (let h = 0; h <= 9; h++) {
-  UNBLOCK_HOURS.push(`${h.toString().padStart(2, '0')}:00`);
+// Fonction pour générer les heures hors horaires pour les déblocages
+function generateUnblockHours(openingTime: string, closingTime: string): string[] {
+  const openingHour = parseInt(openingTime.split(':')[0], 10);
+  const closingHour = parseInt(closingTime.split(':')[0], 10);
+  const hours: string[] = [];
+  // Avant l'ouverture (0h jusqu'à l'heure d'ouverture)
+  for (let h = 0; h <= openingHour; h++) {
+    hours.push(`${h.toString().padStart(2, '0')}:00`);
+  }
+  // Après la fermeture (heure de fermeture jusqu'à 23h)
+  for (let h = closingHour; h <= 23; h++) {
+    hours.push(`${h.toString().padStart(2, '0')}:00`);
+  }
+  return hours;
 }
-for (let h = 18; h <= 23; h++) {
-  UNBLOCK_HOURS.push(`${h.toString().padStart(2, '0')}:00`);
+
+// Toutes les heures en tranches de 30 minutes pour les horaires d'ouverture
+const ALL_HOURS_30MIN: string[] = [];
+for (let h = 0; h < 24; h++) {
+  ALL_HOURS_30MIN.push(`${h.toString().padStart(2, '0')}:00`);
+  ALL_HOURS_30MIN.push(`${h.toString().padStart(2, '0')}:30`);
 }
+ALL_HOURS_30MIN.push('24:00'); // Minuit fin de journée
+
+// Labels des jours de la semaine (1=Lundi ... 7=Dimanche)
+const DAYS_OF_WEEK = [
+  { value: 1, label: 'Lundi' },
+  { value: 2, label: 'Mardi' },
+  { value: 3, label: 'Mercredi' },
+  { value: 4, label: 'Jeudi' },
+  { value: 5, label: 'Vendredi' },
+  { value: 6, label: 'Samedi' },
+  { value: 7, label: 'Dimanche' },
+];
 
 function AdminBlockedSlotsPage() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
@@ -94,9 +128,89 @@ function AdminBlockedSlotsPage() {
 
   const [error, setError] = useState<string | null>(null);
 
+  // État pour les paramètres du studio
+  const [settings, setSettings] = useState<StudioSettings | null>(null);
+  const [loadingSettings, setLoadingSettings] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [settingsOpeningTime, setSettingsOpeningTime] = useState('09:00');
+  const [settingsClosingTime, setSettingsClosingTime] = useState('18:00');
+  const [settingsOpenDays, setSettingsOpenDays] = useState<number[]>([1, 2, 3, 4, 5]);
+  const [settingsSuccess, setSettingsSuccess] = useState(false);
+
+  // Heures dynamiques basées sur les horaires d'ouverture
+  const blockHours = useMemo(() => {
+    return generateBlockHours(settingsOpeningTime, settingsClosingTime);
+  }, [settingsOpeningTime, settingsClosingTime]);
+
+  const unblockHours = useMemo(() => {
+    return generateUnblockHours(settingsOpeningTime, settingsClosingTime);
+  }, [settingsOpeningTime, settingsClosingTime]);
+
+  // Labels formatés pour les heures d'ouverture
+  const openingHourLabel = useMemo(() => {
+    const hour = parseInt(settingsOpeningTime.split(':')[0], 10);
+    return `${hour}h`;
+  }, [settingsOpeningTime]);
+
+  const closingHourLabel = useMemo(() => {
+    const hour = parseInt(settingsClosingTime.split(':')[0], 10);
+    return `${hour}h`;
+  }, [settingsClosingTime]);
+
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const weeks = getDaysMatrix(year, month);
+
+  // Charger les paramètres du studio
+  async function loadSettings() {
+    try {
+      setLoadingSettings(true);
+      const data = await getAdminStudioSettings();
+      setSettings(data);
+      const openingTime = data.opening_time?.substring(0, 5) || '09:00';
+      const closingTime = data.closing_time?.substring(0, 5) || '18:00';
+      setSettingsOpeningTime(openingTime);
+      setSettingsClosingTime(closingTime);
+      setSettingsOpenDays(data.open_days || [1, 2, 3, 4, 5]);
+      // Mettre à jour les valeurs par défaut du modal
+      setStartTime(openingTime);
+      setEndTime(closingTime);
+    } catch (err: any) {
+      console.error('Erreur chargement paramètres:', err);
+    } finally {
+      setLoadingSettings(false);
+    }
+  }
+
+  // Sauvegarder les paramètres du studio
+  async function handleSaveSettings() {
+    try {
+      setSavingSettings(true);
+      setError(null);
+      setSettingsSuccess(false);
+      await updateAdminStudioSettings({
+        opening_time: settingsOpeningTime,
+        closing_time: settingsClosingTime,
+        open_days: settingsOpenDays
+      });
+      setSettingsSuccess(true);
+      setTimeout(() => setSettingsSuccess(false), 3000);
+    } catch (err: any) {
+      console.error('Erreur sauvegarde paramètres:', err);
+      setError(err?.response?.data?.message || 'Impossible de sauvegarder les paramètres.');
+    } finally {
+      setSavingSettings(false);
+    }
+  }
+
+  // Toggle un jour d'ouverture
+  function toggleOpenDay(day: number) {
+    setSettingsOpenDays(prev =>
+      prev.includes(day)
+        ? prev.filter(d => d !== day)
+        : [...prev, day].sort()
+    );
+  }
 
   // Charger les blocages du mois
   async function loadMonthBlockedSlots() {
@@ -127,6 +241,10 @@ function AdminBlockedSlotsPage() {
       setLoadingDay(false);
     }
   }
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
 
   useEffect(() => {
     loadMonthBlockedSlots();
@@ -298,8 +416,8 @@ function AdminBlockedSlotsPage() {
       // Reset le modal
       setShowModal(false);
       setBlockType('fullday');
-      setStartTime('09:00');
-      setEndTime('18:00');
+      setStartTime(settingsOpeningTime);
+      setEndTime(settingsClosingTime);
       setReason('');
       setMultiDayStart(null);
       setMultiDayEnd(null);
@@ -357,6 +475,93 @@ function AdminBlockedSlotsPage() {
       {error && <p className="sr-page-error">{error}</p>}
 
       <div className="sr-page-body">
+        {/* SECTION HORAIRES D'OUVERTURE */}
+        <div className="sr-card opening-hours-section">
+          <div className="opening-hours-header">
+            <div className="opening-hours-title">
+              <Clock size={18} />
+              <span>Horaires d'ouverture</span>
+            </div>
+          </div>
+
+          {loadingSettings ? (
+            <p className="blocked-loading">Chargement des paramètres...</p>
+          ) : (
+            <div className="opening-hours-content">
+              <div className="opening-hours-times">
+                <div className="field">
+                  <label className="label">Heure d'ouverture</label>
+                  <div className="control">
+                    <div className="select">
+                      <select
+                        value={settingsOpeningTime}
+                        onChange={(e) => setSettingsOpeningTime(e.target.value)}
+                      >
+                        {ALL_HOURS_30MIN.filter(h => h !== '24:00').map((h) => (
+                          <option key={h} value={h}>{h}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="field">
+                  <label className="label">Heure de fermeture</label>
+                  <div className="control">
+                    <div className="select">
+                      <select
+                        value={settingsClosingTime}
+                        onChange={(e) => setSettingsClosingTime(e.target.value)}
+                      >
+                        {ALL_HOURS_30MIN.map((h) => (
+                          <option key={h} value={h}>{h === '24:00' ? '00:00 (minuit)' : h}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="opening-hours-days">
+                <label className="label">Jours d'ouverture</label>
+                <div className="days-checkboxes">
+                  {DAYS_OF_WEEK.map((day) => (
+                    <label key={day.value} className="day-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={settingsOpenDays.includes(day.value)}
+                        onChange={() => toggleOpenDay(day.value)}
+                      />
+                      <span>{day.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="opening-hours-actions">
+                <button
+                  type="button"
+                  className="button is-primary"
+                  onClick={handleSaveSettings}
+                  disabled={savingSettings}
+                >
+                  <Save size={16} />
+                  <span>{savingSettings ? 'Enregistrement...' : 'Enregistrer'}</span>
+                </button>
+                {settingsSuccess && (
+                  <span className="settings-success">Paramètres enregistrés !</span>
+                )}
+              </div>
+
+              <p className="opening-hours-info">
+                Les créneaux en dehors de ces horaires seront automatiquement bloqués pour les réservations.
+                Les jours non cochés seront également indisponibles.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* SECTION GESTION DES CRÉNEAUX BLOQUÉS */}
         <div className="blocked-slots-layout">
           {/* CALENDRIER */}
           <div className="sr-card blocked-calendar-card">
@@ -432,7 +637,7 @@ function AdminBlockedSlotsPage() {
               </div>
             </div>
             <p className="blocked-info-text">
-              Par défaut, le studio est ouvert de 9h à 18h. Les créneaux hors de ces horaires sont automatiquement bloqués.
+              Par défaut, le studio est ouvert de {settingsOpeningTime} à {settingsClosingTime}. Les créneaux hors de ces horaires sont automatiquement bloqués.
             </p>
           </div>
 
@@ -542,7 +747,7 @@ function AdminBlockedSlotsPage() {
                       checked={blockType === 'hours'}
                       onChange={() => setBlockType('hours')}
                     />
-                    <span>Bloquer un créneau (9h-18h)</span>
+                    <span>Bloquer un créneau ({openingHourLabel}-{closingHourLabel})</span>
                   </label>
                   <label className="radio">
                     <input
@@ -560,7 +765,7 @@ function AdminBlockedSlotsPage() {
                       checked={blockType === 'unblock'}
                       onChange={() => setBlockType('unblock')}
                     />
-                    <span>Ouvrir un créneau hors horaires (0h-9h ou 18h-24h)</span>
+                    <span>Ouvrir un créneau hors horaires (0h-{openingHourLabel} ou {closingHourLabel}-24h)</span>
                   </label>
                 </div>
               </div>
@@ -572,7 +777,7 @@ function AdminBlockedSlotsPage() {
                     <div className="control">
                       <div className="select">
                         <select value={startTime} onChange={(e) => setStartTime(e.target.value)}>
-                          {BLOCK_HOURS.map((h) => (
+                          {blockHours.map((h) => (
                             <option key={h} value={h}>
                               {h}
                             </option>
@@ -587,7 +792,7 @@ function AdminBlockedSlotsPage() {
                     <div className="control">
                       <div className="select">
                         <select value={endTime} onChange={(e) => setEndTime(e.target.value)}>
-                          {BLOCK_HOURS.map((h) => (
+                          {blockHours.map((h) => (
                             <option key={h} value={h}>
                               {h}
                             </option>
@@ -602,14 +807,14 @@ function AdminBlockedSlotsPage() {
               {blockType === 'unblock' && (
                 <div className="blocked-time-inputs">
                   <p className="blocked-unblock-info">
-                    Ouvrez un créneau en dehors des horaires d'ouverture habituels (9h-18h).
+                    Ouvrez un créneau en dehors des horaires d'ouverture habituels ({openingHourLabel}-{closingHourLabel}).
                   </p>
                   <div className="field">
                     <label className="label">Heure de début</label>
                     <div className="control">
                       <div className="select">
                         <select value={unblockStartTime} onChange={(e) => setUnblockStartTime(e.target.value)}>
-                          {UNBLOCK_HOURS.map((h) => (
+                          {unblockHours.map((h) => (
                             <option key={h} value={h}>
                               {h}
                             </option>
@@ -624,7 +829,7 @@ function AdminBlockedSlotsPage() {
                     <div className="control">
                       <div className="select">
                         <select value={unblockEndTime} onChange={(e) => setUnblockEndTime(e.target.value)}>
-                          {UNBLOCK_HOURS.map((h) => (
+                          {unblockHours.map((h) => (
                             <option key={h} value={h}>
                               {h}
                             </option>

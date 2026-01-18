@@ -29,6 +29,7 @@ import promoRoutes from './routes/promo.routes.js';
 import adminPromoRoutes from './routes/admin.promo.routes.js';
 import adminActivityRoutes from './routes/admin.activity.routes.js';
 import adminEmailingRoutes from './routes/admin.emailing.routes.js';
+import invoiceRoutes from './routes/invoice.routes.js';
 import { unsubscribeController, trackOpenController, trackClickController, oneClickUnsubscribeController } from './controllers/emailing.controller.js';
 
 const app = express();
@@ -123,6 +124,7 @@ app.use('/api/promo', promoRoutes);
 app.use('/api/admin/promo', adminPromoRoutes);
 app.use('/api/admin/activity', adminActivityRoutes);
 app.use('/api/admin/emailing', adminEmailingRoutes);
+app.use('/api/invoices', invoiceRoutes);
 
 // Route publique de desabonnement (pas d'auth requise)
 app.post('/api/emailing/unsubscribe', unsubscribeController);

@@ -13,6 +13,7 @@ import PodcasterBlockedSlot from './podcasterBlockedSlot.model.js';
 import PromoCode from './promoCode.model.js';
 import PopupConfig from './popupConfig.model.js';
 import EmailCampaign from './emailCampaign.model.js';
+import StudioSettings from './studioSettings.model.js';
 
 // ====== Modèle Message ======
 class Message extends Model {}
@@ -123,5 +124,6 @@ export {
   PodcasterBlockedSlot,
   PromoCode,
   PopupConfig,
-  EmailCampaign
+  EmailCampaign,
+  StudioSettings
 };

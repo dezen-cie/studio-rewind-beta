@@ -19,6 +19,16 @@ export interface DefaultBlockedRange {
   end: number;
 }
 
+export interface StudioSettings {
+  id?: string;
+  key?: string;
+  opening_time: string;
+  closing_time: string;
+  open_days: number[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // --- API publique ---
 
 /**
@@ -42,6 +52,30 @@ export async function getDefaultBlockedHours(): Promise<DefaultBlockedRange[]> {
  */
 export async function getUnblocksForDate(date: string): Promise<BlockedSlot[]> {
   const res = await api.get<BlockedSlot[]>(`/reservations/unblocks/${date}`);
+  return res.data;
+}
+
+/**
+ * Récupère les paramètres du studio (horaires et jours d'ouverture) - public
+ */
+export async function getStudioSettingsPublic(): Promise<StudioSettings> {
+  const res = await api.get<StudioSettings>('/reservations/studio-settings');
+  return res.data;
+}
+
+/**
+ * Récupère les plages bloquées calculées depuis les paramètres - public
+ */
+export async function getComputedBlockedRangesPublic(): Promise<DefaultBlockedRange[]> {
+  const res = await api.get<DefaultBlockedRange[]>('/reservations/computed-blocked-ranges');
+  return res.data;
+}
+
+/**
+ * Récupère les dates avec déblocages pour un mois donné - public
+ */
+export async function getUnblockDatesForMonth(year: number, month: number): Promise<string[]> {
+  const res = await api.get<string[]>(`/reservations/unblock-dates/${year}/${month}`);
   return res.data;
 }
 
@@ -109,5 +143,33 @@ export async function deleteAdminBlockedSlot(id: string): Promise<void> {
  */
 export async function deleteAdminBlockedSlotsForDate(date: string): Promise<{ deleted: number }> {
   const res = await api.delete<{ deleted: number }>(`/admin/blocked-slots/date/${date}`);
+  return res.data;
+}
+
+/**
+ * Récupère les paramètres du studio (admin)
+ */
+export async function getAdminStudioSettings(): Promise<StudioSettings> {
+  const res = await api.get<StudioSettings>('/admin/blocked-slots/settings');
+  return res.data;
+}
+
+/**
+ * Met à jour les paramètres du studio (admin)
+ */
+export async function updateAdminStudioSettings(data: {
+  opening_time?: string;
+  closing_time?: string;
+  open_days?: number[];
+}): Promise<StudioSettings> {
+  const res = await api.put<StudioSettings>('/admin/blocked-slots/settings', data);
+  return res.data;
+}
+
+/**
+ * Récupère les plages bloquées calculées depuis les paramètres (admin)
+ */
+export async function getAdminComputedBlockedRanges(): Promise<DefaultBlockedRange[]> {
+  const res = await api.get<DefaultBlockedRange[]>('/admin/blocked-slots/computed-ranges');
   return res.data;
 }

@@ -9,8 +9,11 @@ import {
   getBlockedSlotsForDate,
   getDefaultBlockedHours,
   getUnblocksForDate,
+  getStudioSettingsPublic,
+  getUnblockDatesForMonth,
   type BlockedSlot,
-  type DefaultBlockedRange
+  type DefaultBlockedRange,
+  type StudioSettings
 } from '../../api/blockedSlots';
 import { getPublicPodcasters, getPodcasterBlockedSlotsForDate, getPodcasterFullDayBlocks, type Podcaster, type PodcasterBlockedSlotPublic } from '../../api/podcasters';
 import { getPublicFormulas } from '../../api/formulas';
@@ -62,6 +65,7 @@ const StepTwoDateTime = ({
   const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
   const [podcasterBlockedSlots, setPodcasterBlockedSlots] = useState<PodcasterBlockedSlotPublic[]>([]);
   const [defaultBlockedRanges, setDefaultBlockedRanges] = useState<DefaultBlockedRange[]>([]);
+  const [studioSettings, setStudioSettings] = useState<StudioSettings | null>(null);
   const [unblocks, setUnblocks] = useState<BlockedSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [slotsError, setSlotsError] = useState<string | null>(null);
@@ -78,18 +82,23 @@ const StepTwoDateTime = ({
   // Dates avec jour entier bloque pour le podcasteur selectionne (pour griser le calendrier)
   const [fullDayBlockedDates, setFullDayBlockedDates] = useState<string[]>([]);
 
-  // Charger les podcasteurs, les heures bloquées par défaut et l'info de la formule au montage
+  // Dates avec ouverture exceptionnelle (pour dégriser les jours normalement fermés)
+  const [exceptionalOpenDates, setExceptionalOpenDates] = useState<string[]>([]);
+
+  // Charger les podcasteurs, les heures bloquées par défaut, les paramètres du studio et l'info de la formule au montage
   useEffect(() => {
     async function loadInitialData() {
       try {
         setLoadingPodcasters(true);
-        const [podcastersData, defaultHours, formulas] = await Promise.all([
+        const [podcastersData, defaultHours, settings, formulas] = await Promise.all([
           getPublicPodcasters(),
           getDefaultBlockedHours(),
+          getStudioSettingsPublic(),
           getPublicFormulas()
         ]);
         setPodcasters(podcastersData);
         setDefaultBlockedRanges(defaultHours);
+        setStudioSettings(settings);
 
         // Trouver la formule actuelle et récupérer ses infos
         const currentFormula = formulas.find((f) => f.key === formula);
@@ -98,6 +107,17 @@ const StepTwoDateTime = ({
           setFormulaPrice(currentFormula.price_ttc);
           setFormulaName(currentFormula.name);
         }
+
+        // Charger les dates avec ouvertures exceptionnelles pour les 6 prochains mois
+        const now = new Date();
+        const unblockPromises = [];
+        for (let i = 0; i < 6; i++) {
+          const targetDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
+          unblockPromises.push(getUnblockDatesForMonth(targetDate.getFullYear(), targetDate.getMonth() + 1));
+        }
+        const unblockResults = await Promise.all(unblockPromises);
+        const allUnblockDates = unblockResults.flat();
+        setExceptionalOpenDates(allUnblockDates);
       } catch (err) {
         console.error('Erreur chargement données initiales:', err);
       } finally {
@@ -411,11 +431,32 @@ const StepTwoDateTime = ({
     return disabled;
   }, [selectedDate, startTime, dayReservations, blockedSlots, podcasterBlockedSlots, defaultBlockedRanges, unblocks]);
 
+  // ====== JOURS FERMÉS DE LA SEMAINE ======
+  const closedDaysOfWeek = useMemo(() => {
+    if (!studioSettings || !studioSettings.open_days) return [];
+    // open_days contient les jours ouverts (1=Lundi, ..., 7=Dimanche)
+    // On doit retourner les jours FERMÉS
+    const allDays = [1, 2, 3, 4, 5, 6, 7];
+    return allDays.filter(d => !studioSettings.open_days.includes(d));
+  }, [studioSettings]);
+
   // ====== HEURES DISPONIBLES À AFFICHER (incluant les déblocages exceptionnels) ======
   const availableHours = useMemo(() => {
-    // Heures normales d'ouverture (9h-18h)
+    // Heures normales d'ouverture basées sur les paramètres du studio
     const normalHours = new Set<number>();
-    for (let h = 9; h <= 18; h++) {
+
+    // Récupérer les heures d'ouverture et de fermeture
+    let openingHour = 9;
+    let closingHour = 18;
+
+    if (studioSettings) {
+      const openTime = studioSettings.opening_time || '09:00';
+      const closeTime = studioSettings.closing_time || '18:00';
+      openingHour = parseInt(openTime.split(':')[0], 10);
+      closingHour = parseInt(closeTime.split(':')[0], 10);
+    }
+
+    for (let h = openingHour; h <= closingHour; h++) {
       normalHours.add(h);
     }
 
@@ -436,7 +477,7 @@ const StepTwoDateTime = ({
     return Array.from(normalHours)
       .sort((a, b) => a - b)
       .map(h => `${h.toString().padStart(2, '0')}:00`);
-  }, [unblocks]);
+  }, [unblocks, studioSettings]);
 
   // ====== CALCUL AUTOMATIQUE HEURE DE FIN (TOUJOURS +1h) ======
   useEffect(() => {
@@ -535,7 +576,7 @@ const StepTwoDateTime = ({
       )}
 
       <div className="booked-step2">
-        <BookingCalendar value={selectedDate} onChange={handleDateChange} disabledDates={fullDayBlockedDates} />
+        <BookingCalendar value={selectedDate} onChange={handleDateChange} disabledDates={fullDayBlockedDates} closedDaysOfWeek={closedDaysOfWeek} exceptionalOpenDates={exceptionalOpenDates} />
 
         <div className="recap">
           {/* RÉCAP EN HAUT : toujours TTC */}

@@ -321,6 +321,34 @@
   color: var(--color-primary, #f97316);
 }
 
+/* Bouton relevé de commission */
+
+.pc-reservation-commission-btn {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pc-reservation-commission-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.pc-reservation-commission-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Zone d'erreur */
 
 .pc-error {

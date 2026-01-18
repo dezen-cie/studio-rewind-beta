@@ -8,6 +8,11 @@ import {
   deleteBlockedSlotsForDate,
   getDefaultBlockedRanges
 } from '../services/blockedSlot.service.js';
+import {
+  getStudioSettings,
+  updateStudioSettings,
+  getDefaultBlockedRangesFromSettings
+} from '../services/studioSettings.service.js';
 
 /**
  * GET /admin/blocked-slots/month/:year/:month
@@ -123,6 +128,49 @@ export async function getUnblocksForDateController(req, res) {
     return res.json(unblocks);
   } catch (error) {
     console.error('Erreur getUnblocksForDate:', error);
+    return res.status(error.status || 500).json({ message: error.message });
+  }
+}
+
+/**
+ * GET /admin/blocked-slots/settings
+ * Récupère les paramètres du studio (horaires et jours d'ouverture)
+ */
+export async function getStudioSettingsController(_req, res) {
+  try {
+    const settings = await getStudioSettings();
+    return res.json(settings);
+  } catch (error) {
+    console.error('Erreur getStudioSettings:', error);
+    return res.status(error.status || 500).json({ message: error.message });
+  }
+}
+
+/**
+ * PUT /admin/blocked-slots/settings
+ * Met à jour les paramètres du studio
+ */
+export async function updateStudioSettingsController(req, res) {
+  try {
+    const { opening_time, closing_time, open_days } = req.body;
+    const settings = await updateStudioSettings({ opening_time, closing_time, open_days });
+    return res.json(settings);
+  } catch (error) {
+    console.error('Erreur updateStudioSettings:', error);
+    return res.status(error.status || 500).json({ message: error.message });
+  }
+}
+
+/**
+ * GET /admin/blocked-slots/computed-ranges
+ * Retourne les plages horaires bloquées calculées à partir des paramètres
+ */
+export async function getComputedBlockedRangesController(_req, res) {
+  try {
+    const ranges = await getDefaultBlockedRangesFromSettings();
+    return res.json(ranges);
+  } catch (error) {
+    console.error('Erreur getComputedBlockedRanges:', error);
     return res.status(error.status || 500).json({ message: error.message });
   }
 }

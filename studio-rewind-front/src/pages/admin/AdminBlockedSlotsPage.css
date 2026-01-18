@@ -576,3 +576,138 @@
   font-size: 0.85rem;
   text-align: center;
 }
+
+/* ========== SECTION HORAIRES D'OUVERTURE ========== */
+.opening-hours-section {
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.opening-hours-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.opening-hours-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-color, #fff);
+}
+
+.opening-hours-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.opening-hours-times {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.opening-hours-times .field {
+  margin-bottom: 0;
+}
+
+.opening-hours-times .label {
+  color: var(--text-color, #fff);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.opening-hours-times .select select {
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-color, #fff);
+  width: 100%;
+}
+
+.opening-hours-times .select select option {
+  background: #1a1a2e;
+  color: #fff;
+}
+
+.opening-hours-times .select select:focus {
+  border-color: #646cff;
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+}
+
+.opening-hours-days {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.opening-hours-days .label {
+  color: var(--text-color, #fff);
+  font-weight: 500;
+}
+
+.days-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.day-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: rgba(255, 255, 255, 0.7);
+  user-select: none;
+}
+
+.day-checkbox:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.day-checkbox input[type="checkbox"] {
+  accent-color: #646cff;
+  width: 16px;
+  height: 16px;
+}
+
+.day-checkbox:has(input:checked) {
+  background: rgba(100, 108, 255, 0.2);
+  color: #fff;
+}
+
+.opening-hours-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 0.5rem;
+}
+
+.opening-hours-actions .button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.settings-success {
+  color: #10b981;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.opening-hours-info {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border-left: 3px solid rgba(100, 108, 255, 0.5);
+}

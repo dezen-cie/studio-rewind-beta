@@ -3,6 +3,7 @@ import {
   getPodcasterReservationsByDate,
   type PodcasterReservation
 } from '../../api/podcasterDashboard';
+import { downloadCommissionStatement } from '../../api/invoices';
 import './PodcasterCalendarPage.css';
 
 interface CalendarDay {
@@ -97,6 +98,7 @@ function PodcasterCalendarPage() {
   const [reservations, setReservations] = useState<PodcasterReservation[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingCommissionId, setDownloadingCommissionId] = useState<string | null>(null);
 
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
@@ -184,6 +186,18 @@ function PodcasterCalendarPage() {
     if (cell.date.getMonth() !== currentMonth || cell.date.getFullYear() !== currentYear) {
       setCurrentMonth(cell.date.getMonth());
       setCurrentYear(cell.date.getFullYear());
+    }
+  }
+
+  async function handleDownloadCommission(reservationId: string) {
+    try {
+      setDownloadingCommissionId(reservationId);
+      await downloadCommissionStatement(reservationId);
+    } catch (err: any) {
+      console.error('Erreur téléchargement relevé commission:', err);
+      alert(err?.response?.data?.message || 'Impossible de télécharger le relevé de commission.');
+    } finally {
+      setDownloadingCommissionId(null);
     }
   }
 
@@ -311,6 +325,16 @@ function PodcasterCalendarPage() {
                         <p className="pc-reservation-price">
                           {r.price_ttc.toFixed(2)} EUR TTC
                         </p>
+                        {r.status === 'confirmed' && (
+                          <button
+                            type="button"
+                            className="pc-reservation-commission-btn"
+                            onClick={() => handleDownloadCommission(r.id)}
+                            disabled={downloadingCommissionId === r.id}
+                          >
+                            {downloadingCommissionId === r.id ? 'Téléchargement...' : '📄 Relevé de commission'}
+                          </button>
+                        )}
                       </li>
                     ))}
                   </ul>

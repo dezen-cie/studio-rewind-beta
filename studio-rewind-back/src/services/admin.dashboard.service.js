@@ -1,6 +1,7 @@
 // src/services/admin.dashboard.service.js
 import { Op } from 'sequelize';
 import { Reservation, Subscription, User, BlockedSlot, Podcaster } from '../models/index.js';
+import { getOpeningHours, isDayOpen } from './studioSettings.service.js';
 
 function getDayRange(date = new Date()) {
   const d = new Date(date);
@@ -201,9 +202,39 @@ export async function getDayOccupancyRate(selectedDate = null) {
   const targetDate = selectedDate ? new Date(selectedDate) : new Date();
   const { start, end } = getDayRange(targetDate);
 
-  // Heures d'ouverture par défaut
-  const DEFAULT_START = 9;
-  const DEFAULT_END = 18;
+  // Récupérer les heures d'ouverture depuis les paramètres
+  const openingHours = await getOpeningHours();
+  const DEFAULT_START = openingHours.opening_hour;
+  const DEFAULT_END = openingHours.closing_hour;
+
+  // Vérifier si le jour est ouvert selon les paramètres
+  const dayOfWeek = targetDate.getDay();
+  const dayIsOpen = await isDayOpen(dayOfWeek);
+
+  // Si le jour est fermé, retourner des valeurs nulles (sauf s'il y a des déblocages)
+  const todayStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
+  const blockedSlots = await BlockedSlot.findAll({
+    where: { date: todayStr }
+  });
+
+  // Séparer les blocages et les déblocages (créneaux exceptionnels)
+  const blockSlots = blockedSlots.filter(b => !b.is_unblock);
+  const unblockSlots = blockedSlots.filter(b => b.is_unblock);
+
+  // Si le jour est fermé et pas de déblocages, retourner fermé
+  if (!dayIsOpen && unblockSlots.length === 0) {
+    return {
+      effective_start: DEFAULT_START,
+      effective_end: DEFAULT_END,
+      total_available_hours: 0,
+      booked_hours: 0,
+      blocked_hours: 0,
+      available_hours: 0,
+      occupancy_rate: 0,
+      is_full_day_blocked: true,
+      is_closed_day: true
+    };
+  }
 
   // Récupérer les réservations du jour
   const reservations = await Reservation.findAll({
@@ -214,19 +245,9 @@ export async function getDayOccupancyRate(selectedDate = null) {
     attributes: ['start_date', 'end_date', 'total_hours']
   });
 
-  // Récupérer les blocages du jour (utiliser la date locale, pas UTC)
-  const todayStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
-  const blockedSlots = await BlockedSlot.findAll({
-    where: { date: todayStr }
-  });
-
-  // Séparer les blocages et les déblocages (créneaux exceptionnels)
-  const blockSlots = blockedSlots.filter(b => !b.is_unblock);
-  const unblockSlots = blockedSlots.filter(b => b.is_unblock);
-
   // Calculer les heures étendues grâce aux déblocages (créneaux exceptionnels)
-  let effectiveStart = DEFAULT_START;
-  let effectiveEnd = DEFAULT_END;
+  let effectiveStart = dayIsOpen ? DEFAULT_START : 24;
+  let effectiveEnd = dayIsOpen ? DEFAULT_END : 0;
   let extraHours = 0;
 
   for (const unblock of unblockSlots) {
@@ -236,21 +257,29 @@ export async function getDayOccupancyRate(selectedDate = null) {
       const unblockStart = sh + sm / 60;
       const unblockEnd = eh + em / 60;
 
-      // Si le déblocage est avant l'heure d'ouverture par défaut
-      if (unblockStart < DEFAULT_START) {
+      if (!dayIsOpen) {
+        // Jour fermé : les déblocages définissent les heures disponibles
         effectiveStart = Math.min(effectiveStart, unblockStart);
-        extraHours += Math.min(DEFAULT_START, unblockEnd) - unblockStart;
-      }
-      // Si le déblocage est après l'heure de fermeture par défaut
-      if (unblockEnd > DEFAULT_END) {
         effectiveEnd = Math.max(effectiveEnd, unblockEnd);
-        extraHours += unblockEnd - Math.max(DEFAULT_END, unblockStart);
+        extraHours += unblockEnd - unblockStart;
+      } else {
+        // Jour ouvert : les déblocages étendent les heures normales
+        // Si le déblocage est avant l'heure d'ouverture par défaut
+        if (unblockStart < DEFAULT_START) {
+          effectiveStart = Math.min(effectiveStart, unblockStart);
+          extraHours += Math.min(DEFAULT_START, unblockEnd) - unblockStart;
+        }
+        // Si le déblocage est après l'heure de fermeture par défaut
+        if (unblockEnd > DEFAULT_END) {
+          effectiveEnd = Math.max(effectiveEnd, unblockEnd);
+          extraHours += unblockEnd - Math.max(DEFAULT_END, unblockStart);
+        }
       }
     }
   }
 
   // Heures totales disponibles = heures par défaut + heures exceptionnelles
-  const BASE_HOURS = DEFAULT_END - DEFAULT_START;
+  const BASE_HOURS = dayIsOpen ? (DEFAULT_END - DEFAULT_START) : 0;
   const totalAvailableHours = BASE_HOURS + extraHours;
 
   // Calculer les heures réservées
@@ -294,6 +323,7 @@ export async function getDayOccupancyRate(selectedDate = null) {
     blocked_hours: blockedHours,
     available_hours: Math.max(netAvailableHours - bookedHours, 0),
     occupancy_rate: Math.round(Math.min(occupancyRate, 100)),
-    is_full_day_blocked: isFullDayBlocked
+    is_full_day_blocked: isFullDayBlocked,
+    is_closed_day: !dayIsOpen
   };
 }

@@ -8,7 +8,10 @@ import {
   getByDayPublic,
   getBlockedByDayPublic,
   getDefaultBlockedHoursPublic,
-  getUnblocksByDayPublic
+  getUnblocksByDayPublic,
+  getStudioSettingsPublic,
+  getComputedBlockedRangesPublic,
+  getUnblockDatesForMonthPublic
 } from '../controllers/reservation.controller.js';
 
 const router = Router();
@@ -24,6 +27,15 @@ router.get('/default-blocked-hours', getDefaultBlockedHoursPublic);
 
 // Route publique : récupérer les déblocages d'un jour donné
 router.get('/unblocks/:date', getUnblocksByDayPublic);
+
+// Route publique : récupérer les paramètres du studio (horaires et jours d'ouverture)
+router.get('/studio-settings', getStudioSettingsPublic);
+
+// Route publique : récupérer les plages bloquées calculées depuis les paramètres
+router.get('/computed-blocked-ranges', getComputedBlockedRangesPublic);
+
+// Route publique : récupérer les dates avec déblocages pour un mois
+router.get('/unblock-dates/:year/:month', getUnblockDatesForMonthPublic);
 
 // Prévisualisation (step 2 du tunnel : calcul prix HT/TVA/TTC)
 router.post('/preview', authenticate, preview);

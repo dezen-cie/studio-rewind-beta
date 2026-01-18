@@ -1,25 +1,22 @@
 // src/services/blockedSlot.service.js
 import { Op } from 'sequelize';
 import { BlockedSlot } from '../models/index.js';
+import { getDefaultBlockedRangesFromSettings, isDayOpen } from './studioSettings.service.js';
 
-// Heures par défaut bloquées (hors horaires d'ouverture)
+// Heures par défaut bloquées (hors horaires d'ouverture) - LEGACY, utilisé comme fallback
 const DEFAULT_BLOCKED_RANGES = [
   { start: 0, end: 9 },   // Minuit à 9h
   { start: 18, end: 24 }  // 18h à minuit
 ];
 
 /**
- * Vérifie si une heure est dans les plages bloquées par défaut
+ * Vérifie si un intervalle chevauche les plages bloquées
+ * @param {number} startHour - Heure de début
+ * @param {number} endHour - Heure de fin
+ * @param {Array} blockedRanges - Plages bloquées [{start, end}, ...]
  */
-function isInDefaultBlockedRange(hour) {
-  return DEFAULT_BLOCKED_RANGES.some(range => hour >= range.start && hour < range.end);
-}
-
-/**
- * Vérifie si un intervalle chevauche les plages bloquées par défaut
- */
-function intervalOverlapsDefaultBlocked(startHour, endHour) {
-  for (const range of DEFAULT_BLOCKED_RANGES) {
+function intervalOverlapsBlockedRanges(startHour, endHour, blockedRanges) {
+  for (const range of blockedRanges) {
     // Chevauchement si start < range.end ET end > range.start
     if (startHour < range.end && endHour > range.start) {
       return true;
@@ -75,11 +72,39 @@ export async function getUnblocksForDate(date) {
 }
 
 /**
+ * Récupère toutes les dates qui ont des déblocages pour un mois donné
+ * @returns {Array<string>} Tableau de dates au format YYYY-MM-DD
+ */
+export async function getUnblockDatesForMonth(year, month) {
+  const startOfMonth = new Date(year, month - 1, 1);
+  const endOfMonth = new Date(year, month, 0);
+
+  const unblocks = await BlockedSlot.findAll({
+    where: {
+      date: {
+        [Op.between]: [startOfMonth, endOfMonth]
+      },
+      is_unblock: true
+    },
+    attributes: ['date']
+  });
+
+  // Extraire les dates uniques
+  const datesSet = new Set();
+  for (const u of unblocks) {
+    datesSet.add(u.date);
+  }
+
+  return Array.from(datesSet);
+}
+
+/**
  * Vérifie si un créneau est bloqué
  * Prend en compte :
- * 1. Les heures par défaut bloquées (0-9h et 18-24h)
- * 2. Les déblocages exceptionnels (is_unblock: true)
- * 3. Les blocages manuels de l'admin
+ * 1. Le jour de la semaine (fermé selon les paramètres)
+ * 2. Les heures par défaut bloquées (selon les paramètres du studio)
+ * 3. Les déblocages exceptionnels (is_unblock: true)
+ * 4. Les blocages manuels de l'admin
  *
  * @param {Date} startDate - Date/heure de début
  * @param {Date} endDate - Date/heure de fin
@@ -87,6 +112,35 @@ export async function getUnblocksForDate(date) {
  */
 export async function isSlotBlocked(startDate, endDate) {
   const dateOnly = startDate.toISOString().split('T')[0];
+  const dayOfWeek = startDate.getDay(); // 0=Dimanche, 1=Lundi, ...
+
+  // Vérifier si le jour est ouvert selon les paramètres
+  const dayIsOpen = await isDayOpen(dayOfWeek);
+
+  if (!dayIsOpen) {
+    // Le jour est fermé, chercher un déblocage exceptionnel
+    const startHour = startDate.getHours();
+    const startMinutes = startDate.getMinutes();
+    const endHour = endDate.getHours();
+    const endMinutes = endDate.getMinutes();
+
+    const startTimeStr = `${startHour.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')}:00`;
+    const endTimeStr = `${endHour.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}:00`;
+
+    const unblock = await BlockedSlot.findOne({
+      where: {
+        date: dateOnly,
+        is_unblock: true,
+        start_time: { [Op.lte]: startTimeStr },
+        end_time: { [Op.gte]: endTimeStr }
+      }
+    });
+
+    // Si pas de déblocage, le jour est fermé
+    if (!unblock) {
+      return true;
+    }
+  }
 
   // Vérifier si le jour entier est bloqué (blocage manuel)
   const fullDayBlock = await BlockedSlot.findOne({
@@ -109,8 +163,11 @@ export async function isSlotBlocked(startDate, endDate) {
   const startTimeStr = `${startHour.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')}:00`;
   const endTimeStr = `${endHour.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}:00`;
 
+  // Récupérer les plages bloquées depuis les paramètres
+  const blockedRanges = await getDefaultBlockedRangesFromSettings();
+
   // Vérifier si le créneau est dans les heures par défaut bloquées
-  const inDefaultBlocked = intervalOverlapsDefaultBlocked(startHour, endHour);
+  const inDefaultBlocked = intervalOverlapsBlockedRanges(startHour, endHour, blockedRanges);
 
   if (inDefaultBlocked) {
     // Chercher un déblocage qui couvre entièrement le créneau demandé

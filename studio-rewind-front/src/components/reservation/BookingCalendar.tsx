@@ -17,6 +17,8 @@ interface BookingCalendarProps {
   value: Date | null;
   onChange: (date: Date) => void;
   disabledDates?: string[]; // Format YYYY-MM-DD
+  closedDaysOfWeek?: number[]; // Jours fermés (1=Lundi, 2=Mardi, ..., 7=Dimanche)
+  exceptionalOpenDates?: string[]; // Dates avec ouverture exceptionnelle (format YYYY-MM-DD)
 }
 
 function getDaysMatrix(year: number, month: number): DaysMatrix {
@@ -53,7 +55,7 @@ function formatMonthYear(date: Date): string {
   return `${month} ${year}`;
 }
 
-const BookingCalendar: React.FC<BookingCalendarProps> = ({ value, onChange, disabledDates = [] }) => {
+const BookingCalendar: React.FC<BookingCalendarProps> = ({ value, onChange, disabledDates = [], closedDaysOfWeek = [], exceptionalOpenDates = [] }) => {
   // le mois affiché, basé sur la valeur si dispo
   const [currentDate, setCurrentDate] = useState<Date>(() => value ?? new Date());
 
@@ -93,6 +95,29 @@ const isDisabledDate = (day: Day): boolean => {
   if (!day) return false;
   const dateKey = toDateKey(year, month, day);
   return disabledDatesSet.has(dateKey);
+};
+
+// Set de jours de la semaine fermés
+const closedDaysSet = new Set(closedDaysOfWeek);
+
+// Set de dates avec ouverture exceptionnelle
+const exceptionalOpenDatesSet = new Set(exceptionalOpenDates);
+
+// Vérifie si un jour est un jour fermé de la semaine (sauf s'il a une ouverture exceptionnelle)
+const isClosedDayOfWeek = (day: Day): boolean => {
+  if (!day) return false;
+
+  // Vérifier d'abord si cette date a une ouverture exceptionnelle
+  const dateKey = toDateKey(year, month, day);
+  if (exceptionalOpenDatesSet.has(dateKey)) {
+    return false; // Pas fermé car ouverture exceptionnelle
+  }
+
+  const date = new Date(year, month, day);
+  const dayOfWeek = date.getDay(); // 0=Dimanche, 1=Lundi, ..., 6=Samedi
+  // Convertir au format 1=Lundi, ..., 7=Dimanche
+  const ourDayFormat = dayOfWeek === 0 ? 7 : dayOfWeek;
+  return closedDaysSet.has(ourDayFormat);
 };
 
   const handlePrevMonth = () => {
@@ -170,7 +195,8 @@ const isDisabledDate = (day: Day): boolean => {
             {week.map((day: Day, dayIndex: number) => {
               const past = isPastDay(day);
               const disabled = isDisabledDate(day);
-              const isUnavailable = past || disabled;
+              const closedDay = isClosedDayOfWeek(day);
+              const isUnavailable = past || disabled || closedDay;
               return (
                 <button
                   key={dayIndex}
