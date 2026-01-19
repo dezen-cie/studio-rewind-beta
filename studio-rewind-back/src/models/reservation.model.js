@@ -108,6 +108,12 @@ Reservation.init(
     reminder_sent: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
+    },
+
+    // Indique si l'admin a vu cette réservation (pour les notifications)
+    admin_viewed: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     }
   },
   {

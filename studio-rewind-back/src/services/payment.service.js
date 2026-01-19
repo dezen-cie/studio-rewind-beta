@@ -87,14 +87,16 @@ export async function createReservationPaymentIntent(
       throw err;
     }
 
-    if (promoCodeRecord.used) {
-      const err = new Error('Ce code promo a deja ete utilise.');
+    // Vérifier si le code est actif
+    if (promoCodeRecord.is_active === false) {
+      const err = new Error('Ce code promo n\'est plus actif.');
       err.status = 400;
       throw err;
     }
 
+    // Vérifier si le code n'est pas expiré
     if (promoCodeRecord.expires_at && promoCodeRecord.expires_at < new Date()) {
-      const err = new Error('Ce code promo a expire.');
+      const err = new Error('Ce code promo a expiré.');
       err.status = 400;
       throw err;
     }
@@ -105,7 +107,7 @@ export async function createReservationPaymentIntent(
 
     promoData = {
       code: promoCodeRecord.code,
-      label: 'Promo lancement',
+      label: 'Code promo',
       discount: discountPercent,
       original_price_ht: pricing.price_ht,
       original_price_ttc: pricing.price_ttc
@@ -116,11 +118,8 @@ export async function createReservationPaymentIntent(
     finalPricing.price_tva = Math.round(finalPricing.price_ht * 0.2 * 100) / 100;
     finalPricing.price_ttc = Math.round((finalPricing.price_ht + finalPricing.price_tva) * 100) / 100;
 
-    // Marquer le code promo comme utilise
-    await promoCodeRecord.update({
-      used: true,
-      used_at: new Date()
-    });
+    // Incrémenter le compteur d'utilisation (ne bloque pas les futures utilisations)
+    await promoCodeRecord.increment('usage_count');
   }
 
   // Vérifier que le créneau n'est pas déjà pris

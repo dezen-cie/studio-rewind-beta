@@ -8,6 +8,7 @@ import {
   getUsers,
   toggleAdmin,
 } from '../controllers/admin.controller.js';
+import { getNotificationCountsController } from '../controllers/admin.notification.controller.js';
 
 import adminSubscriptionRoutes from './admin.subscription.routes.js';
 
@@ -32,4 +33,8 @@ router.delete('/delete/:userId', authenticate, requireSuperAdmin, deleteUser);
 router.patch('/toggle-admin/:userId', authenticate, requireSuperAdmin, toggleAdmin);
 
 router.use('/subscriptions', adminSubscriptionRoutes);
+
+// Compteurs de notifications (messages non lus, réservations en attente)
+router.get('/notifications/counts', authenticate, requireAdmin, getNotificationCountsController);
+
 export default router;

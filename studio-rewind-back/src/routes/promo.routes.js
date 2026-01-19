@@ -8,6 +8,7 @@ import {
   adminList,
   adminDelete,
   adminCreatePromo,
+  adminTogglePromo,
   getPopupActive,
   adminListPopups,
   adminSavePopup,
@@ -41,6 +42,7 @@ router.get('/popup/active', getPopupActive);
 router.get('/admin', authenticate, requireAdmin, adminList);
 router.get('/admin/stats', authenticate, requireAdmin, stats);
 router.post('/admin/create', authenticate, requireAdmin, adminCreatePromo);
+router.patch('/admin/:id/toggle', authenticate, requireAdmin, adminTogglePromo);
 router.delete('/admin/:id', authenticate, requireAdmin, adminDelete);
 
 // ============================================================

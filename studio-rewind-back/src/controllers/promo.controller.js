@@ -7,6 +7,7 @@ import {
   getPromoStats,
   getAllPromoCodes,
   deletePromoCode,
+  togglePromoCodeActive,
   getActivePopup,
   getAllPopups,
   createOrUpdatePopup,
@@ -280,6 +281,29 @@ export async function adminCreatePromo(req, res) {
 
   } catch (error) {
     console.error('Erreur create promo:', error);
+    res.status(error.status || 500).json({ message: error.message });
+  }
+}
+
+/**
+ * PATCH /api/promo/admin/:id/toggle
+ * Active/desactive un code promo (admin)
+ */
+export async function adminTogglePromo(req, res) {
+  try {
+    const { id } = req.params;
+    const { is_active } = req.body;
+
+    const promoCode = await togglePromoCodeActive(id, is_active === true);
+
+    res.json({
+      success: true,
+      message: is_active ? 'Code promo active.' : 'Code promo desactive.',
+      promoCode
+    });
+
+  } catch (error) {
+    console.error('Erreur toggle promo:', error);
     res.status(error.status || 500).json({ message: error.message });
   }
 }

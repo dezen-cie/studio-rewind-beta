@@ -43,7 +43,7 @@ function toDateTimeLocalValue(dateStr: string) {
 const PAGE_SIZE = 5;
 
 function AdminReservationsPage() {
-  const { searchQuery } = useOutletContext<AdminLayoutOutletContext>();
+  const { searchQuery, refreshNotifications } = useOutletContext<AdminLayoutOutletContext>();
 
   const [reservations, setReservations] = useState<AdminReservation[]>([]);
   const [loading, setLoading] = useState(false);
@@ -63,6 +63,8 @@ function AdminReservationsPage() {
       setLoading(true);
       const data = await getAdminReservations();
       setReservations(data);
+      // Rafraichir les notifications pour avoir les compteurs a jour
+      refreshNotifications();
     } catch (err: any) {
       console.error('Erreur getAdminReservations:', err);
       setError(
@@ -195,6 +197,9 @@ function AdminReservationsPage() {
       setReservations((prev) =>
         prev.map((r) => (r.id === updated.id ? updated : r))
       );
+
+      // Rafraichir les notifications (une reservation pending de moins)
+      refreshNotifications();
     } catch (err: any) {
       console.error('Erreur cancelAdminReservation:', err);
       const message =

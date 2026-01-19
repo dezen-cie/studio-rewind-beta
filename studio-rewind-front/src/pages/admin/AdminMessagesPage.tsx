@@ -37,7 +37,7 @@ function getSenderName(msg: AdminMessage) {
 }
 
 function AdminMessagesPage() {
-  const { searchQuery } = useOutletContext<AdminLayoutOutletContext>();
+  const { searchQuery, refreshNotifications } = useOutletContext<AdminLayoutOutletContext>();
 
   const [messages, setMessages] = useState<AdminMessage[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -59,6 +59,8 @@ function AdminMessagesPage() {
         setLoadingList(true);
         const data = await getAdminMessages();
         setMessages(data);
+        // Rafraichir les notifications pour avoir les compteurs a jour
+        refreshNotifications();
         if (data.length > 0) {
           setSelectedId(data[0].id);
         }
@@ -73,7 +75,7 @@ function AdminMessagesPage() {
     }
 
     load();
-  }, []);
+  }, [refreshNotifications]);
 
   useEffect(() => {
     async function loadDetail(id: string) {
@@ -81,6 +83,14 @@ function AdminMessagesPage() {
         setLoadingDetail(true);
         const msg = await getAdminMessageById(id);
         setSelected(msg);
+
+        // Rafraichir les notifications (le message est maintenant lu)
+        refreshNotifications();
+
+        // Mettre a jour le statut dans la liste locale
+        setMessages((prev) =>
+          prev.map((m) => (m.id === id ? { ...m, status: 'read' } : m))
+        );
 
         if (!replySubject) {
           setReplySubject(`Re: ${msg.subject}`);
@@ -101,7 +111,7 @@ function AdminMessagesPage() {
     } else {
       setSelected(null);
     }
-  }, [selectedId]);
+  }, [selectedId, refreshNotifications]);
 
   async function handleDelete() {
     if (!selected) return;
@@ -116,6 +126,9 @@ function AdminMessagesPage() {
       await deleteAdminMessage(selected.id);
 
       setMessages((prev) => prev.filter((m) => m.id !== selected.id));
+
+      // Rafraichir les notifications
+      refreshNotifications();
 
       const remaining = messages.filter((m) => m.id !== selected.id);
       if (remaining.length > 0) {

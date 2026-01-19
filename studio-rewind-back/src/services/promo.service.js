@@ -118,39 +118,20 @@ export async function validatePromoCode(code, email = null) {
     return { valid: false, message: 'Code promo invalide.' };
   }
 
-  // Pour les codes manuels (non lies a un email specifique)
-  const isManualCode = promoCode.email === 'manual@admin.local';
-
-  if (isManualCode) {
-    // Verifier si ce client a deja utilise ce code
-    if (email) {
-      const alreadyUsed = await PromoCode.findOne({
-        where: {
-          code: code.toUpperCase(),
-          used: true,
-          used_by_email: email.toLowerCase()
-        }
-      });
-      if (alreadyUsed) {
-        return { valid: false, message: 'Vous avez deja utilise ce code promo.' };
-      }
-    }
-  } else {
-    // Code lie a un email specifique
-    if (promoCode.used) {
-      return { valid: false, message: 'Ce code promo a deja ete utilise.' };
-    }
+  // Vérifier si le code est actif
+  if (promoCode.is_active === false) {
+    return { valid: false, message: 'Ce code promo n\'est plus actif.' };
   }
 
   // Verifier expiration (si date definie)
   if (promoCode.expires_at && promoCode.expires_at < new Date()) {
-    return { valid: false, message: 'Ce code promo a expire.' };
+    return { valid: false, message: 'Ce code promo a expiré.' };
   }
 
   return {
     valid: true,
     discount: promoCode.discount,
-    message: `Reduction de ${promoCode.discount}% appliquee !`
+    message: `Réduction de ${promoCode.discount}% appliquée !`
   };
 }
 
@@ -228,6 +209,23 @@ export async function deletePromoCode(id) {
   }
   await promoCode.destroy();
   return true;
+}
+
+/**
+ * Active ou désactive un code promo
+ * @param {string} id - L'ID du code promo
+ * @param {boolean} active - true pour activer, false pour désactiver
+ * @returns {Promise<PromoCode>}
+ */
+export async function togglePromoCodeActive(id, active) {
+  const promoCode = await PromoCode.findByPk(id);
+  if (!promoCode) {
+    const error = new Error('Code promo introuvable.');
+    error.status = 404;
+    throw error;
+  }
+  await promoCode.update({ is_active: active });
+  return promoCode;
 }
 
 // ============================================================

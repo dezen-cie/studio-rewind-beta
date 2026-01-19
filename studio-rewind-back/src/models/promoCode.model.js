@@ -30,6 +30,7 @@ PromoCode.init(
       defaultValue: 15 // 15% par défaut
     },
 
+    // Champ legacy - ne plus utiliser pour bloquer, seulement pour stats
     used: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -44,6 +45,20 @@ PromoCode.init(
     expires_at: {
       type: DataTypes.DATE,
       allowNull: true // null = sans expiration
+    },
+
+    // Permet de désactiver manuellement un code promo
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
+    },
+
+    // Compteur d'utilisations
+    usage_count: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
     }
   },
   {

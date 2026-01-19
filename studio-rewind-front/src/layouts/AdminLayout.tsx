@@ -1,21 +1,39 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { logout } from '../utils/auth';
+import { getAdminNotificationCounts, type NotificationCounts } from '../api/adminNotifications';
 import 'bulma/css/bulma.min.css';
 import './admin.css';
 
 
 export type AdminLayoutOutletContext = {
   searchQuery: string;
+  refreshNotifications: () => Promise<void>;
 };
 
 function AdminLayout() {
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [notifCounts, setNotifCounts] = useState<NotificationCounts | null>(null);
 
   const rawUser =
     typeof window !== 'undefined' ? window.localStorage.getItem('sr_user') : null;
   const user = rawUser ? JSON.parse(rawUser) : null;
+
+  // Fonction pour charger/rafraichir les compteurs de notifications
+  const refreshNotifications = useCallback(async () => {
+    try {
+      const counts = await getAdminNotificationCounts();
+      setNotifCounts(counts);
+    } catch (err) {
+      console.error('Erreur chargement notifications:', err);
+    }
+  }, []);
+
+  // Charger les compteurs de notifications au montage
+  useEffect(() => {
+    refreshNotifications();
+  }, [refreshNotifications]);
 
   function getDisplayName() {
     if (!user) return 'Utilisateur';
@@ -95,6 +113,9 @@ function AdminLayout() {
                 >
                   <span className="sr-admin-navlink-icon">📅</span>
                   <span>Réservations</span>
+                  {notifCounts && notifCounts.new_reservations > 0 && (
+                    <span className="sr-admin-navlink-badge">{notifCounts.new_reservations}</span>
+                  )}
                 </NavLink>
               </li>
               <li>
@@ -232,6 +253,9 @@ function AdminLayout() {
                 >
                   <span className="sr-admin-navlink-icon">✉️</span>
                   <span>Messages</span>
+                  {notifCounts && notifCounts.unread_messages > 0 && (
+                    <span className="sr-admin-navlink-badge">{notifCounts.unread_messages}</span>
+                  )}
                 </NavLink>
               </li>
               <li>
@@ -355,7 +379,7 @@ function AdminLayout() {
           </header>
 
           <main className="sr-admin-main-content">
-            <Outlet context={{ searchQuery }} />
+            <Outlet context={{ searchQuery, refreshNotifications }} />
           </main>
         </div>
       </div>

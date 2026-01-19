@@ -9,6 +9,8 @@ export interface PromoCode {
   used: boolean;
   used_at: string | null;
   expires_at: string | null;
+  is_active: boolean;
+  usage_count: number;
   createdAt: string;
 }
 
@@ -72,6 +74,11 @@ export async function createAdminPromoCode(data: CreatePromoCodeData): Promise<{
 
 export async function deleteAdminPromoCode(id: string): Promise<{ success: boolean; message: string }> {
   const res = await api.delete<{ success: boolean; message: string }>(`/promo/admin/${id}`);
+  return res.data;
+}
+
+export async function toggleAdminPromoCode(id: string, isActive: boolean): Promise<{ success: boolean; message: string; promoCode: PromoCode }> {
+  const res = await api.patch<{ success: boolean; message: string; promoCode: PromoCode }>(`/promo/admin/${id}/toggle`, { is_active: isActive });
   return res.data;
 }
 

@@ -5,10 +5,13 @@ import {
   adminUpdateReservation,
   adminCancelReservation
 } from '../services/reservation.service.js';
+import { markReservationsAsViewed } from '../services/notification.service.js';
 
 export async function getAllReservations(req, res) {
   try {
     const reservations = await adminListReservations();
+    // Marquer les nouvelles réservations comme vues
+    await markReservationsAsViewed();
     return res.json(reservations);
   } catch (error) {
     console.error('Erreur getAllReservations:', error);

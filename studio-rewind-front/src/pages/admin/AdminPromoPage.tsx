@@ -18,6 +18,7 @@ import {
   getAdminPromoStats,
   createAdminPromoCode,
   deleteAdminPromoCode,
+  toggleAdminPromoCode,
   getAdminPopups,
   saveAdminPopup,
   deleteAdminPopup,
@@ -41,12 +42,15 @@ function formatDate(dateStr?: string | null) {
 }
 
 function getStatus(code: PromoCode): { label: string; className: string } {
-  if (code.used) {
-    return { label: 'Utilise', className: 'promo-status--used' };
+  // Verifie d'abord si le code est desactive manuellement
+  if (code.is_active === false) {
+    return { label: 'Desactive', className: 'promo-status--disabled' };
   }
+  // Ensuite verifie l'expiration
   if (code.expires_at && new Date(code.expires_at) < new Date()) {
     return { label: 'Expire', className: 'promo-status--expired' };
   }
+  // Le code est actif
   return { label: 'Actif', className: 'promo-status--active' };
 }
 
@@ -172,6 +176,22 @@ function AdminPromoPage() {
       alert(err?.response?.data?.message || 'Erreur lors de la suppression.');
     } finally {
       setDeleting(null);
+    }
+  }
+
+  async function handleTogglePromo(id: string, currentActive: boolean) {
+    try {
+      await toggleAdminPromoCode(id, !currentActive);
+      // Recharger les donnees
+      const [codesData, statsData] = await Promise.all([
+        getAdminPromoCodes(),
+        getAdminPromoStats()
+      ]);
+      setCodes(codesData);
+      setStats(statsData);
+    } catch (err: any) {
+      console.error('Erreur toggle promo:', err);
+      alert(err?.response?.data?.message || 'Erreur lors du changement de statut.');
     }
   }
 
@@ -615,10 +635,10 @@ function AdminPromoPage() {
                         <th>Code</th>
                         <th>Email</th>
                         <th className="text-center">Reduction</th>
+                        <th className="text-center">Utilisations</th>
                         <th className="text-center">Statut</th>
                         <th>Cree le</th>
                         <th>Expire le</th>
-                        <th>Utilise le</th>
                         <th className="text-center">Actions</th>
                       </tr>
                     </thead>
@@ -634,14 +654,23 @@ function AdminPromoPage() {
                             </td>
                             <td className="text-center">{code.discount}%</td>
                             <td className="text-center">
+                              <span className="promo-usage-count">{code.usage_count || 0}</span>
+                            </td>
+                            <td className="text-center">
                               <span className={`promo-status ${status.className}`}>
                                 {status.label}
                               </span>
                             </td>
                             <td>{formatDate(code.createdAt)}</td>
                             <td>{formatDate(code.expires_at)}</td>
-                            <td>{formatDate(code.used_at)}</td>
-                            <td className="text-center">
+                            <td className="text-center promo-actions-cell">
+                              <button
+                                className={`promo-toggle-btn ${code.is_active !== false ? 'promo-toggle-btn--active' : ''}`}
+                                onClick={() => handleTogglePromo(code.id, code.is_active !== false)}
+                                title={code.is_active !== false ? 'Desactiver' : 'Activer'}
+                              >
+                                {code.is_active !== false ? <Eye size={16} /> : <EyeOff size={16} />}
+                              </button>
                               <button
                                 className="promo-delete-btn"
                                 onClick={() => handleDeletePromo(code.id, code.code)}

@@ -225,6 +225,23 @@
   color: var(--sr-color-heading);
 }
 
+/* Badge de notification */
+.sr-admin-navlink-badge {
+  margin-left: auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 /* FOOTER SIDEBAR */
 
 .sr-admin-sidebar-footer {
